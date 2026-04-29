@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadChart from "./LoadChart";
 
@@ -10,28 +11,28 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
   const [expanded, setExpanded] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [setNumber, setSetNumber] = useState(1);
-  const [repsDone, setRepsDone] = useState("");
+  const [setNumber, setSetNumber] = useState("1");
   const [weightKg, setWeightKg] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
   const todayLogs = logs.filter(l => l.date === today);
+  const totalSets = exercise.sets || 5;
 
   async function handleSave() {
-    if (!repsDone) return;
     setSaving(true);
     const newLog = await base44.entities.WorkoutLog.create({
       exercise_id: exercise.id,
       plan_id: exercise.plan_id,
       exercise_name: exercise.name,
-      set_number: setNumber,
-      reps_done: Number(repsDone),
+      set_number: Number(setNumber),
+      reps_done: exercise.reps ? parseInt(exercise.reps) : 0,
       weight_kg: weightKg ? Number(weightKg) : undefined,
       date: today,
     });
     onLogSaved(newLog);
-    setSetNumber(prev => prev + 1);
-    setRepsDone("");
+    // Auto-advance to next set
+    const next = Math.min(Number(setNumber) + 1, totalSets);
+    setSetNumber(String(next));
     setWeightKg("");
     setSaving(false);
   }
@@ -54,13 +55,13 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
           <h3 className="font-semibold">{exercise.name}</h3>
           <p className="text-sm text-muted-foreground">
             {exercise.sets && `${exercise.sets} serie`}
-            {exercise.reps && ` × ${exercise.reps}`}
+            {exercise.reps && ` × ${exercise.reps} rep`}
             {exercise.rest_seconds && ` • ${exercise.rest_seconds}s rec.`}
           </p>
         </div>
         {todayLogs.length > 0 && (
           <span className="px-2.5 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full">
-            {todayLogs.length} serie
+            {todayLogs.length}/{totalSets} serie
           </span>
         )}
         {expanded ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
@@ -90,7 +91,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
                     {todayLogs.map((log, i) => (
                       <div key={log.id || i} className="bg-secondary/50 rounded-xl p-3 text-center">
                         <p className="text-xs text-muted-foreground">Serie {log.set_number}</p>
-                        <p className="font-bold text-sm">{log.reps_done} rep</p>
+                        <p className="font-bold text-sm">{exercise.reps || log.reps_done} rep</p>
                         {log.weight_kg && <p className="text-xs text-primary font-medium">{log.weight_kg} kg</p>}
                       </div>
                     ))}
@@ -100,40 +101,46 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
 
               {/* Add new set */}
               <div className="space-y-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nuova Serie</p>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="text-xs text-muted-foreground mb-1 block">Serie #</label>
-                    <Input
-                      type="number"
-                      value={setNumber}
-                      onChange={e => setSetNumber(Number(e.target.value))}
-                      className="h-10 rounded-xl"
-                    />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registra Serie</p>
+
+                {/* Prescribed reps (read-only) */}
+                {exercise.reps && (
+                  <div className="flex items-center gap-2 bg-secondary/40 rounded-xl px-3 py-2">
+                    <span className="text-xs text-muted-foreground">Ripetizioni prescritte:</span>
+                    <span className="font-semibold text-sm">{exercise.reps}</span>
                   </div>
+                )}
+
+                <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-xs text-muted-foreground mb-1 block">Ripetizioni</label>
-                    <Input
-                      type="number"
-                      placeholder="12"
-                      value={repsDone}
-                      onChange={e => setRepsDone(e.target.value)}
-                      className="h-10 rounded-xl"
-                    />
+                    <label className="text-xs text-muted-foreground mb-1 block">Seleziona Serie</label>
+                    <Select value={setNumber} onValueChange={setSetNumber}>
+                      <SelectTrigger className="h-10 rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: totalSets }, (_, i) => i + 1).map(n => (
+                          <SelectItem key={n} value={String(n)}>
+                            Serie {n}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex-1">
                     <label className="text-xs text-muted-foreground mb-1 block">Carico (kg)</label>
                     <Input
                       type="number"
-                      placeholder="50"
+                      placeholder="es. 50"
                       value={weightKg}
                       onChange={e => setWeightKg(e.target.value)}
                       className="h-10 rounded-xl"
                     />
                   </div>
                 </div>
+
                 <div className="flex gap-2">
-                  <Button onClick={handleSave} disabled={saving || !repsDone} className="flex-1 rounded-xl h-10">
+                  <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl h-10">
                     <Plus className="w-4 h-4 mr-1" />
                     {saving ? "Salvataggio..." : "Salva Serie"}
                   </Button>
