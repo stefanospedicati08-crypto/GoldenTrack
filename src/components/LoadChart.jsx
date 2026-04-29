@@ -11,21 +11,21 @@ import {
 import moment from "moment";
 
 export default function LoadChart({ logs }) {
-  // Group by date, take max weight per day
+  // Group by session (date): average weight per session
   const byDate = {};
   logs.forEach(l => {
     if (!l.weight_kg) return;
-    if (!byDate[l.date] || l.weight_kg > byDate[l.date]) {
-      byDate[l.date] = l.weight_kg;
-    }
+    if (!byDate[l.date]) byDate[l.date] = [];
+    byDate[l.date].push(l.weight_kg);
   });
 
   const data = Object.entries(byDate)
     .sort(([a], [b]) => a.localeCompare(b))
     .slice(-20)
-    .map(([date, weight]) => ({
-      date: moment(date).format("DD/MM"),
-      kg: weight,
+    .map(([date, weights], i) => ({
+      sessione: `Sessione ${i + 1}`,
+      data: moment(date).format("DD/MM"),
+      kg: Math.round((weights.reduce((s, v) => s + v, 0) / weights.length) * 10) / 10,
     }));
 
   if (data.length === 0) {
@@ -53,7 +53,7 @@ export default function LoadChart({ logs }) {
     if (!active || !payload?.length) return null;
     return (
       <div className="bg-card border border-border rounded-xl px-3 py-2 shadow-lg text-sm">
-        <p className="text-muted-foreground text-xs mb-1">{label}</p>
+        <p className="text-muted-foreground text-xs mb-1">{label} • {payload[0]?.payload?.data}</p>
         <p className="font-bold text-primary">{payload[0].value} kg</p>
       </div>
     );
@@ -73,7 +73,7 @@ export default function LoadChart({ logs }) {
             horizontal={true}
           />
           <XAxis
-            dataKey="date"
+            dataKey="sessione"
             tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
             axisLine={{ stroke: "hsl(var(--border))" }}
             tickLine={{ stroke: "hsl(var(--border))" }}
