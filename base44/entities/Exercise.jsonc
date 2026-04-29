@@ -1,0 +1,46 @@
+{
+  "name": "Exercise",
+  "type": "object",
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "title": "ID Scheda"
+    },
+    "name": {
+      "type": "string",
+      "title": "Nome Esercizio"
+    },
+    "muscle_group": {
+      "type": "string",
+      "title": "Gruppo Muscolare"
+    },
+    "sets": {
+      "type": "number",
+      "title": "Serie"
+    },
+    "reps": {
+      "type": "string",
+      "title": "Ripetizioni"
+    },
+    "rest_seconds": {
+      "type": "number",
+      "title": "Recupero (sec)"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Note"
+    },
+    "order_index": {
+      "type": "number",
+      "title": "Ordine"
+    },
+    "day_label": {
+      "type": "string",
+      "title": "Giorno"
+    }
+  },
+  "required": [
+    "plan_id",
+    "name"
+  ]
+}

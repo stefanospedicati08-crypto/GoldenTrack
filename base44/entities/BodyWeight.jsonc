@@ -1,0 +1,23 @@
+{
+  "name": "BodyWeight",
+  "type": "object",
+  "properties": {
+    "weight_kg": {
+      "type": "number",
+      "title": "Peso (kg)"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Note"
+    }
+  },
+  "required": [
+    "weight_kg",
+    "date"
+  ]
+}

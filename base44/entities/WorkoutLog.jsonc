@@ -1,0 +1,46 @@
+{
+  "name": "WorkoutLog",
+  "type": "object",
+  "properties": {
+    "exercise_id": {
+      "type": "string",
+      "title": "ID Esercizio"
+    },
+    "plan_id": {
+      "type": "string",
+      "title": "ID Scheda"
+    },
+    "exercise_name": {
+      "type": "string",
+      "title": "Nome Esercizio"
+    },
+    "set_number": {
+      "type": "number",
+      "title": "Numero Serie"
+    },
+    "reps_done": {
+      "type": "number",
+      "title": "Ripetizioni Fatte"
+    },
+    "weight_kg": {
+      "type": "number",
+      "title": "Carico (kg)"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Note"
+    }
+  },
+  "required": [
+    "exercise_id",
+    "plan_id",
+    "exercise_name",
+    "set_number",
+    "date"
+  ]
+}

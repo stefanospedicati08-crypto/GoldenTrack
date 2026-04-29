@@ -1,0 +1,35 @@
+{
+  "name": "WorkoutPlan",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Titolo Scheda"
+    },
+    "description": {
+      "type": "string",
+      "title": "Descrizione"
+    },
+    "assigned_to": {
+      "type": "string",
+      "title": "Assegnato a (email)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "archived"
+      ],
+      "title": "Stato"
+    },
+    "pdf_url": {
+      "type": "string",
+      "title": "PDF Originale"
+    }
+  },
+  "required": [
+    "title",
+    "assigned_to"
+  ]
+}
