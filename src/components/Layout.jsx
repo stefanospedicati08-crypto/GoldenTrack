@@ -90,6 +90,12 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+        <div className="hidden lg:flex items-center justify-end px-8 py-4 border-b border-border bg-card/50 backdrop-blur-sm">
+          <div className="flex items-center gap-2 bg-primary/10 rounded-xl px-4 py-2">
+            <Dumbbell className="w-6 h-6 text-primary" />
+            <span className="font-heading font-bold text-lg text-primary">GymTrack</span>
+          </div>
+        </div>
         <div className="p-4 lg:p-8 max-w-6xl mx-auto">
           <Outlet />
         </div>
