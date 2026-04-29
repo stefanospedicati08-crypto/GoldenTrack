@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,10 +13,17 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
   const [saving, setSaving] = useState(false);
   const [setNumber, setSetNumber] = useState("1");
   const [weightKg, setWeightKg] = useState("");
+  const [editingLog, setEditingLog] = useState(null); // log id being edited
+  const [editWeight, setEditWeight] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
   const todayLogs = logs.filter(l => l.date === today);
   const totalSets = exercise.sets || 5;
+  const allSetsCompleted = todayLogs.length >= totalSets;
+
+  // Auto-select first incomplete set
+  const completedSetNumbers = todayLogs.map(l => l.set_number);
+  const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSetNumbers.includes(n));
 
   async function handleSave() {
     setSaving(true);
@@ -30,10 +37,18 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
       date: today,
     });
     onLogSaved(newLog);
-    // Auto-advance to next set
-    const next = Math.min(Number(setNumber) + 1, totalSets);
-    setSetNumber(String(next));
+    const next = nextSet ? String(nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : String(totalSets);
+    setSetNumber(next);
     setWeightKg("");
+    setSaving(false);
+  }
+
+  async function handleEditWeight(log) {
+    setSaving(true);
+    await base44.entities.WorkoutLog.update(log.id, { weight_kg: editWeight ? Number(editWeight) : undefined });
+    log.weight_kg = editWeight ? Number(editWeight) : undefined;
+    setEditingLog(null);
+    setEditWeight("");
     setSaving(false);
   }
 
@@ -60,8 +75,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
           </p>
         </div>
         {todayLogs.length > 0 && (
-          <span className="px-2.5 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full">
-            {todayLogs.length}/{totalSets} serie
+          <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${allSetsCompleted ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
+            {allSetsCompleted ? "✓ Completato" : `${todayLogs.length}/${totalSets} serie`}
           </span>
         )}
         {expanded ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
@@ -83,76 +98,108 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
                 </p>
               )}
 
+              {/* Prescribed reps (read-only) */}
+              {exercise.reps && (
+                <div className="flex items-center gap-2 bg-secondary/40 rounded-xl px-3 py-2">
+                  <span className="text-xs text-muted-foreground">Ripetizioni prescritte:</span>
+                  <span className="font-semibold text-sm">{exercise.reps}</span>
+                </div>
+              )}
+
               {/* Today's logs */}
               {todayLogs.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Oggi</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {todayLogs.map((log, i) => (
-                      <div key={log.id || i} className="bg-secondary/50 rounded-xl p-3 text-center">
-                        <p className="text-xs text-muted-foreground">Serie {log.set_number}</p>
-                        <p className="font-bold text-sm">{exercise.reps || log.reps_done} rep</p>
-                        {log.weight_kg && <p className="text-xs text-primary font-medium">{log.weight_kg} kg</p>}
-                      </div>
-                    ))}
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Serie di oggi</p>
+                  <div className="space-y-2">
+                    {todayLogs
+                      .sort((a, b) => a.set_number - b.set_number)
+                      .map((log) => (
+                        <div key={log.id} className="flex items-center gap-3 bg-secondary/40 rounded-xl px-3 py-2.5">
+                          <span className="text-xs text-muted-foreground w-14">Serie {log.set_number}</span>
+                          <span className="text-sm font-medium">{exercise.reps || log.reps_done} rep</span>
+                          {editingLog === log.id ? (
+                            <>
+                              <Input
+                                type="number"
+                                placeholder="kg"
+                                value={editWeight}
+                                onChange={e => setEditWeight(e.target.value)}
+                                className="h-8 w-24 rounded-lg text-sm ml-auto"
+                                autoFocus
+                              />
+                              <Button size="sm" onClick={() => handleEditWeight(log)} disabled={saving} className="h-8 rounded-lg px-3">
+                                <Check className="w-3.5 h-3.5" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-sm font-bold text-primary ml-auto">
+                                {log.weight_kg ? `${log.weight_kg} kg` : "—"}
+                              </span>
+                              <button
+                                onClick={() => { setEditingLog(log.id); setEditWeight(log.weight_kg ? String(log.weight_kg) : ""); }}
+                                className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+                              >
+                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}
 
-              {/* Add new set */}
-              <div className="space-y-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registra Serie</p>
-
-                {/* Prescribed reps (read-only) */}
-                {exercise.reps && (
-                  <div className="flex items-center gap-2 bg-secondary/40 rounded-xl px-3 py-2">
-                    <span className="text-xs text-muted-foreground">Ripetizioni prescritte:</span>
-                    <span className="font-semibold text-sm">{exercise.reps}</span>
+              {/* Add new set — only if not all sets completed */}
+              {!allSetsCompleted && (
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registra Serie</p>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">Seleziona Serie</label>
+                      <Select value={setNumber} onValueChange={setSetNumber}>
+                        <SelectTrigger className="h-10 rounded-xl">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: totalSets }, (_, i) => i + 1)
+                            .filter(n => !completedSetNumbers.includes(n))
+                            .map(n => (
+                              <SelectItem key={n} value={String(n)}>Serie {n}</SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">Carico (kg)</label>
+                      <Input
+                        type="number"
+                        placeholder="es. 50"
+                        value={weightKg}
+                        onChange={e => setWeightKg(e.target.value)}
+                        className="h-10 rounded-xl"
+                      />
+                    </div>
                   </div>
-                )}
-
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="text-xs text-muted-foreground mb-1 block">Seleziona Serie</label>
-                    <Select value={setNumber} onValueChange={setSetNumber}>
-                      <SelectTrigger className="h-10 rounded-xl">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: totalSets }, (_, i) => i + 1).map(n => (
-                          <SelectItem key={n} value={String(n)}>
-                            Serie {n}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-xs text-muted-foreground mb-1 block">Carico (kg)</label>
-                    <Input
-                      type="number"
-                      placeholder="es. 50"
-                      value={weightKg}
-                      onChange={e => setWeightKg(e.target.value)}
-                      className="h-10 rounded-xl"
-                    />
+                  <div className="flex gap-2">
+                    <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl h-10">
+                      <Plus className="w-4 h-4 mr-1" />
+                      {saving ? "Salvataggio..." : "Salva Serie"}
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowChart(!showChart)} className="rounded-xl h-10">
+                      <TrendingUp className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
+              )}
 
-                <div className="flex gap-2">
-                  <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl h-10">
-                    <Plus className="w-4 h-4 mr-1" />
-                    {saving ? "Salvataggio..." : "Salva Serie"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowChart(!showChart)}
-                    className="rounded-xl h-10"
-                  >
-                    <TrendingUp className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
+              {/* Chart button when completed */}
+              {allSetsCompleted && (
+                <Button variant="outline" onClick={() => setShowChart(!showChart)} className="w-full rounded-xl h-10">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  {showChart ? "Nascondi grafico" : "Mostra progressione carico"}
+                </Button>
+              )}
 
               {/* Load chart */}
               <AnimatePresence>
