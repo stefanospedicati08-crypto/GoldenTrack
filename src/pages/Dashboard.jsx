@@ -89,7 +89,7 @@ export default function Dashboard() {
             <p className="text-sm text-muted-foreground">Schede Attive</p>
             <p className="text-2xl font-heading font-bold mt-1">{plans.length}</p>
             {activePlan &&
-            <p className="text-xs text-primary mt-1 font-medium">{activePlan.title} · doppio clic per aprire</p>
+            <p className="text-xs mt-1 font-medium text-slate-50">{activePlan.title} · doppio clic per aprire</p>
             }
           </div>
           <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary bg-primary/10">
