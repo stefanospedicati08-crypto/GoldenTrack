@@ -3,6 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Dumbbell, TrendingUp, ClipboardList, ArrowRight, Flame } from "lucide-react";
 import { motion } from "framer-motion";
+import WelcomeBanner from "../components/WelcomeBanner";
+import SessioniPrecedenti from "../components/SessioniPrecedenti";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -39,6 +41,7 @@ export default function Dashboard() {
   const today = new Date().toISOString().split("T")[0];
   const todayLogs = logs.filter(l => l.date === today);
   const lastWeight = weights[0];
+  const activePlan = plans[0];
 
   const stats = [
     {
@@ -63,12 +66,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h1 className="font-heading text-3xl font-bold">
-          Ciao, {user?.full_name?.split(" ")[0] || "Atleta"} 💪
-        </h1>
-        <p className="text-muted-foreground mt-1">Ecco il tuo riepilogo di oggi</p>
-      </motion.div>
+      <WelcomeBanner
+        userName={user?.full_name?.split(" ")[0] || "Atleta"}
+        hasActivePlan={plans.length > 0}
+        planId={activePlan?.id}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map((stat, i) => (
@@ -127,6 +129,11 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="font-heading text-xl font-semibold">Sessioni Precedenti</h2>
+        <SessioniPrecedenti logs={logs} />
       </div>
     </div>
   );
