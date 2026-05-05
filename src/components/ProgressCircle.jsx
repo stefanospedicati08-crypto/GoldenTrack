@@ -22,8 +22,8 @@ export default function ProgressCircle({ completed, total, size = 120, faded = f
           r={radius}
           fill="none"
           stroke="hsl(var(--border))"
-          strokeWidth={strokeWidth}
-        />
+          strokeWidth={strokeWidth} />
+        
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -35,26 +35,26 @@ export default function ProgressCircle({ completed, total, size = 120, faded = f
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        />
+          transition={{ duration: 0.8, ease: "easeOut" }} />
+        
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        {isFull ? (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className={`${checkSize} rounded-full bg-accent/20 flex items-center justify-center`}
-          >
+      <div className="absolute inset-0 flex items-center justify-center bg-transparent">
+        {isFull ?
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className={`${checkSize} rounded-full bg-accent/20 flex items-center justify-center`}>
+          
             <Check className={`${checkIconSize} text-accent`} strokeWidth={3} />
-          </motion.div>
-        ) : (
-          <div className="text-center">
+          </motion.div> :
+
+        <div className="text-center">
             <span className={`${fontSize} font-heading font-bold leading-none`}>{completed}</span>
             <span className={`${subFontSize} text-muted-foreground block`}>/{total}</span>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
