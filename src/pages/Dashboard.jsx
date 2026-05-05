@@ -1,34 +1,32 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
-import { Dumbbell, TrendingUp, ClipboardList, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { ClipboardList, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
-import ProgressCircle from "../components/ProgressCircle";
+import WeeklyMonthProgress from "../components/WeeklyMonthProgress";
 import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [plans, setPlans] = useState([]);
-  const [logs, setLogs] = useState([]);
-  const [weights, setWeights] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function load() {
       const u = await base44.auth.me();
       setUser(u);
-      const [p, l, w, sess] = await Promise.all([
+      const [p, sess, notifs] = await Promise.all([
         base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "active" }),
-        base44.entities.WorkoutLog.filter({ created_by: u.email }, "-date", 10),
-        base44.entities.BodyWeight.filter({ created_by: u.email }, "-date", 5),
-        base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 50),
+        base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100),
+        base44.entities.Notification.filter({ user_email: u.email, read: false }),
       ]);
       setPlans(p);
-      setLogs(l);
-      setWeights(w);
       setSessions(sess);
+      setNotifications(notifs);
       setLoading(false);
     }
     load();
@@ -42,43 +40,12 @@ export default function Dashboard() {
     );
   }
 
-  const today = new Date().toISOString().split("T")[0];
-  const todayLogs = logs.filter(l => l.date === today);
-  const lastWeight = weights[0];
   const activePlan = plans[0];
 
-  // Weekly session progress: count unique days with a session this week (Mon–Sun)
-  const getWeekStart = () => {
-    const d = new Date();
-    const day = d.getDay();
-    const diff = (day === 0 ? -6 : 1 - day);
-    d.setDate(d.getDate() + diff);
-    return d.toISOString().split("T")[0];
-  };
-  const weekStart = getWeekStart();
-  const weekEnd = new Date(new Date(weekStart).getTime() + 6 * 86400000).toISOString().split("T")[0];
-  const weekSessions = sessions.filter(s => s.date >= weekStart && s.date <= weekEnd);
-  const uniqueSessionDays = [...new Set(weekSessions.map(s => s.date))].length;
-
-  // Total expected sessions = unique day_labels across active plans exercises
-  const activePlanDays = activePlan
-    ? [...new Set(sessions.filter(s => s.plan_id === activePlan.id).map(s => s.day_label))].length || 4
-    : 4;
-
-  const stats = [
-    {
-      label: "Schede Attive",
-      value: plans.length,
-      icon: ClipboardList,
-      color: "text-primary bg-primary/10",
-    },
-    {
-      label: "Ultimo Peso",
-      value: lastWeight ? `${lastWeight.weight_kg} kg` : "—",
-      icon: TrendingUp,
-      color: "text-chart-3 bg-chart-3/10",
-    },
-  ];
+  async function dismissNotification(id) {
+    await base44.entities.Notification.update(id, { read: true });
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }
 
   return (
     <div className="space-y-8">
@@ -88,78 +55,54 @@ export default function Dashboard() {
         planId={activePlan?.id}
       />
 
-      {/* Weekly progress + richiesta scheda */}
-      <div className="flex flex-col sm:flex-row items-center gap-6 bg-card rounded-2xl border border-border p-6">
-        <ProgressCircle completed={uniqueSessionDays} total={activePlanDays} />
-        <div className="flex-1 space-y-2 text-center sm:text-left">
-          <h3 className="font-heading font-semibold text-lg">Progresso Settimanale</h3>
-          <p className="text-sm text-muted-foreground">
-            Hai completato <strong>{uniqueSessionDays}</strong> sessioni su <strong>{activePlanDays}</strong> questa settimana.
-          </p>
-          <RichiestaSchedaForm user={user} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {stats.map((stat, i) => (
+      {/* Notifiche */}
+      <AnimatePresence>
+        {notifications.map(notif => (
           <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
+            key={notif.id}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.1 }}
-            className="bg-card rounded-2xl border border-border p-5"
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-start gap-3 bg-accent/10 border border-accent/30 rounded-2xl px-4 py-3"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-                <p className="text-2xl font-heading font-bold mt-1">{stat.value}</p>
-              </div>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
-            </div>
+            <ClipboardList className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+            <p className="flex-1 text-sm text-foreground">{notif.message}</p>
+            <button onClick={() => dismissNotification(notif.id)} className="p-1 rounded-lg hover:bg-accent/10">
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
           </motion.div>
         ))}
-      </div>
+      </AnimatePresence>
 
-      <div className="space-y-4">
-        <h2 className="font-heading text-xl font-semibold">Le Tue Schede</h2>
-        {plans.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-border p-8 text-center">
-            <Dumbbell className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">Nessuna scheda attiva al momento</p>
-            <p className="text-sm text-muted-foreground/70 mt-1">Il tuo trainer ti assegnerà presto una scheda</p>
+      {/* Schede Attive stat — doppio clic per aprire */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        onDoubleClick={() => activePlan && navigate(`/schede/${activePlan.id}`)}
+        className={`bg-card rounded-2xl border border-border p-5 ${
+          activePlan ? "cursor-pointer hover:border-primary/40 transition-colors" : ""
+        }`}
+        title={activePlan ? "Doppio clic per aprire la scheda" : ""}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">Schede Attive</p>
+            <p className="text-2xl font-heading font-bold mt-1">{plans.length}</p>
+            {activePlan && (
+              <p className="text-xs text-primary mt-1 font-medium">{activePlan.title} · doppio clic per aprire</p>
+            )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {plans.map((plan, i) => (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.1 }}
-              >
-                <Link
-                  to={`/schede/${plan.id}`}
-                  className="block bg-card rounded-2xl border border-border p-5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-heading font-semibold text-lg">{plan.title}</h3>
-                      {plan.description && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{plan.description}</p>
-                      )}
-                    </div>
-                    <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary bg-primary/10">
+            <ClipboardList className="w-6 h-6" />
           </div>
-        )}
+        </div>
+      </motion.div>
+
+      {/* Progresso mensile (4 settimane) */}
+      <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+        <WeeklyMonthProgress sessions={sessions} />
+        <RichiestaSchedaForm user={user} />
       </div>
-
-
     </div>
   );
 }

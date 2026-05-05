@@ -1,0 +1,22 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "title": "Email Utente"
+    },
+    "message": {
+      "type": "string",
+      "title": "Messaggio"
+    },
+    "read": {
+      "type": "boolean",
+      "title": "Letta"
+    }
+  },
+  "required": [
+    "user_email",
+    "message"
+  ]
+}

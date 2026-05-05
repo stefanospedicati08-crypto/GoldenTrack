@@ -41,10 +41,8 @@ export default function Admin() {
 
     setUploading(true);
 
-    // Upload PDF
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
 
-    // Create workout plan
     const plan = await base44.entities.WorkoutPlan.create({
       title: planTitle,
       description: planDesc || undefined,
@@ -53,7 +51,6 @@ export default function Admin() {
       pdf_url: file_url,
     });
 
-    // Extract exercises from PDF using AI
     const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
       file_url: file_url,
       json_schema: {
@@ -78,6 +75,17 @@ export default function Admin() {
       },
     });
 
+    // Deactivate old active plans for this user
+    const oldPlans = await base44.entities.WorkoutPlan.filter({ assigned_to: selectedUser, status: "active" });
+    await Promise.all(oldPlans.filter(p => p.id !== plan.id).map(p => base44.entities.WorkoutPlan.update(p.id, { status: "archived" })));
+
+    // Notify user
+    await base44.entities.Notification.create({
+      user_email: selectedUser,
+      message: "La nuova programmazione di allenamento è stata consegnata, la si può trovare andando nella sezione schede.",
+      read: false,
+    });
+
     if (extracted.status === "success" && extracted.output?.exercises) {
       const exercisesToCreate = extracted.output.exercises.map((ex, i) => ({
         plan_id: plan.id,
@@ -90,7 +98,6 @@ export default function Admin() {
         day_label: ex.day_label || undefined,
         order_index: i,
       }));
-
       await base44.entities.Exercise.bulkCreate(exercisesToCreate);
       toast.success(`Scheda creata con ${exercisesToCreate.length} esercizi!`);
     } else {
@@ -130,62 +137,66 @@ export default function Admin() {
 
   return (
     <div className="space-y-8">
-
-    {/* Richieste Scheda */}
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Inbox className="w-5 h-5 text-primary" />
-        <h2 className="font-heading font-semibold text-lg">Richieste Scheda</h2>
-        <span className="text-sm text-muted-foreground">({requests.filter(r => r.status === 'pending').length} in attesa)</span>
+      <div>
+        <h1 className="font-heading text-3xl font-bold">Admin Panel</h1>
+        <p className="text-muted-foreground mt-1">Gestisci schede e clienti</p>
       </div>
-      {requests.length === 0 ? (
-        <div className="bg-card rounded-2xl border border-border p-6 text-center">
-          <p className="text-muted-foreground text-sm">Nessuna richiesta ricevuta</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {requests.map((req, i) => (
-            <motion.div
-              key={req.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className="flex items-start gap-4 bg-card rounded-xl border border-border p-4"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-sm">{req.user_name || req.user_email}</p>
-                  <span className="text-xs text-muted-foreground">{req.user_email}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    req.status === 'pending' ? 'bg-chart-3/10 text-chart-3' :
-                    req.status === 'approved' ? 'bg-accent/10 text-accent' :
-                    'bg-destructive/10 text-destructive'
-                  }`}>
-                    {req.status === 'pending' ? 'In attesa' : req.status === 'approved' ? 'Approvata' : 'Rifiutata'}
-                  </span>
-                </div>
-                {req.notes && (
-                  <p className="text-sm text-muted-foreground mt-1 italic">"{req.notes}"</p>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">{new Date(req.created_date).toLocaleDateString('it-IT')}</p>
-              </div>
-              {req.status === 'pending' && (
-                <div className="flex gap-2 shrink-0">
-                  <Button size="sm" onClick={() => handleRequestStatus(req.id, 'approved')} className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90">
-                    <Check className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleRequestStatus(req.id, 'rejected')} className="h-8 rounded-lg text-destructive hover:bg-destructive/10">
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
 
-    {/* Upload new plan */}
+      {/* Richieste Scheda */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Inbox className="w-5 h-5 text-primary" />
+          <h2 className="font-heading font-semibold text-lg">Richieste Scheda</h2>
+          <span className="text-sm text-muted-foreground">({requests.filter(r => r.status === "pending").length} in attesa)</span>
+        </div>
+        {requests.length === 0 ? (
+          <div className="bg-card rounded-2xl border border-border p-6 text-center">
+            <p className="text-muted-foreground text-sm">Nessuna richiesta ricevuta</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {requests.map((req, i) => (
+              <motion.div
+                key={req.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="flex items-start gap-4 bg-card rounded-xl border border-border p-4"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-sm">{req.user_name || req.user_email}</p>
+                    <span className="text-xs text-muted-foreground">{req.user_email}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      req.status === "pending" ? "bg-chart-3/10 text-chart-3" :
+                      req.status === "approved" ? "bg-accent/10 text-accent" :
+                      "bg-destructive/10 text-destructive"
+                    }`}>
+                      {req.status === "pending" ? "In attesa" : req.status === "approved" ? "Approvata" : "Rifiutata"}
+                    </span>
+                  </div>
+                  {req.notes && (
+                    <p className="text-sm text-muted-foreground mt-1 italic">"{req.notes}"</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">{new Date(req.created_date).toLocaleDateString("it-IT")}</p>
+                </div>
+                {req.status === "pending" && (
+                  <div className="flex gap-2 shrink-0">
+                    <Button size="sm" onClick={() => handleRequestStatus(req.id, "approved")} className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90">
+                      <Check className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleRequestStatus(req.id, "rejected")} className="h-8 rounded-lg text-destructive hover:bg-destructive/10">
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Upload new plan */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -240,14 +251,12 @@ export default function Admin() {
 
         <div>
           <label className="text-sm font-medium mb-1.5 block">File PDF</label>
-          <div className="relative">
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={e => setPdfFile(e.target.files[0])}
-              className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 file:cursor-pointer cursor-pointer"
-            />
-          </div>
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={e => setPdfFile(e.target.files[0])}
+            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 file:cursor-pointer cursor-pointer"
+          />
           {pdfFile && (
             <p className="text-sm text-accent mt-2 flex items-center gap-1">
               <FileText className="w-4 h-4" /> {pdfFile.name}
@@ -294,25 +303,15 @@ export default function Admin() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold">{plan.title}</h3>
                   <p className="text-sm text-muted-foreground truncate">
-                    {plan.assigned_to} • {plan.status}
+                    {plan.assigned_to} · {plan.status}
                   </p>
                 </div>
                 {plan.pdf_url && (
-                  <a
-                    href={plan.pdf_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:text-primary/80 transition-colors"
-                  >
+                  <a href={plan.pdf_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
                     <FileText className="w-5 h-5" />
                   </a>
                 )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeletePlan(plan.id)}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
+                <Button variant="ghost" size="icon" onClick={() => handleDeletePlan(plan.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </motion.div>
