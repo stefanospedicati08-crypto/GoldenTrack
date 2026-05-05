@@ -48,7 +48,7 @@ export default function Layout() {
           </div>
           <div>
             <h1 className="font-heading font-bold text-lg leading-tight">Golden Track</h1>
-            <p className="text-xs text-muted-foreground">believe </p>
+            <p className="text-xs text-muted-foreground">believe in yorself</p>
           </div>
         </div>
 
