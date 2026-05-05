@@ -1,0 +1,31 @@
+{
+  "name": "SchedaRequest",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "title": "Email Utente"
+    },
+    "user_name": {
+      "type": "string",
+      "title": "Nome Utente"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Note / Richieste"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "title": "Stato"
+    }
+  },
+  "required": [
+    "user_email",
+    "status"
+  ]
+}

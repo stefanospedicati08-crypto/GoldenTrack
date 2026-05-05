@@ -4,27 +4,31 @@ import { Link } from "react-router-dom";
 import { Dumbbell, TrendingUp, ClipboardList, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
-import SessioniPrecedenti from "../components/SessioniPrecedenti";
+import ProgressCircle from "../components/ProgressCircle";
+import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [plans, setPlans] = useState([]);
   const [logs, setLogs] = useState([]);
   const [weights, setWeights] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       const u = await base44.auth.me();
       setUser(u);
-      const [p, l, w] = await Promise.all([
+      const [p, l, w, sess] = await Promise.all([
         base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "active" }),
         base44.entities.WorkoutLog.filter({ created_by: u.email }, "-date", 10),
         base44.entities.BodyWeight.filter({ created_by: u.email }, "-date", 5),
+        base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 50),
       ]);
       setPlans(p);
       setLogs(l);
       setWeights(w);
+      setSessions(sess);
       setLoading(false);
     }
     load();
@@ -42,6 +46,24 @@ export default function Dashboard() {
   const todayLogs = logs.filter(l => l.date === today);
   const lastWeight = weights[0];
   const activePlan = plans[0];
+
+  // Weekly session progress: count unique days with a session this week (Mon–Sun)
+  const getWeekStart = () => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = (day === 0 ? -6 : 1 - day);
+    d.setDate(d.getDate() + diff);
+    return d.toISOString().split("T")[0];
+  };
+  const weekStart = getWeekStart();
+  const weekEnd = new Date(new Date(weekStart).getTime() + 6 * 86400000).toISOString().split("T")[0];
+  const weekSessions = sessions.filter(s => s.date >= weekStart && s.date <= weekEnd);
+  const uniqueSessionDays = [...new Set(weekSessions.map(s => s.date))].length;
+
+  // Total expected sessions = unique day_labels across active plans exercises
+  const activePlanDays = activePlan
+    ? [...new Set(sessions.filter(s => s.plan_id === activePlan.id).map(s => s.day_label))].length || 4
+    : 4;
 
   const stats = [
     {
@@ -65,6 +87,18 @@ export default function Dashboard() {
         hasActivePlan={plans.length > 0}
         planId={activePlan?.id}
       />
+
+      {/* Weekly progress + richiesta scheda */}
+      <div className="flex flex-col sm:flex-row items-center gap-6 bg-card rounded-2xl border border-border p-6">
+        <ProgressCircle completed={uniqueSessionDays} total={activePlanDays} />
+        <div className="flex-1 space-y-2 text-center sm:text-left">
+          <h3 className="font-heading font-semibold text-lg">Progresso Settimanale</h3>
+          <p className="text-sm text-muted-foreground">
+            Hai completato <strong>{uniqueSessionDays}</strong> sessioni su <strong>{activePlanDays}</strong> questa settimana.
+          </p>
+          <RichiestaSchedaForm user={user} />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map((stat, i) => (

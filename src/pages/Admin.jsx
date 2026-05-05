@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Users, ClipboardList, Loader2, FileText, Trash2 } from "lucide-react";
+import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X } from "lucide-react";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
 
 export default function Admin() {
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [selectedUser, setSelectedUser] = useState("");
@@ -19,12 +20,14 @@ export default function Admin() {
 
   useEffect(() => {
     async function load() {
-      const [u, p] = await Promise.all([
+      const [u, p, r] = await Promise.all([
         base44.entities.User.list(),
         base44.entities.WorkoutPlan.list("-created_date", 50),
+        base44.entities.SchedaRequest.list("-created_date", 100),
       ]);
       setUsers(u);
       setPlans(p);
+      setRequests(r);
       setLoading(false);
     }
     load();
@@ -102,6 +105,12 @@ export default function Admin() {
     setUploading(false);
   }
 
+  async function handleRequestStatus(id, status) {
+    await base44.entities.SchedaRequest.update(id, { status });
+    setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+    toast.success(status === "approved" ? "Richiesta approvata" : "Richiesta rifiutata");
+  }
+
   async function handleDeletePlan(planId) {
     if (!confirm("Sei sicuro di voler eliminare questa scheda?")) return;
     const exercises = await base44.entities.Exercise.filter({ plan_id: planId });
@@ -121,12 +130,62 @@ export default function Admin() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-heading text-3xl font-bold">Admin Panel</h1>
-        <p className="text-muted-foreground mt-1">Gestisci schede e clienti</p>
-      </div>
 
-      {/* Upload new plan */}
+    {/* Richieste Scheda */}
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Inbox className="w-5 h-5 text-primary" />
+        <h2 className="font-heading font-semibold text-lg">Richieste Scheda</h2>
+        <span className="text-sm text-muted-foreground">({requests.filter(r => r.status === 'pending').length} in attesa)</span>
+      </div>
+      {requests.length === 0 ? (
+        <div className="bg-card rounded-2xl border border-border p-6 text-center">
+          <p className="text-muted-foreground text-sm">Nessuna richiesta ricevuta</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {requests.map((req, i) => (
+            <motion.div
+              key={req.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03 }}
+              className="flex items-start gap-4 bg-card rounded-xl border border-border p-4"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-sm">{req.user_name || req.user_email}</p>
+                  <span className="text-xs text-muted-foreground">{req.user_email}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    req.status === 'pending' ? 'bg-chart-3/10 text-chart-3' :
+                    req.status === 'approved' ? 'bg-accent/10 text-accent' :
+                    'bg-destructive/10 text-destructive'
+                  }`}>
+                    {req.status === 'pending' ? 'In attesa' : req.status === 'approved' ? 'Approvata' : 'Rifiutata'}
+                  </span>
+                </div>
+                {req.notes && (
+                  <p className="text-sm text-muted-foreground mt-1 italic">"{req.notes}"</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">{new Date(req.created_date).toLocaleDateString('it-IT')}</p>
+              </div>
+              {req.status === 'pending' && (
+                <div className="flex gap-2 shrink-0">
+                  <Button size="sm" onClick={() => handleRequestStatus(req.id, 'approved')} className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Check className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => handleRequestStatus(req.id, 'rejected')} className="h-8 rounded-lg text-destructive hover:bg-destructive/10">
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Upload new plan */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
