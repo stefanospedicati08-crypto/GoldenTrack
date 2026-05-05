@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Dumbbell, TrendingUp, ClipboardList, ArrowRight, Flame } from "lucide-react";
+import { Dumbbell, TrendingUp, ClipboardList, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
 import SessioniPrecedenti from "../components/SessioniPrecedenti";
@@ -49,12 +49,6 @@ export default function Dashboard() {
       value: plans.length,
       icon: ClipboardList,
       color: "text-primary bg-primary/10",
-    },
-    {
-      label: "Esercizi Oggi",
-      value: todayLogs.length,
-      icon: Flame,
-      color: "text-accent bg-accent/10",
     },
     {
       label: "Ultimo Peso",
@@ -131,10 +125,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div className="space-y-4">
-        <h2 className="font-heading text-xl font-semibold">Sessioni Precedenti</h2>
-        <SessioniPrecedenti logs={logs} />
-      </div>
+
     </div>
   );
 }

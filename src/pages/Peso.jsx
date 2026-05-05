@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Scale, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { Plus, Scale, TrendingDown, TrendingUp, Minus, RotateCcw, Trash2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, AreaChart } from "recharts";
 import { motion } from "framer-motion";
 import moment from "moment";
@@ -13,6 +13,7 @@ export default function Peso() {
   const [newWeight, setNewWeight] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -35,6 +36,14 @@ export default function Peso() {
     setWeights(prev => [entry, ...prev]);
     setNewWeight("");
     setNotes("");
+    setSaving(false);
+  }
+
+  async function handleReset() {
+    setSaving(true);
+    await Promise.all(weights.map(w => base44.entities.BodyWeight.delete(w.id)));
+    setWeights([]);
+    setShowResetConfirm(false);
     setSaving(false);
   }
 
@@ -159,6 +168,34 @@ export default function Peso() {
               />
             </AreaChart>
           </ResponsiveContainer>
+        </motion.div>
+      )}
+
+      {/* Reset section */}
+      {weights.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-card rounded-2xl border border-border p-5"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-heading font-semibold">Reset Peso</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">Elimina tutto lo storico peso per ricominciare da zero</p>
+            </div>
+            {!showResetConfirm ? (
+              <Button variant="outline" size="sm" onClick={() => setShowResetConfirm(true)} className="rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10">
+                <RotateCcw className="w-4 h-4 mr-1" /> Reset
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setShowResetConfirm(false)} className="rounded-xl">Annulla</Button>
+                <Button size="sm" onClick={handleReset} disabled={saving} className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  <Trash2 className="w-4 h-4 mr-1" /> Conferma
+                </Button>
+              </div>
+            )}
+          </div>
         </motion.div>
       )}
 

@@ -28,7 +28,11 @@
     },
     "notes": {
       "type": "string",
-      "title": "Note"
+      "title": "Note Trainer"
+    },
+    "athlete_note": {
+      "type": "string",
+      "title": "Nota Atleta"
     },
     "order_index": {
       "type": "number",

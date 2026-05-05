@@ -26,6 +26,10 @@
     "pdf_url": {
       "type": "string",
       "title": "PDF Originale"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Note Trainer"
     }
   },
   "required": [

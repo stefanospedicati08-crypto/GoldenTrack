@@ -1,27 +1,32 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import ExerciseCard from "../components/ExerciseCard";
+import DaySessionHistory from "../components/DaySessionHistory";
+import SessionDayLogger from "../components/SessionDayLogger";
 
 export default function SchedaDetail() {
   const { id } = useParams();
   const [plan, setPlan] = useState(null);
   const [exercises, setExercises] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const [p, exs, lgs] = await Promise.all([
+      const [p, exs, lgs, sess] = await Promise.all([
         base44.entities.WorkoutPlan.get(id),
         base44.entities.Exercise.filter({ plan_id: id }, "order_index"),
-        base44.entities.WorkoutLog.filter({ plan_id: id }, "-date", 200),
+        base44.entities.WorkoutLog.filter({ plan_id: id }, "-date", 500),
+        base44.entities.WorkoutSession.filter({ plan_id: id }, "-date", 100),
       ]);
       setPlan(p);
       setExercises(exs);
       setLogs(lgs);
+      setSessions(sess);
       setLoading(false);
     }
     load();
@@ -43,8 +48,18 @@ export default function SchedaDetail() {
     grouped[day].push(ex);
   });
 
+  const today = new Date().toISOString().split("T")[0];
+
   const handleLogSaved = (newLog) => {
     setLogs(prev => [newLog, ...prev]);
+  };
+
+  const handleSessionSaved = (session) => {
+    setSessions(prev => {
+      const exists = prev.find(s => s.id === session.id);
+      if (exists) return prev.map(s => s.id === session.id ? session : s);
+      return [session, ...prev];
+    });
   };
 
   return (
@@ -58,6 +73,21 @@ export default function SchedaDetail() {
           {plan?.description && <p className="text-sm text-muted-foreground mt-0.5">{plan.description}</p>}
         </div>
       </div>
+
+      {/* Note admin sulla scheda */}
+      {plan?.notes && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3"
+        >
+          <FileText className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-primary mb-1 uppercase tracking-wider">Note del Trainer</p>
+            <p className="text-sm text-foreground">{plan.notes}</p>
+          </div>
+        </motion.div>
+      )}
 
       {Object.entries(grouped).map(([day, exs], gi) => (
         <motion.div
@@ -79,6 +109,22 @@ export default function SchedaDetail() {
               />
             ))}
           </div>
+
+          {/* Logger sessione del giorno */}
+          <SessionDayLogger
+            planId={id}
+            dayLabel={day}
+            date={today}
+            existingSession={sessions.find(s => s.day_label === day && s.date === today)}
+            onSaved={handleSessionSaved}
+          />
+
+          {/* Storico sessioni per questo giorno */}
+          <DaySessionHistory
+            sessions={sessions.filter(s => s.day_label === day && s.date !== today)}
+            dayLabel={day}
+            logs={logs}
+          />
         </motion.div>
       ))}
     </div>

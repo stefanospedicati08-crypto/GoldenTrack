@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,8 +13,12 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
   const [saving, setSaving] = useState(false);
   const [setNumber, setSetNumber] = useState("1");
   const [weightKg, setWeightKg] = useState("");
-  const [editingLog, setEditingLog] = useState(null); // log id being edited
+  const [editingLog, setEditingLog] = useState(null);
   const [editWeight, setEditWeight] = useState("");
+  const [exerciseNote, setExerciseNote] = useState(exercise.athlete_note || "");
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(!!exercise.athlete_note);
+  const [editingNote, setEditingNote] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
   const todayLogs = logs.filter(l => l.date === today);
@@ -50,6 +54,15 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
     setEditingLog(null);
     setEditWeight("");
     setSaving(false);
+  }
+
+  async function handleSaveNote() {
+    setSavingNote(true);
+    await base44.entities.Exercise.update(exercise.id, { athlete_note: exerciseNote || undefined });
+    exercise.athlete_note = exerciseNote || undefined;
+    setNoteSaved(true);
+    setEditingNote(false);
+    setSavingNote(false);
   }
 
   return (
@@ -200,6 +213,38 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
                   {showChart ? "Nascondi grafico" : "Mostra progressione carico"}
                 </Button>
               )}
+
+              {/* Note atleta per esercizio */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5" /> Note personali esercizio
+                  </p>
+                  {noteSaved && !editingNote && (
+                    <button onClick={() => setEditingNote(true)} className="p-1 rounded hover:bg-secondary">
+                      <Pencil className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
+                {noteSaved && !editingNote ? (
+                  <p className="text-sm text-muted-foreground bg-secondary/40 rounded-xl px-3 py-2 italic">
+                    {exerciseNote || "—"}
+                  </p>
+                ) : (
+                  <div className="flex gap-2">
+                    <textarea
+                      placeholder="Es. Sento bene il bicipite, aumentare peso..."
+                      value={exerciseNote}
+                      onChange={e => setExerciseNote(e.target.value)}
+                      rows={2}
+                      className="flex-1 text-sm bg-background border border-input rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+                    />
+                    <Button size="sm" onClick={handleSaveNote} disabled={savingNote} className="h-9 rounded-xl self-end">
+                      {savingNote ? "..." : <Check className="w-3.5 h-3.5" />}
+                    </Button>
+                  </div>
+                )}
+              </div>
 
               {/* Load chart */}
               <AnimatePresence>
