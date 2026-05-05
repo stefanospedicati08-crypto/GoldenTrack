@@ -47,8 +47,8 @@ export default function Layout() {
             <Dumbbell className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="font-heading font-bold text-lg leading-tight">GymTrack</h1>
-            <p className="text-xs text-muted-foreground">Il tuo allenamento</p>
+            <h1 className="font-heading font-bold text-lg leading-tight">Golden Track</h1>
+            <p className="text-xs text-muted-foreground">be</p>
           </div>
         </div>
 
