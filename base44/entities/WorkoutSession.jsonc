@@ -25,6 +25,14 @@
       "type": "number",
       "title": "Frequenza Cardiaca Media (bpm)"
     },
+    "calories": {
+      "type": "number",
+      "title": "Dispendio Calorico (kcal)"
+    },
+    "training_minutes": {
+      "type": "number",
+      "title": "Durata Allenamento (min)"
+    },
     "athlete_note": {
       "type": "string",
       "title": "Note Atleta"

@@ -3,7 +3,7 @@ import { Dumbbell, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-export default function WelcomeBanner({ userName, hasActivePlan, planId }) {
+export default function WelcomeBanner({ userName, hasActivePlan, planId, watermarkUrl }) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera";
 
@@ -17,6 +17,9 @@ export default function WelcomeBanner({ userName, hasActivePlan, planId }) {
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
       <div className="absolute bottom-0 right-16 w-24 h-24 bg-white/5 rounded-full translate-y-8" />
+      {watermarkUrl && (
+        <img src={watermarkUrl} alt="" className="absolute inset-0 w-full h-full object-contain opacity-5 pointer-events-none select-none" />
+      )}
 
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-4">

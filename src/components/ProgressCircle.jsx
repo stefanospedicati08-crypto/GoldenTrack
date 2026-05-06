@@ -29,7 +29,7 @@ export default function ProgressCircle({ completed, total, size = 120, faded = f
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={isFull ? "hsl(var(--accent))" : "hsl(var(--primary))"}
+          stroke="hsl(var(--accent))"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}

@@ -1,0 +1,27 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "title": "Ruolo"
+    },
+    "birth_year": {
+      "type": "number",
+      "title": "Anno di Nascita"
+    },
+    "weight_goal": {
+      "type": "number",
+      "title": "Obiettivo Peso (kg)"
+    },
+    "weight_goal_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data Obiettivo Peso"
+    }
+  }
+}

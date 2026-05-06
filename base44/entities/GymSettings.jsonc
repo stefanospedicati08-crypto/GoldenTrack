@@ -1,0 +1,15 @@
+{
+  "name": "GymSettings",
+  "type": "object",
+  "properties": {
+    "watermark_url": {
+      "type": "string",
+      "title": "URL Filigrana"
+    },
+    "gym_name": {
+      "type": "string",
+      "title": "Nome Palestra"
+    }
+  },
+  "required": []
+}

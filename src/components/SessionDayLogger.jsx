@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Zap, MessageSquare, Check, Edit2 } from "lucide-react";
+import { Heart, Zap, MessageSquare, Check, Edit2, Flame, Clock } from "lucide-react";
 import RPEInfoTooltip from "./RPEInfoTooltip";
 
 export default function SessionDayLogger({ planId, dayLabel, date, existingSession, onSaved }) {
   const [rpe, setRpe] = useState(existingSession?.rpe ? String(existingSession.rpe) : "");
   const [hr, setHr] = useState(existingSession?.heart_rate_avg ? String(existingSession.heart_rate_avg) : "");
   const [note, setNote] = useState(existingSession?.athlete_note || "");
+  const [calories, setCalories] = useState(existingSession?.calories ? String(existingSession.calories) : "");
+  const [trainingMinutes, setTrainingMinutes] = useState(existingSession?.training_minutes ? String(existingSession.training_minutes) : "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(!!existingSession);
   const [editing, setEditing] = useState(false);
@@ -23,6 +25,8 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
       date,
       rpe: rpe ? Number(rpe) : undefined,
       heart_rate_avg: hr ? Number(hr) : undefined,
+      calories: calories ? Number(calories) : undefined,
+      training_minutes: trainingMinutes ? Number(trainingMinutes) : undefined,
       athlete_note: note || undefined,
     };
 
@@ -65,15 +69,25 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
               <Heart className="w-4 h-4" /> {hr} bpm
             </span>
           )}
+          {calories && (
+            <span className="flex items-center gap-1.5 text-sm bg-orange-500/10 text-orange-500 px-3 py-1.5 rounded-xl font-medium">
+              <Flame className="w-4 h-4" /> {calories} kcal
+            </span>
+          )}
+          {trainingMinutes && (
+            <span className="flex items-center gap-1.5 text-sm bg-secondary text-muted-foreground px-3 py-1.5 rounded-xl">
+              <Clock className="w-4 h-4" /> {trainingMinutes} min
+            </span>
+          )}
           {note && (
             <span className="flex items-center gap-1.5 text-sm bg-secondary px-3 py-1.5 rounded-xl text-muted-foreground w-full">
               <MessageSquare className="w-4 h-4 shrink-0" /> {note}
             </span>
           )}
         </div>
-      ) : (
+        ) : (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
                 <Zap className="w-3 h-3" /> RPE (1-10)
@@ -92,13 +106,19 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
               <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
                 <Heart className="w-3 h-3" /> FC Media (bpm)
               </label>
-              <Input
-                type="number"
-                placeholder="es. 145"
-                value={hr}
-                onChange={e => setHr(e.target.value)}
-                className="h-10 rounded-xl"
-              />
+              <Input type="number" placeholder="es. 145" value={hr} onChange={e => setHr(e.target.value)} className="h-10 rounded-xl" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
+                <Flame className="w-3 h-3" /> Calorie (kcal)
+              </label>
+              <Input type="number" placeholder="es. 450" value={calories} onChange={e => setCalories(e.target.value)} className="h-10 rounded-xl" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Durata (min)
+              </label>
+              <Input type="number" placeholder="es. 60" value={trainingMinutes} onChange={e => setTrainingMinutes(e.target.value)} className="h-10 rounded-xl" />
             </div>
           </div>
           <div>

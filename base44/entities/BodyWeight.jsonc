@@ -14,6 +14,10 @@
     "notes": {
       "type": "string",
       "title": "Note"
+    },
+    "photo_url": {
+      "type": "string",
+      "title": "Foto"
     }
   },
   "required": [
