@@ -7,6 +7,7 @@ import WelcomeBanner from "../components/WelcomeBanner";
 import WeeklyMonthProgress from "../components/WeeklyMonthProgress";
 import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
 import ProfileCompleteModal from "../components/ProfileCompleteModal";
+import CalendarProgress from "../components/CalendarProgress";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -105,6 +106,9 @@ export default function Dashboard() {
           </div>
         </div>
       </motion.div>
+
+      {/* Calendario sessioni */}
+      <CalendarProgress sessions={sessions} />
 
       {/* Progresso mensile (4 settimane) */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-4">

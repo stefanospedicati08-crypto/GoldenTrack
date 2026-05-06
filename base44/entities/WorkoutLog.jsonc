@@ -24,7 +24,11 @@
     },
     "weight_kg": {
       "type": "number",
-      "title": "Carico (kg)"
+      "title": "Carico 1 (kg)"
+    },
+    "weight_kg_2": {
+      "type": "number",
+      "title": "Carico 2 (kg)"
     },
     "date": {
       "type": "string",
