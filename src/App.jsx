@@ -11,6 +11,8 @@ import Schede from './pages/Schede';
 import SchedaDetail from './pages/SchedaDetail';
 import Peso from './pages/Peso';
 import Admin from './pages/Admin';
+import Notifiche from './pages/Notifiche';
+import TrainerRequestPage from './pages/TrainerRequestPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -44,6 +46,8 @@ const AuthenticatedApp = () => {
         <Route path="/schede/:id" element={<SchedaDetail />} />
         <Route path="/peso" element={<Peso />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/notifiche" element={<Notifiche />} />
+        <Route path="/trainer-request" element={<TrainerRequestPage />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

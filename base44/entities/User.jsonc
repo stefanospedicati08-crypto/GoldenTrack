@@ -6,7 +6,8 @@
       "type": "string",
       "enum": [
         "admin",
-        "user"
+        "user",
+        "trainer"
       ],
       "title": "Ruolo"
     },
@@ -14,13 +15,28 @@
       "type": "number",
       "title": "Anno di Nascita"
     },
+    "first_name": {
+      "type": "string",
+      "title": "Nome"
+    },
+    "last_name": {
+      "type": "string",
+      "title": "Cognome"
+    },
+    "height_cm": {
+      "type": "number",
+      "title": "Altezza (cm)"
+    },
+    "initial_weight_kg": {
+      "type": "number",
+      "title": "Peso Iniziale (kg)"
+    },
     "weight_goal": {
       "type": "number",
       "title": "Obiettivo Peso (kg)"
     },
     "weight_goal_date": {
       "type": "string",
-      "format": "date",
       "title": "Data Obiettivo Peso"
     }
   }

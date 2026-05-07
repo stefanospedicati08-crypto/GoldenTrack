@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, X } from "lucide-react";
+import { ClipboardList, X, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
 import WeeklyMonthProgress from "../components/WeeklyMonthProgress";
-import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
 import ProfileCompleteModal from "../components/ProfileCompleteModal";
-import CalendarProgress from "../components/CalendarProgress";
+import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -61,10 +60,11 @@ export default function Dashboard() {
       )}
 
       <WelcomeBanner
-        userName={user?.full_name?.split(" ")[0] || "Atleta"}
+        userName={user?.first_name || user?.full_name?.split(" ")[0] || "Atleta"}
         hasActivePlan={plans.length > 0}
         planId={activePlan?.id}
         watermarkUrl={watermarkUrl}
+        user={user}
       />
 
       {/* Notifiche */}
@@ -107,8 +107,7 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* Calendario sessioni */}
-      <CalendarProgress sessions={sessions} />
+
 
       {/* Progresso mensile (4 settimane) */}
       <div className="bg-card rounded-2xl border border-border p-6 space-y-4">

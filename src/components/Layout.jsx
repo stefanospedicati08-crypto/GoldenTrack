@@ -1,12 +1,16 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog } from "lucide-react";
+
+
 
 const navItems = [
 { path: "/", label: "Dashboard", icon: LayoutDashboard },
 { path: "/schede", label: "Schede", icon: ClipboardList },
 { path: "/peso", label: "Peso", icon: Weight },
+{ path: "/notifiche", label: "Notifiche", icon: Bell },
+{ path: "/trainer-request", label: "Accesso Trainer", icon: UserCog, userOnly: true },
 { path: "/admin", label: "Admin", icon: Settings, adminOnly: true }];
 
 
@@ -20,7 +24,12 @@ export default function Layout() {
   }, []);
 
   const isAdmin = user?.role === "admin";
-  const visibleNav = navItems.filter((item) => !item.adminOnly || isAdmin);
+  const isTrainer = user?.role === "trainer";
+  const visibleNav = navItems.filter((item) => {
+    if (item.adminOnly) return isAdmin || isTrainer;
+    if (item.userOnly) return !isAdmin && !isTrainer;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -77,12 +86,15 @@ export default function Layout() {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
-                {user.full_name?.[0] || user.email?.[0]?.toUpperCase()}
+                {user.first_name?.[0] || user.full_name?.[0] || user.email?.[0]?.toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user.full_name || "Utente"}</p>
+                <p className="text-sm font-medium truncate">{user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.full_name || "Utente"}</p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
+              <button onClick={() => base44.auth.logout()} className="p-1.5 rounded-lg hover:bg-secondary transition-colors" title="Logout">
+                <LogOut className="w-4 h-4 text-muted-foreground" />
+              </button>
             </div>
           </div>
         }

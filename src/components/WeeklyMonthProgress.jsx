@@ -38,7 +38,7 @@ export default function WeeklyMonthProgress({ sessions }) {
     <>
       <div className="space-y-3">
         <h3 className="font-heading font-semibold text-lg">Progresso Mensile</h3>
-        <div className="flex justify-around items-center gap-2">
+        <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none">
           {weeks.map((week, i) => {
             const weekSessions = sessions.filter(s => s.date >= week.start && s.date <= week.end);
             const uniqueDays = [...new Set(weekSessions.map(s => s.date))].length;

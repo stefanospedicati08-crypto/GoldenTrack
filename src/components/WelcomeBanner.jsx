@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
+import RichiestaSchedaForm from "./RichiestaSchedaForm";
 import { Dumbbell, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-export default function WelcomeBanner({ userName, hasActivePlan, planId, watermarkUrl }) {
+export default function WelcomeBanner({ userName, hasActivePlan, planId, watermarkUrl, user }) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera";
 
@@ -37,28 +38,35 @@ export default function WelcomeBanner({ userName, hasActivePlan, planId, waterma
           </div>
         </div>
 
-        {hasActivePlan && (
-          <div className="mt-5 flex gap-3">
-            <Link to={planId ? `/schede/${planId}` : "/schede"}>
-              <Button
-                size="sm"
-                className="bg-white text-primary hover:bg-white/90 font-semibold rounded-xl px-5 h-10 shadow-lg"
-              >
-                <Flame className="w-4 h-4 mr-1.5" />
-                Inizia Allenamento
-              </Button>
-            </Link>
-            <Link to="/schede">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-white hover:bg-white/15 rounded-xl h-10 px-4"
-              >
-                Vedi Schede
-              </Button>
-            </Link>
-          </div>
-        )}
+        <div className="mt-5 flex flex-wrap gap-3">
+          {hasActivePlan && (
+            <>
+              <Link to={planId ? `/schede/${planId}` : "/schede"}>
+                <Button
+                  size="sm"
+                  className="bg-white text-primary hover:bg-white/90 font-semibold rounded-xl px-5 h-10 shadow-lg"
+                >
+                  <Flame className="w-4 h-4 mr-1.5" />
+                  Inizia Allenamento
+                </Button>
+              </Link>
+              <Link to="/schede">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-white hover:bg-white/15 rounded-xl h-10 px-4"
+                >
+                  Vedi Schede
+                </Button>
+              </Link>
+            </>
+          )}
+          {user && (
+            <div className="[&_button]:text-white [&_button]:border-white/30 [&_button]:hover:bg-white/15">
+              <RichiestaSchedaForm user={user} compact />
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );

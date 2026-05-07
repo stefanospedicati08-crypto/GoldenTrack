@@ -23,7 +23,7 @@ const NOTE_EXAMPLES = [
   "Allenamento breve (max 45 min)",
 ];
 
-export default function RichiestaSchedaForm({ user }) {
+export default function RichiestaSchedaForm({ user, compact = false }) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,7 +56,7 @@ export default function RichiestaSchedaForm({ user }) {
 
   return (
     <>
-      <Button onClick={handleOpen} variant="outline" className="rounded-xl h-10 gap-2 w-full sm:w-auto">
+      <Button onClick={handleOpen} variant="outline" className={`rounded-xl h-10 gap-2 ${compact ? "" : "w-full sm:w-auto"}`}>
         <ClipboardList className="w-4 h-4" />
         Richiedi Nuova Scheda
       </Button>

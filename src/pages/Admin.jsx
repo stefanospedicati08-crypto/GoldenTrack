@@ -3,6 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X, Download, Image } from "lucide-react";
+import AdminNotifications from "../components/AdminNotifications";
+import TrainerRequests from "../components/TrainerRequests";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -212,6 +214,8 @@ export default function Admin() {
         <p className="text-muted-foreground mt-1">Gestisci schede e clienti</p>
       </div>
 
+      <TrainerRequests />
+
       {/* Richieste Scheda */}
       <div className="space-y-4">
         <div className="flex items-center gap-3 flex-wrap">
@@ -358,6 +362,9 @@ export default function Admin() {
           </div>
         </div>
       </div>
+
+      {/* Invio Notifiche */}
+      <AdminNotifications users={users} />
 
       {/* Users list */}
       <div className="space-y-4">
