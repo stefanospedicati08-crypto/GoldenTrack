@@ -16,13 +16,7 @@ export default function ProgressCircle({ completed, total, size = 120, faded = f
   return (
     <div className={`relative ${faded ? "opacity-40" : ""}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="hsl(var(--border))"
-          strokeWidth={strokeWidth} />
+
         
         <motion.circle
           cx={size / 2}
