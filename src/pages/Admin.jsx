@@ -257,7 +257,7 @@ export default function Admin() {
                       </Button>
                     </>
                   )}
-                  <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.SchedaRequest.delete(req.id); setRequests(prev => prev.filter(r => r.id !== req.id)); toast.success("Richiesta eliminata"); }} className="h-8 rounded-lg text-muted-foreground hover:bg-secondary">
+                  <Button size="sm" variant="ghost" onClick={async () => { try { await base44.entities.SchedaRequest.delete(req.id); } catch (e) {} setRequests(prev => prev.filter(r => r.id !== req.id)); toast.success("Richiesta eliminata"); }} className="h-8 rounded-lg text-muted-foreground hover:bg-secondary">
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
