@@ -38,7 +38,7 @@ export default function WeeklyMonthProgress({ sessions }) {
     <>
       <div className="space-y-3">
         <h3 className="font-heading font-semibold text-lg">Progresso Mensile</h3>
-        <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex items-center gap-6 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory px-1">
           {weeks.map((week, i) => {
             const weekSessions = sessions.filter(s => s.date >= week.start && s.date <= week.end);
             const uniqueDays = [...new Set(weekSessions.map(s => s.date))].length;
@@ -50,13 +50,19 @@ export default function WeeklyMonthProgress({ sessions }) {
                 key={i}
                 onClick={() => !isFuture && setSelectedWeek({ ...week, sessions: weekSessions })}
                 disabled={isFuture}
-                className={`flex flex-col items-center gap-1.5 transition-all ${isFuture ? "opacity-25 cursor-default" : "cursor-pointer hover:scale-105 active:scale-95"}`}
+                className={`flex flex-col items-center gap-2 snap-center shrink-0 transition-all ${
+                  isFuture ? "opacity-25 cursor-default" : "cursor-pointer hover:scale-105 active:scale-95"
+                }`}
               >
-                <p className={`text-xs font-semibold uppercase tracking-wider ${isCurrent ? "text-accent" : "text-muted-foreground"}`}>
+                <p className={`text-xs font-semibold uppercase tracking-widest ${
+                  isCurrent ? "text-primary" : "text-muted-foreground"
+                }`}>
                   {week.label}
-                  {isCurrent && <span className="ml-1">●</span>}
                 </p>
-                <ProgressCircle completed={uniqueDays} total={SESSIONS_PER_WEEK} size={80} />
+                <ProgressCircle completed={uniqueDays} total={SESSIONS_PER_WEEK} size={88} />
+                {isCurrent && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                )}
               </button>
             );
           })}

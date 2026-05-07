@@ -246,16 +246,21 @@ export default function Admin() {
                   {req.notes && <p className="text-sm text-muted-foreground mt-1 italic">"{req.notes}"</p>}
                   <p className="text-xs text-muted-foreground mt-1">{new Date(req.created_date).toLocaleDateString("it-IT")}</p>
                 </div>
-                {req.status === "pending" && (
-                  <div className="flex gap-2 shrink-0">
-                    <Button size="sm" onClick={() => handleRequestStatus(req, "approved")} className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90">
-                      <Check className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleRequestStatus(req, "rejected")} className="h-8 rounded-lg text-destructive hover:bg-destructive/10">
-                      <X className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                )}
+                <div className="flex gap-2 shrink-0">
+                  {req.status === "pending" && (
+                    <>
+                      <Button size="sm" onClick={() => handleRequestStatus(req, "approved")} className="h-8 rounded-lg bg-accent text-accent-foreground hover:bg-accent/90">
+                        <Check className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleRequestStatus(req, "rejected")} className="h-8 rounded-lg text-destructive hover:bg-destructive/10">
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </>
+                  )}
+                  <Button size="sm" variant="ghost" onClick={async () => { await base44.entities.SchedaRequest.delete(req.id); setRequests(prev => prev.filter(r => r.id !== req.id)); toast.success("Richiesta eliminata"); }} className="h-8 rounded-lg text-muted-foreground hover:bg-secondary">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
               </motion.div>
             ))}
           </div>

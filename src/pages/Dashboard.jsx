@@ -110,9 +110,8 @@ export default function Dashboard() {
 
 
       {/* Progresso mensile (4 settimane) */}
-      <div className="bg-card rounded-2xl border border-border p-6 space-y-4">
+      <div className="bg-card rounded-2xl border border-border p-6">
         <WeeklyMonthProgress sessions={sessions} />
-        <RichiestaSchedaForm user={user} />
       </div>
     </div>
   );
