@@ -38,7 +38,7 @@ export default function WeeklyMonthProgress({ sessions }) {
     <>
       <div className="space-y-3">
         <h3 className="font-heading font-semibold text-lg">Progresso Mensile</h3>
-        <div className="flex items-center gap-6 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory px-1">
+        <div className="flex items-center gap-6 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory px-1" ref={el => el && (el.style.msOverflowStyle = 'none')}>
           {weeks.map((week, i) => {
             const weekSessions = sessions.filter(s => s.date >= week.start && s.date <= week.end);
             const uniqueDays = [...new Set(weekSessions.map(s => s.date))].length;
@@ -67,7 +67,22 @@ export default function WeeklyMonthProgress({ sessions }) {
             );
           })}
         </div>
-        <p className="text-xs text-muted-foreground text-center">Tocca un cerchio per vedere i dettagli della settimana</p>
+        {/* Scroll indicator dots */}
+        <div className="flex justify-center gap-1.5 mt-2">
+          {weeks.map((_, i) => {
+            const isCurrent = today >= weeks[i].start && today <= weeks[i].end;
+            return (
+              <div
+                key={i}
+                className={`rounded-full transition-all duration-300 ${
+                  isCurrent
+                    ? "w-5 h-1.5 bg-primary"
+                    : "w-1.5 h-1.5 bg-border"
+                }`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       <AnimatePresence>
