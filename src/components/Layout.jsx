@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog } from "lucide-react";
+import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog, Users } from "lucide-react";
 
 
 
@@ -11,6 +11,7 @@ const navItems = [
 { path: "/peso", label: "Peso", icon: Weight },
 { path: "/notifiche", label: "Notifiche", icon: Bell },
 { path: "/trainer-request", label: "Accesso Trainer", icon: UserCog, userOnly: true },
+{ path: "/clienti", label: "Clienti", icon: Users, trainerOnly: true },
 { path: "/admin", label: "Admin", icon: Settings, adminOnly: true }];
 
 
@@ -27,6 +28,7 @@ export default function Layout() {
   const isTrainer = user?.role === "trainer";
   const visibleNav = navItems.filter((item) => {
     if (item.adminOnly) return isAdmin || isTrainer;
+    if (item.trainerOnly) return isTrainer;
     if (item.userOnly) return !isAdmin && !isTrainer;
     return true;
   });

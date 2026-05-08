@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X, Download, Image } from "lucide-react";
+import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X, Download, Image, Search, ArrowRight } from "lucide-react";
 import AdminNotifications from "../components/AdminNotifications";
 import TrainerRequests from "../components/TrainerRequests";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ export default function Admin() {
   const [gymSettings, setGymSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
   const [uploadingWatermark, setUploadingWatermark] = useState(false);
   const [selectedUser, setSelectedUser] = useState("");
   const [planTitle, setPlanTitle] = useState("");
@@ -381,19 +382,36 @@ export default function Admin() {
             <Download className="w-3.5 h-3.5" /> Esporta CSV
           </Button>
         </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Cerca cliente..."
+            value={userSearch}
+            onChange={e => setUserSearch(e.target.value)}
+            className="pl-9 h-10 rounded-xl"
+          />
+        </div>
         <div className="space-y-2">
-          {users.map((u, i) => (
+          {users.filter(u =>
+            !userSearch ||
+            u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+            u.email.toLowerCase().includes(userSearch.toLowerCase())
+          ).map((u, i) => (
             <motion.div key={u.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
               className="flex items-center gap-4 bg-card rounded-xl border border-border p-4">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
                 {u.full_name?.[0] || u.email?.[0]?.toUpperCase()}
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="font-semibold">{u.full_name || "—"}</p>
-                <p className="text-sm text-muted-foreground">{u.email}</p>
+                <p className="text-sm text-muted-foreground truncate">{u.email}</p>
                 {u.birth_year && <p className="text-xs text-muted-foreground">Nato nel {u.birth_year}</p>}
               </div>
-              <span className="ml-auto px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">{u.role || "user"}</span>
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground shrink-0">{u.role || "user"}</span>
+              <a href={`/cliente/${encodeURIComponent(u.email)}`}
+                className="flex items-center gap-1 text-xs text-primary font-medium hover:underline shrink-0">
+                Dettagli <ArrowRight className="w-3.5 h-3.5" />
+              </a>
             </motion.div>
           ))}
         </div>

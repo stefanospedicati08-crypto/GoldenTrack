@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Plus, Timer } from "lucide-react";
+import { X, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "framer-motion";
 
 function playBeep() {
@@ -26,7 +26,9 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
   const [total, setTotal] = useState(defaultSeconds);
   const [remaining, setRemaining] = useState(defaultSeconds);
   const [running, setRunning] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const intervalRef = useRef(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     clearInterval(intervalRef.current);
@@ -47,6 +49,21 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
     return () => clearInterval(intervalRef.current);
   }, [running]);
 
+  // Collapse on scroll down, expand on scroll up
+  useEffect(() => {
+    function handleScroll() {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current + 30) {
+        setCollapsed(true);
+      } else if (currentY < lastScrollY.current - 30) {
+        setCollapsed(false);
+      }
+      lastScrollY.current = currentY;
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   function addTime(s) {
     setRemaining(r => r + s);
     setTotal(t => t + s);
@@ -61,43 +78,82 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 60 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 60 }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-2xl shadow-2xl p-4 flex items-center gap-4 min-w-[300px]"
+      initial={{ opacity: 0, y: 80, x: "-50%" }}
+      animate={{ opacity: 1, y: 0, x: "-50%" }}
+      exit={{ opacity: 0, y: 80, x: "-50%" }}
+      className="fixed bottom-6 left-1/2 z-50 bg-card border border-border rounded-2xl shadow-2xl"
+      style={{ width: "min(340px, calc(100vw - 32px))" }}
     >
-      <div className="relative w-14 h-14 shrink-0">
-        <svg className="-rotate-90" width="56" height="56">
-          <circle cx="28" cy="28" r="22" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
-          <circle
-            cx="28" cy="28" r="22" fill="none"
-            stroke={isDone ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-            strokeWidth="4" strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={(1 - progress) * circumference}
-            style={{ transition: "stroke-dashoffset 1s linear" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-bold font-heading">
-            {isDone ? "✓" : `${min}:${sec.toString().padStart(2, "0")}`}
-          </span>
+      {/* Collapsed view */}
+      {collapsed ? (
+        <button
+          onClick={() => setCollapsed(false)}
+          className="w-full flex items-center justify-between gap-3 px-4 py-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="relative w-9 h-9 shrink-0">
+              <svg className="-rotate-90" width="36" height="36">
+                <circle cx="18" cy="18" r="14" fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
+                <circle
+                  cx="18" cy="18" r="14" fill="none"
+                  stroke={isDone ? "hsl(var(--accent))" : "hsl(var(--primary))"}
+                  strokeWidth="3" strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 14}
+                  strokeDashoffset={(1 - progress) * 2 * Math.PI * 14}
+                  style={{ transition: "stroke-dashoffset 1s linear" }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[9px] font-bold font-heading">
+                  {isDone ? "✓" : `${min}:${sec.toString().padStart(2, "0")}`}
+                </span>
+              </div>
+            </div>
+            <span className="text-sm font-semibold">{isDone ? "Recupero completato! 💪" : "Recupero in corso..."}</span>
+          </div>
+          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+        </button>
+      ) : (
+        <div className="p-4 flex items-center gap-4">
+          <div className="relative w-14 h-14 shrink-0">
+            <svg className="-rotate-90" width="56" height="56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
+              <circle
+                cx="28" cy="28" r="22" fill="none"
+                stroke={isDone ? "hsl(var(--accent))" : "hsl(var(--primary))"}
+                strokeWidth="4" strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={(1 - progress) * circumference}
+                style={{ transition: "stroke-dashoffset 1s linear" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-bold font-heading">
+                {isDone ? "✓" : `${min}:${sec.toString().padStart(2, "0")}`}
+              </span>
+            </div>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold">{isDone ? "Recupero completato! 💪" : "Recupero in corso..."}</p>
+            <div className="flex gap-1.5 mt-1.5">
+              <button onClick={() => addTime(10)} className="text-xs bg-secondary hover:bg-secondary/80 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
+                <Plus className="w-3 h-3" /> 10s
+              </button>
+              <button onClick={() => addTime(30)} className="text-xs bg-secondary hover:bg-secondary/80 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
+                <Plus className="w-3 h-3" /> 30s
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1 shrink-0">
+            <button onClick={() => setCollapsed(true)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-semibold">{isDone ? "Recupero completato! 💪" : "Recupero in corso..."}</p>
-        <div className="flex gap-1.5 mt-1.5">
-          <button onClick={() => addTime(10)} className="text-xs bg-secondary hover:bg-secondary/80 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
-            <Plus className="w-3 h-3" /> 10s
-          </button>
-          <button onClick={() => addTime(30)} className="text-xs bg-secondary hover:bg-secondary/80 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
-            <Plus className="w-3 h-3" /> 30s
-          </button>
-        </div>
-      </div>
-      <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition-colors shrink-0">
-        <X className="w-4 h-4 text-muted-foreground" />
-      </button>
+      )}
     </motion.div>
   );
 }

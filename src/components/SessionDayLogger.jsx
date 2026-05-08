@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heart, Zap, MessageSquare, Check, Edit2, Flame, Clock } from "lucide-react";
 import RPEInfoTooltip from "./RPEInfoTooltip";
+
+const RPE_HIDDEN_KEY = "rpe_tooltip_dismissed";
 
 export default function SessionDayLogger({ planId, dayLabel, date, existingSession, onSaved }) {
   const [rpe, setRpe] = useState(existingSession?.rpe ? String(existingSession.rpe) : "");
@@ -14,6 +16,7 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(!!existingSession);
   const [editing, setEditing] = useState(false);
+  const rpeHidden = !!localStorage.getItem(RPE_HIDDEN_KEY);
 
   const showForm = !saved || editing;
 
@@ -85,45 +88,47 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
             </span>
           )}
         </div>
-        ) : (
+      ) : (
         <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            {!rpeHidden && (
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> RPE (1-10)</span>
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="10"
+                  placeholder="es. 7"
+                  value={rpe}
+                  onChange={e => setRpe(e.target.value)}
+                  className="h-10 rounded-xl"
+                />
+              </div>
+            )}
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
-                <Zap className="w-3 h-3" /> RPE (1-10)
-              </label>
-              <Input
-                type="number"
-                min="1"
-                max="10"
-                placeholder="es. 7"
-                value={rpe}
-                onChange={e => setRpe(e.target.value)}
-                className="h-10 rounded-xl"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
-                <Heart className="w-3 h-3" /> FC Media (bpm)
+              <label className="text-xs text-muted-foreground mb-1 block">
+                <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> FC Media (bpm)</span>
               </label>
               <Input type="number" placeholder="es. 145" value={hr} onChange={e => setHr(e.target.value)} className="h-10 rounded-xl" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
-                <Flame className="w-3 h-3" /> Calorie (kcal)
+              <label className="text-xs text-muted-foreground mb-1 block">
+                <span className="flex items-center gap-1"><Flame className="w-3 h-3" /> Calorie (kcal)</span>
               </label>
               <Input type="number" placeholder="es. 450" value={calories} onChange={e => setCalories(e.target.value)} className="h-10 rounded-xl" />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Durata (min)
+              <label className="text-xs text-muted-foreground mb-1 block">
+                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Durata (min)</span>
               </label>
               <Input type="number" placeholder="es. 60" value={trainingMinutes} onChange={e => setTrainingMinutes(e.target.value)} className="h-10 rounded-xl" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
-              <MessageSquare className="w-3 h-3" /> Note personali (visibili al trainer)
+            <label className="text-xs text-muted-foreground mb-1 block">
+              <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> Note personali (visibili al trainer)</span>
             </label>
             <textarea
               placeholder="Come ti sei sentito? Difficoltà particolari..."

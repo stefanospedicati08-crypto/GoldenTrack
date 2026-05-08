@@ -1,0 +1,22 @@
+{
+  "name": "TrainerClient",
+  "type": "object",
+  "properties": {
+    "trainer_email": {
+      "type": "string",
+      "title": "Email Trainer"
+    },
+    "client_email": {
+      "type": "string",
+      "title": "Email Cliente"
+    },
+    "client_name": {
+      "type": "string",
+      "title": "Nome Cliente"
+    }
+  },
+  "required": [
+    "trainer_email",
+    "client_email"
+  ]
+}
