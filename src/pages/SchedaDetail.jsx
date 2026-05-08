@@ -51,7 +51,11 @@ export default function SchedaDetail() {
   const today = new Date().toISOString().split("T")[0];
 
   const handleLogSaved = (newLog) => {
-    setLogs(prev => [newLog, ...prev]);
+    if (newLog._replaceId) {
+      setLogs(prev => prev.map(l => l.id === newLog._replaceId ? newLog : l));
+    } else {
+      setLogs(prev => [newLog, ...prev]);
+    }
   };
 
   const handleSessionSaved = (session) => {

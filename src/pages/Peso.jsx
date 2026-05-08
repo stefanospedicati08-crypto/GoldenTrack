@@ -43,14 +43,17 @@ export default function Peso() {
   async function handleSave() {
     if (!newWeight) return;
     setSaving(true);
-    const entry = await base44.entities.BodyWeight.create({
-      weight_kg: Number(newWeight),
-      date: new Date().toISOString().split("T")[0],
-      notes: notes || undefined,
-    });
-    setWeights(prev => [entry, ...prev]);
+    const today = new Date().toISOString().split("T")[0];
+    const optimistic = { id: `tmp-${Date.now()}`, weight_kg: Number(newWeight), date: today, notes: notes || undefined };
+    setWeights(prev => [optimistic, ...prev]);
     setNewWeight("");
     setNotes("");
+    const entry = await base44.entities.BodyWeight.create({
+      weight_kg: optimistic.weight_kg,
+      date: today,
+      notes: optimistic.notes,
+    });
+    setWeights(prev => prev.map(w => w.id === optimistic.id ? entry : w));
     setSaving(false);
   }
 

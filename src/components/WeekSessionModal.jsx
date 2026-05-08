@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { X, Zap, Heart, MessageSquare, Flame, ChevronDown, ChevronUp, Dumbbell, Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import { X, Zap, Heart, MessageSquare, Flame, Clock, Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
 import "moment/locale/it";
 moment.locale("it");
@@ -11,7 +11,7 @@ export default function WeekSessionModal({ week, onClose }) {
   const [loadingDate, setLoadingDate] = useState(null);
   const [expandedDate, setExpandedDate] = useState(null);
 
-  async function toggleLoads(date) {
+  async function toggleDate(date) {
     if (expandedDate === date) { setExpandedDate(null); return; }
     if (!logs[date]) {
       setLoadingDate(date);
@@ -30,13 +30,17 @@ export default function WeekSessionModal({ week, onClose }) {
   const sortedDates = Object.keys(sessionsByDate).sort();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-4 px-4 pb-4 bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 40 }}
+        exit={{ opacity: 0, y: -50 }}
+        transition={{ type: "spring", damping: 26, stiffness: 300 }}
         onClick={e => e.stopPropagation()}
-        className="bg-card rounded-2xl border border-border p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl space-y-4"
+        className="bg-card rounded-2xl border border-border w-full max-w-lg max-h-[88vh] overflow-y-auto shadow-2xl space-y-4 p-5 mt-12"
       >
         <div className="flex items-center justify-between">
           <h3 className="font-heading font-semibold text-lg">{week.label}</h3>
@@ -52,6 +56,10 @@ export default function WeekSessionModal({ week, onClose }) {
             {sortedDates.map(date => {
               const dateSessions = sessionsByDate[date];
               const dateLogsArr = logs[date] || [];
+              const isExpanded = expandedDate === date;
+              const isLoading = loadingDate === date;
+
+              // Group logs by exercise
               const exerciseGroups = {};
               dateLogsArr.forEach(l => {
                 if (!exerciseGroups[l.exercise_name]) exerciseGroups[l.exercise_name] = [];
@@ -60,10 +68,22 @@ export default function WeekSessionModal({ week, onClose }) {
 
               return (
                 <div key={date} className="bg-secondary/30 rounded-xl border border-border overflow-hidden">
-                  <div className="p-3 space-y-2">
-                    <p className="font-semibold text-sm capitalize">{moment(date).format("dddd D MMMM")}</p>
+                  {/* Clickable header */}
+                  <button
+                    className="w-full text-left p-3 hover:bg-secondary/50 transition-colors"
+                    onClick={() => toggleDate(date)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-sm capitalize">{moment(date).format("dddd D MMMM")}</p>
+                      <div className="flex items-center gap-2">
+                        {isLoading && <div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />}
+                        {!isLoading && (isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />)}
+                      </div>
+                    </div>
+
+                    {/* Session metrics */}
                     {dateSessions.map((s, i) => (
-                      <div key={i} className="space-y-1.5">
+                      <div key={i} className="mt-2 space-y-1.5">
                         {s.day_label && <p className="text-xs text-muted-foreground font-medium">{s.day_label}</p>}
                         <div className="flex flex-wrap gap-1.5">
                           {s.rpe && (
@@ -94,45 +114,51 @@ export default function WeekSessionModal({ week, onClose }) {
                         )}
                       </div>
                     ))}
-                  </div>
-
-                  <button
-                    onClick={() => toggleLoads(date)}
-                    className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:bg-secondary/50 transition-colors border-t border-border"
-                  >
-                    <Dumbbell className="w-3.5 h-3.5" />
-                    {expandedDate === date ? "Nascondi carichi" : "Storico carichi serie"}
-                    {loadingDate === date ? (
-                      <div className="w-3 h-3 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                    ) : expandedDate === date ? (
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    )}
                   </button>
 
-                  {expandedDate === date && (
-                    <div className="px-3 pb-3 space-y-3">
-                      {Object.keys(exerciseGroups).length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-2">Nessun carico registrato</p>
-                      ) : (
-                        Object.entries(exerciseGroups).map(([exName, exLogs]) => (
-                          <div key={exName} className="space-y-1">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{exName}</p>
-                            <div className="space-y-1">
-                              {exLogs.sort((a, b) => a.set_number - b.set_number).map(log => (
-                                <div key={log.id} className="flex items-center gap-3 text-xs bg-secondary/40 rounded-lg px-2 py-1.5">
-                                  <span className="text-muted-foreground w-14">Serie {log.set_number}</span>
-                                  <span>{log.reps_done || "—"} rep</span>
-                                  <span className="font-bold text-primary ml-auto">{log.weight_kg ? `${log.weight_kg} kg` : "—"}</span>
+                  {/* Load report */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-3 pb-3 pt-1 border-t border-border space-y-3">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 pt-1">
+                            <Dumbbell className="w-3.5 h-3.5" /> Report Carichi
+                          </p>
+                          {Object.keys(exerciseGroups).length === 0 ? (
+                            <p className="text-xs text-muted-foreground text-center py-2">Nessun carico registrato</p>
+                          ) : (
+                            Object.entries(exerciseGroups).map(([exName, exLogs]) => {
+                              const maxWeight = Math.max(...exLogs.map(l => l.weight_kg || 0));
+                              const totalSets = exLogs.length;
+                              return (
+                                <div key={exName} className="space-y-1">
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-xs font-semibold">{exName}</p>
+                                    <span className="text-xs text-primary font-bold">{maxWeight > 0 ? `Max ${maxWeight} kg` : "—"}</span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-1">
+                                    {exLogs.sort((a, b) => a.set_number - b.set_number).map(log => (
+                                      <div key={log.id} className="flex items-center gap-2 text-xs bg-secondary/50 rounded-lg px-2 py-1.5">
+                                        <span className="text-muted-foreground">S{log.set_number}</span>
+                                        <span>{log.reps_done || "—"} rep</span>
+                                        <span className="font-bold text-primary ml-auto">{log.weight_kg ? `${log.weight_kg}kg` : "—"}</span>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
+                              );
+                            })
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}

@@ -35,7 +35,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
 
   async function handleSave() {
     setSaving(true);
-    const newLog = await base44.entities.WorkoutLog.create({
+    const optimistic = {
+      id: `tmp-${Date.now()}`,
       exercise_id: exercise.id,
       plan_id: exercise.plan_id,
       exercise_name: exercise.name,
@@ -44,14 +45,26 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
       weight_kg: weightKg ? Number(weightKg) : undefined,
       weight_kg_2: isDoubleReps && weightKg2 ? Number(weightKg2) : undefined,
       date: today,
-    });
-    onLogSaved(newLog);
+    };
+    onLogSaved(optimistic);
     const next = nextSet ? String(nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : String(totalSets);
     setSetNumber(next);
     setWeightKg("");
     setWeightKg2("");
     setSaving(false);
     setShowTimer(true);
+    const newLog = await base44.entities.WorkoutLog.create({
+      exercise_id: exercise.id,
+      plan_id: exercise.plan_id,
+      exercise_name: exercise.name,
+      set_number: Number(optimistic.set_number),
+      reps_done: optimistic.reps_done,
+      weight_kg: optimistic.weight_kg,
+      weight_kg_2: optimistic.weight_kg_2,
+      date: today,
+    });
+    // Replace optimistic entry with real one
+    onLogSaved({ ...newLog, _replaceId: optimistic.id });
   }
 
   async function handleEditWeight(log) {

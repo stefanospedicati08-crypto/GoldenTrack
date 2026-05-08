@@ -67,22 +67,7 @@ export default function WeeklyMonthProgress({ sessions }) {
             );
           })}
         </div>
-        {/* Scroll indicator dots */}
-        <div className="flex justify-center gap-1.5 mt-2">
-          {weeks.map((_, i) => {
-            const isCurrent = today >= weeks[i].start && today <= weeks[i].end;
-            return (
-              <div
-                key={i}
-                className={`rounded-full transition-all duration-300 ${
-                  isCurrent
-                    ? "w-5 h-1.5 bg-primary"
-                    : "w-1.5 h-1.5 bg-border"
-                }`}
-              />
-            );
-          })}
-        </div>
+
       </div>
 
       <AnimatePresence>
