@@ -1,7 +1,9 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog, Users } from "lucide-react";
+import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog, Users, User } from "lucide-react";
+import BottomTabBar from "./BottomTabBar";
+import { AnimatePresence, motion } from "framer-motion";
 
 
 
@@ -12,7 +14,8 @@ const navItems = [
 { path: "/notifiche", label: "Notifiche", icon: Bell },
 { path: "/trainer-request", label: "Accesso Trainer", icon: UserCog, userOnly: true },
 { path: "/clienti", label: "Clienti", icon: Users, trainerOnly: true },
-{ path: "/admin", label: "Admin", icon: Settings, adminOnly: true }];
+{ path: "/admin", label: "Admin", icon: Settings, adminOnly: true },
+{ path: "/account", label: "Account", icon: User }];
 
 
 export default function Layout() {
@@ -34,9 +37,9 @@ export default function Layout() {
   });
 
   return (
-    <div className="min-h-screen bg-background font-body">
+    <div className="min-h-screen bg-background font-body" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border h-16 flex items-center px-4">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border h-16 flex items-center px-4" style={{ paddingTop: "env(safe-area-inset-top)", height: "calc(4rem + env(safe-area-inset-top))" }}>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg hover:bg-secondary transition-colors">
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -110,10 +113,21 @@ export default function Layout() {
             <span className="font-heading font-bold text-lg text-primary">GOLDEN EIGHT</span>
           </div>
         </div>
-        <div className="p-4 lg:p-8 max-w-6xl mx-auto">
-          <Outlet />
+        <div className="p-4 lg:p-8 pb-24 lg:pb-8 max-w-6xl mx-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
+      <BottomTabBar />
     </div>);
 
 }

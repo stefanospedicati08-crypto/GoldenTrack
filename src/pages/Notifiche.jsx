@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Bell, Check, CheckCheck } from "lucide-react";
+import PullToRefresh from "../components/PullToRefresh";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
@@ -32,6 +33,12 @@ export default function Notifiche() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   }
 
+  async function handleRefresh() {
+    const u = await base44.auth.me();
+    const notifs = await base44.entities.Notification.filter({ user_email: u.email }, "-created_date", 100);
+    setNotifications(notifs);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -43,6 +50,7 @@ export default function Notifiche() {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -105,5 +113,6 @@ export default function Notifiche() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

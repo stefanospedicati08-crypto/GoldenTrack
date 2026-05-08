@@ -15,6 +15,7 @@ import Notifiche from './pages/Notifiche';
 import TrainerRequestPage from './pages/TrainerRequestPage';
 import TrainerClients from './pages/TrainerClients';
 import ClientDetail from './pages/ClientDetail';
+import Account from './pages/Account';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,6 +53,7 @@ const AuthenticatedApp = () => {
         <Route path="/trainer-request" element={<TrainerRequestPage />} />
         <Route path="/clienti" element={<TrainerClients />} />
         <Route path="/cliente/:email" element={<ClientDetail />} />
+        <Route path="/account" element={<Account />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

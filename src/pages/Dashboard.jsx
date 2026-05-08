@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ClipboardList, X, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
+import PullToRefresh from "../components/PullToRefresh";
 import WeeklyMonthProgress from "../components/WeeklyMonthProgress";
 import ProfileCompleteModal from "../components/ProfileCompleteModal";
 import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
@@ -48,12 +49,29 @@ export default function Dashboard() {
 
   const activePlan = plans[0];
 
+  async function handleRefresh() {
+    setLoading(true);
+    const u = await base44.auth.me();
+    const [p, sess, notifs, gs] = await Promise.all([
+      base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "active" }),
+      base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100),
+      base44.entities.Notification.filter({ user_email: u.email, read: false }),
+      base44.entities.GymSettings.list(),
+    ]);
+    setPlans(p);
+    setSessions(sess);
+    setNotifications(notifs);
+    if (gs[0]?.watermark_url) setWatermarkUrl(gs[0].watermark_url);
+    setLoading(false);
+  }
+
   async function dismissNotification(id) {
     await base44.entities.Notification.update(id, { read: true });
     setNotifications(prev => prev.filter(n => n.id !== id));
   }
 
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-8">
       {showProfileModal && (
         <ProfileCompleteModal user={user} onComplete={() => setShowProfileModal(false)} />
@@ -114,5 +132,6 @@ export default function Dashboard() {
         <WeeklyMonthProgress sessions={sessions} />
       </div>
     </div>
+    </PullToRefresh>
   );
 }
