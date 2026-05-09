@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { startTimer } from "@/lib/timerStore";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, Flame, Trash2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import LoadChart from "./LoadChart";
 // A superset: multiple exercises performed back-to-back before resting
 export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved, onLogDeleted, index }) {
   const [expanded, setExpanded] = useState(false);
-  const [showTimer, setShowTimer] = useState(false);
+
   const [currentExIdx, setCurrentExIdx] = useState(0); // which exercise in superset we're logging
   const [saving, setSaving] = useState(false);
   const [deletingLog, setDeletingLog] = useState(null);
@@ -58,7 +59,7 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
       setCurrentExIdx(currentExIdx + 1);
     } else {
       setCurrentExIdx(0);
-      setShowTimer(true); // rest after completing all exercises in superset
+      startTimer(restSeconds); // rest after completing all exercises in superset
     }
 
     // Reset form for this exercise
@@ -89,9 +90,6 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
 
   return (
     <>
-      <AnimatePresence>
-        {showTimer && <RestTimer defaultSeconds={restSeconds} onClose={() => setShowTimer(false)} />}
-      </AnimatePresence>
 
       <motion.div
         initial={{ opacity: 0, x: -10 }}

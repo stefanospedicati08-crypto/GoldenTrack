@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { startTimer } from "@/lib/timerStore";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const [expanded, setExpanded] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showTimer, setShowTimer] = useState(false);
+
   const [setNumber, setSetNumber] = useState("1");
   const [weightKg, setWeightKg] = useState("");
   const [weightKg2, setWeightKg2] = useState("");
@@ -57,7 +58,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
     setWeightKg2("");
     setRepsDone("");
     setSaving(false);
-    setShowTimer(true);
+    startTimer(exercise.rest_seconds || 90);
     const newLog = await base44.entities.WorkoutLog.create({
       exercise_id: exercise.id,
       plan_id: exercise.plan_id,
@@ -110,11 +111,6 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
 
   return (
     <>
-      <AnimatePresence>
-        {showTimer && (
-          <RestTimer defaultSeconds={exercise.rest_seconds || 90} onClose={() => setShowTimer(false)} />
-        )}
-      </AnimatePresence>
 
       <motion.div
         initial={{ opacity: 0, x: -10 }}

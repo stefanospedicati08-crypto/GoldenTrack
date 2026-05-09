@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog, Users, User } from "lucide-react";
 import BottomTabBar from "./BottomTabBar";
+import GlobalRestTimer from "./GlobalRestTimer";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -128,6 +129,7 @@ export default function Layout() {
         </div>
       </main>
       <BottomTabBar />
+      <GlobalRestTimer />
     </div>);
 
 }
