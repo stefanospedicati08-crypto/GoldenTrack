@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, CheckCircle2, Flag } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Flag, Pencil, Check, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ExerciseCard from "../components/ExerciseCard";
 import SupersetGroup from "../components/SupersetGroup";
@@ -19,6 +19,8 @@ export default function DayWorkout() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSessionLogger, setShowSessionLogger] = useState(false);
+  const [editingSuperset, setEditingSuperset] = useState(false);
+  const [supersetEdits, setSupersetEdits] = useState({});
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -46,6 +48,20 @@ export default function DayWorkout() {
       setLogs(prev => [newLog, ...prev]);
     }
   };
+
+  async function saveSupersetEdits() {
+    const updates = Object.entries(supersetEdits);
+    await Promise.all(updates.map(([exId, letter]) =>
+      base44.entities.Exercise.update(exId, { notes: letter || undefined })
+    ));
+    setExercises(prev => prev.map(ex =>
+      supersetEdits[ex.id] !== undefined
+        ? { ...ex, notes: supersetEdits[ex.id] || undefined }
+        : ex
+    ));
+    setSupersetEdits({});
+    setEditingSuperset(false);
+  }
 
   const handleLogDeleted = (logId) => {
     setLogs(prev => prev.filter(l => l.id !== logId));
@@ -108,11 +124,60 @@ export default function DayWorkout() {
         <Link to={`/schede/${planId}`} className="p-2 rounded-xl hover:bg-secondary transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <div>
+        <div className="flex-1">
           <p className="text-xs text-muted-foreground font-medium">{plan?.title}</p>
           <h1 className="font-heading text-2xl font-bold">{dayLabel}</h1>
         </div>
+        {!editingSuperset ? (
+          <button onClick={() => setEditingSuperset(true)}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground bg-secondary px-3 py-1.5 rounded-xl transition-colors">
+            <Pencil className="w-3.5 h-3.5" /> Superset
+          </button>
+        ) : (
+          <div className="flex gap-2">
+            <button onClick={saveSupersetEdits}
+              className="flex items-center gap-1 text-xs text-accent bg-accent/10 px-3 py-1.5 rounded-xl">
+              <Check className="w-3.5 h-3.5" /> Salva
+            </button>
+            <button onClick={() => { setSupersetEdits({}); setEditingSuperset(false); }}
+              className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-xl">
+              <X className="w-3.5 h-3.5" /> Annulla
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Superset editing mode */}
+      {editingSuperset && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-2">
+          <p className="text-xs font-semibold text-primary uppercase tracking-wider">Assegna lettere superset</p>
+          <p className="text-xs text-muted-foreground">Assegna la stessa lettera a due esercizi per raggrupparli come superset.</p>
+          <div className="space-y-2 mt-3">
+            {exercises.map(ex => {
+              const current = supersetEdits[ex.id] !== undefined ? supersetEdits[ex.id] : (ex.notes?.match(/^[A-Z]$/i) ? ex.notes.toUpperCase() : "");
+              return (
+                <div key={ex.id} className="flex items-center gap-3 bg-card rounded-xl px-3 py-2.5 border border-border">
+                  <span className="flex-1 text-sm font-medium truncate">{ex.name}</span>
+                  <div className="flex gap-1">
+                    {["", "A", "B", "C", "D", "E"].map(letter => (
+                      <button key={letter}
+                        onClick={() => setSupersetEdits(prev => ({ ...prev, [ex.id]: letter }))}
+                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${
+                          current === letter
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+                        }`}>
+                        {letter || "—"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Exercise list */}
       {groups.map((group, gi) =>
