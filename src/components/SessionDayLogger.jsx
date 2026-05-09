@@ -7,7 +7,7 @@ import RPEInfoTooltip from "./RPEInfoTooltip";
 
 const RPE_HIDDEN_KEY = "rpe_tooltip_dismissed";
 
-export default function SessionDayLogger({ planId, dayLabel, date, existingSession, onSaved }) {
+export default function SessionDayLogger({ planId, dayLabel, date, existingSession, onSaved, inline = false }) {
   const [rpe, setRpe] = useState(existingSession?.rpe ? String(existingSession.rpe) : "");
   const [hr, setHr] = useState(existingSession?.heart_rate_avg ? String(existingSession.heart_rate_avg) : "");
   const [note, setNote] = useState(existingSession?.athlete_note || "");
@@ -46,7 +46,7 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
   }
 
   return (
-    <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
+    <div className={inline ? "space-y-3" : "bg-card rounded-2xl border border-border p-4 space-y-3"}>
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           📊 Dati Sessione di Oggi

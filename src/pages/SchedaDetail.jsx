@@ -1,31 +1,26 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, FileText, Dumbbell, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import ExerciseCard from "../components/ExerciseCard";
-import DaySessionHistory from "../components/DaySessionHistory";
-import SessionDayLogger from "../components/SessionDayLogger";
 
 export default function SchedaDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [plan, setPlan] = useState(null);
   const [exercises, setExercises] = useState([]);
-  const [logs, setLogs] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const [p, exs, lgs, sess] = await Promise.all([
+      const [p, exs, sess] = await Promise.all([
         base44.entities.WorkoutPlan.get(id),
         base44.entities.Exercise.filter({ plan_id: id }, "order_index"),
-        base44.entities.WorkoutLog.filter({ plan_id: id }, "-date", 500),
         base44.entities.WorkoutSession.filter({ plan_id: id }, "-date", 100),
       ]);
       setPlan(p);
       setExercises(exs);
-      setLogs(lgs);
       setSessions(sess);
       setLoading(false);
     }
@@ -40,7 +35,6 @@ export default function SchedaDetail() {
     );
   }
 
-  // Group exercises by day
   const grouped = {};
   exercises.forEach(ex => {
     const day = ex.day_label || "Generale";
@@ -48,26 +42,14 @@ export default function SchedaDetail() {
     grouped[day].push(ex);
   });
 
-  const today = new Date().toISOString().split("T")[0];
+  const days = Object.entries(grouped);
 
-  const handleLogSaved = (newLog) => {
-    if (newLog._replaceId) {
-      setLogs(prev => prev.map(l => l.id === newLog._replaceId ? newLog : l));
-    } else {
-      setLogs(prev => [newLog, ...prev]);
-    }
-  };
-
-  const handleSessionSaved = (session) => {
-    setSessions(prev => {
-      const exists = prev.find(s => s.id === session.id);
-      if (exists) return prev.map(s => s.id === session.id ? session : s);
-      return [session, ...prev];
-    });
-  };
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const cutoff = thirtyDaysAgo.toISOString().split("T")[0];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex items-center gap-3">
         <Link to="/schede" className="p-2 rounded-xl hover:bg-secondary transition-colors">
           <ArrowLeft className="w-5 h-5" />
@@ -78,13 +60,9 @@ export default function SchedaDetail() {
         </div>
       </div>
 
-      {/* Note admin sulla scheda */}
       {plan?.notes && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3"
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-start gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3">
           <FileText className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-semibold text-primary mb-1 uppercase tracking-wider">Note del Trainer</p>
@@ -93,44 +71,43 @@ export default function SchedaDetail() {
         </motion.div>
       )}
 
-      {Object.entries(grouped).map(([day, exs], gi) => (
-        <motion.div
-          key={day}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: gi * 0.1 }}
-          className="space-y-3"
-        >
-          <h2 className="font-heading font-semibold text-lg text-primary">{day}</h2>
-          <div className="space-y-3">
-            {exs.map((ex, i) => (
-              <ExerciseCard
-                key={ex.id}
-                exercise={ex}
-                logs={logs.filter(l => l.exercise_id === ex.id)}
-                onLogSaved={handleLogSaved}
-                index={i}
-              />
-            ))}
-          </div>
-
-          {/* Logger sessione del giorno */}
-          <SessionDayLogger
-            planId={id}
-            dayLabel={day}
-            date={today}
-            existingSession={sessions.find(s => s.day_label === day && s.date === today)}
-            onSaved={handleSessionSaved}
-          />
-
-          {/* Storico sessioni per questo giorno */}
-          <DaySessionHistory
-            sessions={sessions.filter(s => s.day_label === day && s.date !== today)}
-            dayLabel={day}
-            logs={logs}
-          />
-        </motion.div>
-      ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {days.map(([day, exs], gi) => {
+          const recentSessions = sessions.filter(s => s.day_label === day && s.date >= cutoff);
+          const lastSession = sessions.filter(s => s.day_label === day).sort((a, b) => b.date.localeCompare(a.date))[0];
+          return (
+            <motion.button
+              key={day}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: gi * 0.08 }}
+              onClick={() => navigate(`/schede/${id}/giorno/${encodeURIComponent(day)}`)}
+              className="bg-card border border-border rounded-2xl p-5 text-left hover:border-primary/50 hover:shadow-lg transition-all active:scale-95 group"
+            >
+              <div className="flex items-start justify-between">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <Dumbbell className="w-6 h-6 text-primary" />
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mt-1" />
+              </div>
+              <h2 className="font-heading font-bold text-lg">{day}</h2>
+              <p className="text-sm text-muted-foreground mt-1">{exs.length} esercizi</p>
+              {lastSession && (
+                <p className="text-xs text-muted-foreground/60 mt-2">
+                  Ultima sessione: {new Date(lastSession.date).toLocaleDateString("it-IT")}
+                </p>
+              )}
+              {recentSessions.length > 0 && (
+                <div className="mt-3 flex gap-1">
+                  {Array.from({ length: Math.min(recentSessions.length, 8) }).map((_, i) => (
+                    <div key={i} className="w-2 h-2 rounded-full bg-primary/60" />
+                  ))}
+                </div>
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
     </div>
   );
 }

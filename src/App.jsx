@@ -15,6 +15,7 @@ import Notifiche from './pages/Notifiche';
 import TrainerRequestPage from './pages/TrainerRequestPage';
 import TrainerClients from './pages/TrainerClients';
 import ClientDetail from './pages/ClientDetail';
+import DayWorkout from './pages/DayWorkout';
 import Account from './pages/Account';
 
 const AuthenticatedApp = () => {
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/schede" element={<Schede />} />
         <Route path="/schede/:id" element={<SchedaDetail />} />
+        <Route path="/schede/:planId/giorno/:day" element={<DayWorkout />} />
         <Route path="/peso" element={<Peso />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/notifiche" element={<Notifiche />} />
