@@ -131,19 +131,17 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         onClick={() => activePlan && navigate(`/schede/${activePlan.id}`)}
-        className={`bg-card rounded-2xl border border-border p-5 ${activePlan ? "cursor-pointer hover:border-primary/40 transition-colors" : ""}`}
+        className={`flex flex-col items-center justify-center ${activePlan ? "cursor-pointer" : ""}`}
       >
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Scheda Corrente</p>
-            <p className="text-xl font-heading font-bold mt-1">{activePlan ? activePlan.title : "—"}</p>
-            {activePlan?.description && (
-              <p className="text-xs text-muted-foreground mt-0.5">{activePlan.description}</p>
-            )}
-          </div>
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary bg-primary/10">
-            <ClipboardList className="w-6 h-6" />
-          </div>
+        <div className={`relative w-52 h-52 rounded-full flex flex-col items-center justify-center border-4 transition-all ${
+          activePlan ? "border-primary bg-primary/10 hover:bg-primary/20 shadow-lg shadow-primary/20" : "border-border bg-card"
+        }`}>
+          <ClipboardList className="w-8 h-8 text-primary mb-2" />
+          <p className="text-xs text-muted-foreground uppercase tracking-widest">Scheda Corrente</p>
+          <p className="text-lg font-heading font-bold mt-1 text-center px-4 leading-tight">{activePlan ? activePlan.title : "—"}</p>
+          {activePlan?.description && (
+            <p className="text-xs text-muted-foreground mt-1 text-center px-6 line-clamp-2">{activePlan.description}</p>
+          )}
         </div>
       </motion.div>
 
