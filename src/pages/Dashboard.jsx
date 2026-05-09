@@ -126,21 +126,34 @@ export default function Dashboard() {
         ))}
       </AnimatePresence>
 
-      {/* Scheda Corrente */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        onClick={() => activePlan && navigate(`/schede/${activePlan.id}`)}
-        className={`flex flex-col items-center justify-center ${activePlan ? "cursor-pointer" : ""}`}
-      >
-        <div className={`relative w-28 h-28 rounded-full flex flex-col items-center justify-center border-4 transition-all ${
-          activePlan ? "border-primary bg-primary/10 hover:bg-primary/20 shadow-lg shadow-primary/20" : "border-border bg-card"
-        }`}>
-          <ClipboardList className="w-5 h-5 text-primary mb-0.5" />
-          <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Scheda</p>
-          <p className="text-xs font-heading font-bold mt-0.5 text-center px-2 leading-tight line-clamp-2">{activePlan ? activePlan.title : "—"}</p>
-        </div>
-      </motion.div>
+      {/* Scheda Corrente + Progresso Mensile */}
+      <div className="flex items-center gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => activePlan && navigate(`/schede/${activePlan.id}`)}
+          className={`flex flex-col items-center justify-center shrink-0 ${activePlan ? "cursor-pointer" : ""}`}
+        >
+          <div className={`relative w-28 h-28 rounded-full flex flex-col items-center justify-center border-4 transition-all ${
+            activePlan ? "border-primary bg-primary/10 hover:bg-primary/20 shadow-lg shadow-primary/20" : "border-border bg-card"
+          }`}>
+            <ClipboardList className="w-5 h-5 text-primary mb-0.5" />
+            <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Scheda</p>
+            <p className="text-xs font-heading font-bold mt-0.5 text-center px-2 leading-tight line-clamp-2">{activePlan ? activePlan.title : "—"}</p>
+          </div>
+        </motion.div>
+
+        {!showProfileModal && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-card rounded-2xl border border-border p-2 flex-1 min-w-0"
+          >
+            <WeeklyMonthProgress sessions={sessions} compact />
+          </motion.div>
+        )}
+      </div>
 
       {/* Piano Alimentare */}
       {widgets.meal && user?.meal_plan_url && (
