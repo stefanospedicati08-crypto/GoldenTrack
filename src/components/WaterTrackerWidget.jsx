@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Droplets, Plus, Minus, Settings, Check } from "lucide-react";
+import ProgressCircle from "./ProgressCircle";
 
 export default function WaterTrackerWidget() {
   const [log, setLog] = useState(null);
@@ -24,7 +25,6 @@ export default function WaterTrackerWidget() {
   }, []);
 
   const drank = log?.ml_drank || 0;
-  const pct = Math.min(100, Math.round((drank / goal) * 100));
 
   async function addWater(ml) {
     const newMl = drank + ml;
@@ -97,24 +97,29 @@ export default function WaterTrackerWidget() {
         </div>
       )}
 
-      {/* Progress bar */}
-      <div className="h-2.5 bg-secondary rounded-full overflow-hidden">
-        <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
-      </div>
-      <p className="text-xs text-muted-foreground">{pct}% dell'obiettivo giornaliero</p>
-
-      {/* Quick add buttons */}
-      <div className="flex gap-2">
-        {[150, 250, 500].map(ml => (
-          <button key={ml} onClick={() => addWater(ml)}
-            className="flex-1 flex items-center justify-center gap-1 bg-blue-400/10 hover:bg-blue-400/20 text-blue-400 text-xs font-medium rounded-xl py-2 transition-colors">
-            <Plus className="w-3 h-3" />+{ml}ml
+      {/* Circular progress + buttons on right */}
+      <div className="flex items-center gap-6">
+        <div className="flex justify-center">
+          <ProgressCircle completed={drank} total={goal} size={100} />
+        </div>
+        <div className="flex flex-col gap-2">
+          <button onClick={() => addWater(150)}
+            className="flex items-center justify-center gap-2 bg-blue-400/10 hover:bg-blue-400/20 text-blue-400 text-xs font-medium rounded-lg px-4 py-2 transition-colors whitespace-nowrap">
+            <Plus className="w-3 h-3" />150ml
           </button>
-        ))}
-        <button onClick={removeWater} disabled={drank === 0}
-          className="flex items-center justify-center px-3 bg-secondary hover:bg-secondary/80 text-muted-foreground text-xs rounded-xl py-2 transition-colors disabled:opacity-30">
-          <Minus className="w-3.5 h-3.5" />
-        </button>
+          <button onClick={() => addWater(250)}
+            className="flex items-center justify-center gap-2 bg-blue-400/10 hover:bg-blue-400/20 text-blue-400 text-xs font-medium rounded-lg px-4 py-2 transition-colors whitespace-nowrap">
+            <Plus className="w-3 h-3" />250ml
+          </button>
+          <button onClick={() => addWater(500)}
+            className="flex items-center justify-center gap-2 bg-blue-400/10 hover:bg-blue-400/20 text-blue-400 text-xs font-medium rounded-lg px-4 py-2 transition-colors whitespace-nowrap">
+            <Plus className="w-3 h-3" />500ml
+          </button>
+          <button onClick={removeWater} disabled={drank === 0}
+            className="flex items-center justify-center px-4 bg-secondary hover:bg-secondary/80 text-muted-foreground text-xs rounded-lg py-2 transition-colors disabled:opacity-30">
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );
