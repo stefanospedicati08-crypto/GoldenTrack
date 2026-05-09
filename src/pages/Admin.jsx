@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X, Download, Image, Search, ArrowRight, UserX } from "lucide-react";
+import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X, Download, Image, Search, ArrowRight, UserX, RefreshCw } from "lucide-react";
 import AdminNotifications from "../components/AdminNotifications";
 import TrainerRequests from "../components/TrainerRequests";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ export default function Admin() {
   const [gymSettings, setGymSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [reprocessingPlan, setReprocessingPlan] = useState(null);
   const [userSearch, setUserSearch] = useState("");
   const [uploadingWatermark, setUploadingWatermark] = useState(false);
   const [selectedUser, setSelectedUser] = useState("");
@@ -179,6 +180,58 @@ export default function Admin() {
     await base44.entities.User.delete(userId);
     setUsers(prev => prev.filter(u => u.id !== userId));
     toast.success("Account eliminato");
+  }
+
+  async function handleReprocessPlan(plan) {
+    if (!plan.pdf_url) { toast.error("Nessun PDF associato a questa scheda"); return; }
+    setReprocessingPlan(plan.id);
+    const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      file_url: plan.pdf_url,
+      json_schema: {
+        type: "object",
+        properties: {
+          exercises: {
+            type: "array",
+            description: "Lista di tutti gli esercizi presenti nella scheda. IMPORTANTE: nelle schede di allenamento italiane, gli esercizi possono essere raggruppati in SUPERSET contrassegnati con una lettera (A, B, C...). Se due o più esercizi hanno la stessa lettera di fianco (es. entrambi hanno 'A', oppure 'A A', oppure sono nella stessa riga con la lettera A), assegna quella lettera nel campo 'superset_key'. Esercizi senza lettera o con lettere diverse NON sono superset.",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                muscle_group: { type: "string" },
+                sets: { type: "number" },
+                reps: { type: "string" },
+                rest_seconds: { type: "number" },
+                notes: { type: "string", description: "Note aggiuntive del trainer. NON mettere qui la lettera di superset." },
+                superset_key: { type: "string", description: "Lettera maiuscola superset (es. 'A', 'B'). Vuoto se non è superset." },
+                day_label: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (extracted.status === "success" && extracted.output?.exercises) {
+      // Delete old exercises
+      const oldExercises = await base44.entities.Exercise.filter({ plan_id: plan.id });
+      await Promise.all(oldExercises.map(ex => base44.entities.Exercise.delete(ex.id)));
+      // Create new ones
+      const exercisesToCreate = extracted.output.exercises.map((ex, i) => ({
+        plan_id: plan.id,
+        name: ex.name,
+        muscle_group: ex.muscle_group || undefined,
+        sets: ex.sets || undefined,
+        reps: ex.reps || undefined,
+        rest_seconds: ex.rest_seconds || undefined,
+        notes: ex.superset_key ? ex.superset_key.toUpperCase() : (ex.notes || undefined),
+        day_label: ex.day_label || undefined,
+        order_index: i,
+      }));
+      await base44.entities.Exercise.bulkCreate(exercisesToCreate);
+      toast.success(`Scheda ri-elaborata con ${exercisesToCreate.length} esercizi!`);
+    } else {
+      toast.error("Errore durante l'estrazione");
+    }
+    setReprocessingPlan(null);
   }
 
   async function handleDeletePlan(planId) {
@@ -359,6 +412,14 @@ export default function Admin() {
                   <a href={plan.pdf_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
                     <FileText className="w-5 h-5" />
                   </a>
+                )}
+                {plan.pdf_url && (
+                  <Button variant="ghost" size="icon" onClick={() => handleReprocessPlan(plan)} disabled={reprocessingPlan === plan.id}
+                    title="Ri-elabora esercizi dal PDF" className="text-muted-foreground hover:text-foreground hover:bg-secondary">
+                    {reprocessingPlan === plan.id
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <RefreshCw className="w-4 h-4" />}
+                  </Button>
                 )}
                 <Button variant="ghost" size="icon" onClick={() => handleDeletePlan(plan.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                   <Trash2 className="w-4 h-4" />
