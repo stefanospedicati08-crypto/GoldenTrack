@@ -57,7 +57,7 @@ export default function WaterTrackerWidget() {
   if (loading) return null;
 
   return (
-    <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
+    <div className="p-5 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
