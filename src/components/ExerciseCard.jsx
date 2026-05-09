@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LoadChart from "./LoadChart";
 import RestTimer from "./RestTimer";
 
-export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
+export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted, index }) {
   const [expanded, setExpanded] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -24,6 +24,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
   const [noteSaved, setNoteSaved] = useState(!!exercise.athlete_note);
   const [editingNote, setEditingNote] = useState(false);
   const [isWarmup, setIsWarmup] = useState(false);
+  const [deletingLog, setDeletingLog] = useState(null);
 
 
   const isDoubleReps = exercise.reps && exercise.reps.includes("/");
@@ -89,6 +90,13 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
     log.weight_kg = updated;
     // force re-render by triggering onLogSaved with updated log
     onLogSaved({ ...log, weight_kg: updated, _replaceId: log.id });
+  }
+
+  async function handleDeleteLog(log) {
+    setDeletingLog(log.id);
+    await base44.entities.WorkoutLog.delete(log.id);
+    onLogDeleted && onLogDeleted(log.id);
+    setDeletingLog(null);
   }
 
   async function handleSaveNote() {
@@ -198,6 +206,15 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
                                     className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
                                   >
                                     <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteLog(log)}
+                                    disabled={deletingLog === log.id}
+                                    className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+                                  >
+                                    {deletingLog === log.id
+                                      ? <div className="w-3.5 h-3.5 border-2 border-destructive/20 border-t-destructive rounded-full animate-spin" />
+                                      : <Trash2 className="w-3.5 h-3.5" />}
                                   </button>
                                 </>
                               )}
