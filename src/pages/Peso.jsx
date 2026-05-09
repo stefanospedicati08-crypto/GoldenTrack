@@ -14,8 +14,8 @@ export default function Peso() {
   const [newWeight, setNewWeight] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
-  const [showAddWeight, setShowAddWeight] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showAddWeight, setShowAddWeight] = useState(true);
+  const [showHistoryModal, setShowHistoryModal] = useState(true);
   const [showResetMenu, setShowResetMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
