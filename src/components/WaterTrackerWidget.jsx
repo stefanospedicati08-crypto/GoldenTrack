@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Droplets, Plus, Minus } from "lucide-react";
+import { Droplets, Plus, Minus, Settings, Check } from "lucide-react";
 
 export default function WaterTrackerWidget() {
   const [log, setLog] = useState(null);
-  const [goal, setGoalState] = useState(2500);
+  const [goal, setGoal] = useState(2500);
   const [loading, setLoading] = useState(true);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState("");
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     async function load() {
       const user = await base44.auth.me();
+      const savedGoal = user.water_goal_ml || 2500;
+      setGoal(savedGoal);
+      setGoalInput(String(savedGoal));
       const logs = await base44.entities.WaterLog.filter({ created_by: user.email, date: today }, "-created_date", 1);
       setLog(logs[0] || null);
-      if (logs[0]?.goal_ml) setGoalState(logs[0].goal_ml);
       setLoading(false);
     }
     load();
@@ -25,7 +29,7 @@ export default function WaterTrackerWidget() {
   async function addWater(ml) {
     const newMl = drank + ml;
     if (log?.id) {
-      const updated = await base44.entities.WaterLog.update(log.id, { ml_drank: newMl });
+      const updated = await base44.entities.WaterLog.update(log.id, { ml_drank: newMl, goal_ml: goal });
       setLog(updated);
     } else {
       const created = await base44.entities.WaterLog.create({ date: today, ml_drank: newMl, goal_ml: goal });
@@ -39,6 +43,17 @@ export default function WaterTrackerWidget() {
     setLog(updated);
   }
 
+  async function saveGoal() {
+    const newGoal = Number(goalInput);
+    if (!newGoal || newGoal < 100) return;
+    setGoal(newGoal);
+    await base44.auth.updateMe({ water_goal_ml: newGoal });
+    if (log?.id) {
+      await base44.entities.WaterLog.update(log.id, { goal_ml: newGoal });
+    }
+    setEditingGoal(false);
+  }
+
   if (loading) return null;
 
   return (
@@ -48,7 +63,30 @@ export default function WaterTrackerWidget() {
           <Droplets className="w-5 h-5 text-blue-400" />
           <h3 className="font-heading font-semibold">Idratazione</h3>
         </div>
-        <span className="text-sm font-bold text-blue-400">{drank} / {goal} ml</span>
+        <div className="flex items-center gap-2">
+          {editingGoal ? (
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                value={goalInput}
+                onChange={e => setGoalInput(e.target.value)}
+                className="w-20 text-xs h-7 px-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                placeholder="ml"
+                autoFocus
+              />
+              <button onClick={saveGoal} className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Check className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <span className="text-sm font-bold text-blue-400">{drank} / {goal} ml</span>
+              <button onClick={() => setEditingGoal(true)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
+                <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
       <div className="h-2.5 bg-secondary rounded-full overflow-hidden">
         <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />

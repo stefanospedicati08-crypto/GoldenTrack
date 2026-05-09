@@ -9,6 +9,8 @@ import PullToRefresh from "../components/PullToRefresh";
 import WeeklyMonthProgress from "../components/WeeklyMonthProgress";
 import ProfileCompleteModal from "../components/ProfileCompleteModal";
 import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
+import DashboardCustomizer from "../components/DashboardCustomizer";
+import { FileText } from "lucide-react";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -18,6 +20,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [watermarkUrl, setWatermarkUrl] = useState(null);
+  const [widgets, setWidgets] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("dashboard_widgets") || '{"water":true,"meal":true}'); } catch { return { water: true, meal: true }; }
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,6 +54,11 @@ export default function Dashboard() {
   }
 
   const activePlan = plans[0];
+
+  function handleWidgetsChange(newWidgets) {
+    setWidgets(newWidgets);
+    localStorage.setItem("dashboard_widgets", JSON.stringify(newWidgets));
+  }
 
   async function handleRefresh() {
     setLoading(true);
@@ -105,6 +115,11 @@ export default function Dashboard() {
         ))}
       </AnimatePresence>
 
+      {/* Header personalizza */}
+      <div className="flex justify-end -mt-4">
+        <DashboardCustomizer widgets={widgets} onChange={handleWidgetsChange} />
+      </div>
+
       {/* Scheda Corrente */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -126,7 +141,19 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-
+      {/* Piano Alimentare */}
+      {widgets.meal && user?.meal_plan_url && (
+        <a href={user.meal_plan_url} target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-3 bg-card rounded-2xl border border-border p-4 hover:border-accent/40 transition-colors">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+            <FileText className="w-5 h-5 text-accent" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Piano Alimentare</p>
+            <p className="font-semibold">Visualizza il tuo piano</p>
+          </div>
+        </a>
+      )}
 
       {/* Progresso mensile (4 settimane) */}
       <div className="bg-card rounded-2xl border border-border p-6">
@@ -134,7 +161,7 @@ export default function Dashboard() {
       </div>
 
       {/* Acqua */}
-      <WaterTrackerWidget />
+      {widgets.water && <WaterTrackerWidget />}
     </div>
     </PullToRefresh>
   );
