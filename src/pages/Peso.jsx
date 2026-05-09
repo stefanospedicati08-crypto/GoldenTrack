@@ -153,18 +153,62 @@ export default function Peso() {
         )}
       </AnimatePresence>
 
-      {/* Peso Attuale — doppio click apre storico */}
+      {/* Peso Attuale — cerchio */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         onDoubleClick={() => setShowHistoryModal(true)}
-        className="bg-card rounded-2xl border border-border p-5 cursor-pointer select-none"
+        className="flex justify-center cursor-pointer"
+        title="Doppio click per storico"
       >
-        <p className="text-sm text-muted-foreground">Peso Attuale</p>
-        <p className="text-3xl font-heading font-bold mt-1">{latest || "—"}</p>
-        <p className="text-xs text-muted-foreground">kg</p>
-        <p className="text-[10px] text-muted-foreground/40 mt-1">doppio click per storico</p>
+        <div className="w-40 h-40 rounded-full border-4 border-primary bg-primary/5 flex flex-col items-center justify-center">
+          <p className="text-sm text-muted-foreground mb-1">Peso Attuale</p>
+          <p className="text-4xl font-heading font-bold text-primary">{latest || "—"}</p>
+          <p className="text-xs text-muted-foreground mt-1">kg</p>
+        </div>
       </motion.div>
+
+      {/* Variazione + Obiettivo — cerchi */}
+      <div className="flex items-center justify-center gap-8">
+        {/* Variazione cerchio */}
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <div className="w-32 h-32 rounded-full border-4 border-chart-3/40 bg-chart-3/5 flex flex-col items-center justify-center">
+            <p className="text-xs text-muted-foreground mb-1">Variazione</p>
+            <div className="flex items-center gap-1">
+              {diff !== null ? (
+                <>
+                  {Number(diff) > 0 ? <TrendingUp className="w-4 h-4 text-chart-3" /> : Number(diff) < 0 ? <TrendingDown className="w-4 h-4 text-accent" /> : <Minus className="w-4 h-4 text-muted-foreground" />}
+                  <span className="text-2xl font-heading font-bold">{Number(diff) > 0 ? "+" : ""}{diff}</span>
+                </>
+              ) : <span className="text-2xl font-heading font-bold">—</span>}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">kg</p>
+          </div>
+        </motion.div>
+
+        {/* Obiettivo cerchio */}
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <div className="w-32 h-32 rounded-full border-4 border-accent/40 bg-accent/5 flex flex-col items-center justify-center relative">
+            <button onClick={() => setEditingGoal(!editingGoal)} className="absolute top-2 right-2 p-1 rounded-lg hover:bg-secondary/50 transition-colors">
+              <Pencil className="w-3 h-3 text-muted-foreground" />
+            </button>
+            {editingGoal ? (
+              <div className="flex flex-col items-center gap-1.5 w-full px-2">
+                <Input type="number" placeholder="kg" value={goal} onChange={e => setGoal(e.target.value)} className="h-7 rounded-lg text-xs text-center" />
+                <Button size="sm" onClick={handleSaveGoal} disabled={savingGoal} className="h-6 px-2 text-[10px] rounded-lg">
+                  {savingGoal ? "..." : <Check className="w-2.5 h-2.5" />}
+                </Button>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground">Obiettivo</p>
+                <p className="text-2xl font-heading font-bold text-accent">{weightGoal || "—"}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">kg</p>
+              </>
+            )}
+          </div>
+        </motion.div>
+      </div>
 
       {/* Andamento Peso — visible when data exists */}
       {chartData.length > 1 && (
@@ -191,47 +235,6 @@ export default function Peso() {
           </ResponsiveContainer>
         </motion.div>
       )}
-
-      {/* Variazione + Obiettivo */}
-      <div className="grid grid-cols-2 gap-4">
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-2xl border border-border p-5">
-          <p className="text-sm text-muted-foreground">Variazione</p>
-          <div className="flex items-center gap-2 mt-1">
-            {diff !== null ? (
-              <>
-                {Number(diff) > 0 ? <TrendingUp className="w-5 h-5 text-chart-3" /> : Number(diff) < 0 ? <TrendingDown className="w-5 h-5 text-accent" /> : <Minus className="w-5 h-5 text-muted-foreground" />}
-                <span className="text-2xl font-heading font-bold">{Number(diff) > 0 ? "+" : ""}{diff}</span>
-              </>
-            ) : <span className="text-2xl font-heading font-bold">—</span>}
-          </div>
-          <p className="text-xs text-muted-foreground">kg dall'ultima</p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-2xl border border-border p-5">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-sm text-muted-foreground">Obiettivo</p>
-            <button onClick={() => setEditingGoal(!editingGoal)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
-              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-            </button>
-          </div>
-          {editingGoal ? (
-            <div className="space-y-2">
-              <Input type="number" placeholder="kg" value={goal} onChange={e => setGoal(e.target.value)} className="h-8 rounded-lg text-sm" />
-              <Button size="sm" onClick={handleSaveGoal} disabled={savingGoal} className="h-7 rounded-lg px-3 text-xs w-full">
-                {savingGoal ? "..." : <><Check className="w-3 h-3 mr-1" />Salva</>}
-              </Button>
-            </div>
-          ) : (
-            <>
-              <p className="text-3xl font-heading font-bold">{weightGoal || "—"}</p>
-              <p className="text-xs text-muted-foreground">kg obiettivo</p>
-            </>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Hidden file input */}
-      <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={e => handlePhotoUpload(e, photoForId)} />
 
       {/* Add weight slide-up */}
       <AnimatePresence>
@@ -298,6 +301,9 @@ export default function Peso() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Hidden file input */}
+      <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={e => handlePhotoUpload(e, photoForId)} />
 
       {/* FAB */}
       <button onClick={() => setShowAddWeight(true)}
