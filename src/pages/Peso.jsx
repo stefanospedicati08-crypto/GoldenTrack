@@ -156,10 +156,49 @@ export default function Peso() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-5">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          onDoubleClick={() => setShowHistory(v => !v)}
+          className="bg-card rounded-2xl border border-border p-5 cursor-pointer select-none"
+        >
           <p className="text-sm text-muted-foreground">Peso Attuale</p>
           <p className="text-3xl font-heading font-bold mt-1">{latest || "—"}</p>
           <p className="text-xs text-muted-foreground">kg</p>
+          <p className="text-[10px] text-muted-foreground/50 mt-1">doppio click per {showHistory ? "chiudere" : "storico"}</p>
+          <AnimatePresence>
+            {showHistory && weights.length > 0 && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <div className="mt-3 border-t border-border divide-y divide-border">
+                  {weights.slice(0, 30).map((w) => (
+                    <div key={w.id} className="flex items-center gap-4 py-3">
+                      <div className="flex-1">
+                        <p className="font-semibold">{w.weight_kg} kg</p>
+                        <p className="text-sm text-muted-foreground">{moment(w.date).format("DD MMMM YYYY")}</p>
+                        {w.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{w.notes}</p>}
+                      </div>
+                      {w.photo_url && (
+                        <button onClick={e => { e.stopPropagation(); setExpandedPhoto(w.photo_url); }} className="shrink-0">
+                          <img src={w.photo_url} alt="forma fisica" className="w-12 h-12 rounded-xl object-cover border border-border" />
+                        </button>
+                      )}
+                      {!w.photo_url && (
+                        <button onClick={e => { e.stopPropagation(); setPhotoForId(w.id); photoInputRef.current?.click(); }} disabled={uploadingPhoto === w.id}
+                          className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0 text-muted-foreground">
+                          {uploadingPhoto === w.id
+                            ? <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                            : <Camera className="w-4 h-4" />}
+                        </button>
+                      )}
+                      <button onClick={e => { e.stopPropagation(); handleDelete(w.id); }} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive transition-colors shrink-0">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-2xl border border-border p-5">
           <p className="text-sm text-muted-foreground">Variazione</p>
@@ -183,7 +222,7 @@ export default function Peso() {
           {editingGoal ? (
             <div className="space-y-2">
               <Input type="number" placeholder="kg" value={goal} onChange={e => setGoal(e.target.value)} className="h-8 rounded-lg text-sm" />
-              <Input type="date" value={goalDate} onChange={e => setGoalDate(e.target.value)} className="h-8 rounded-lg text-sm" />
+    
               <Button size="sm" onClick={handleSaveGoal} disabled={savingGoal} className="h-7 rounded-lg px-3 text-xs w-full">
                 {savingGoal ? "..." : <><Check className="w-3 h-3 mr-1" />Salva</>}
               </Button>
@@ -191,7 +230,7 @@ export default function Peso() {
           ) : (
             <>
               <p className="text-3xl font-heading font-bold">{user?.weight_goal ? `${user.weight_goal}` : "—"}</p>
-              <p className="text-xs text-muted-foreground">{user?.weight_goal_date ? `entro ${moment(user.weight_goal_date).format("D MMM YY")}` : "kg obiettivo"}</p>
+              <p className="text-xs text-muted-foreground">kg obiettivo</p>
             </>
           )}
         </motion.div>
@@ -223,58 +262,6 @@ export default function Peso() {
                       <Area type="monotone" dataKey="kg" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#weightGrad)" dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* History - collapsible, opens on double click */}
-      {weights.length > 0 && (
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
-          <button
-            onDoubleClick={() => setShowHistory(v => !v)}
-            className="w-full flex items-center justify-between p-5 select-none"
-          >
-            <div>
-              <h2 className="font-heading font-semibold">Storico Pesate</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Doppio click per {showHistory ? "chiudere" : "aprire"}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{weights.length} misurazioni</span>
-              {showHistory ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-            </div>
-          </button>
-          <AnimatePresence>
-            {showHistory && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                <div className="border-t border-border divide-y divide-border">
-                  {weights.slice(0, 30).map((w) => (
-                    <div key={w.id} className="flex items-center gap-4 px-5 py-3">
-                      <div className="flex-1">
-                        <p className="font-semibold">{w.weight_kg} kg</p>
-                        <p className="text-sm text-muted-foreground">{moment(w.date).format("DD MMMM YYYY")}</p>
-                        {w.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{w.notes}</p>}
-                      </div>
-                      {w.photo_url && (
-                        <button onClick={() => setExpandedPhoto(w.photo_url)} className="shrink-0">
-                          <img src={w.photo_url} alt="forma fisica" className="w-12 h-12 rounded-xl object-cover border border-border" />
-                        </button>
-                      )}
-                      {!w.photo_url && (
-                        <button onClick={() => { setPhotoForId(w.id); photoInputRef.current?.click(); }} disabled={uploadingPhoto === w.id}
-                          className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0 text-muted-foreground">
-                          {uploadingPhoto === w.id
-                            ? <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                            : <Camera className="w-4 h-4" />}
-                        </button>
-                      )}
-                      <button onClick={() => handleDelete(w.id)} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive transition-colors shrink-0">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
                 </div>
               </motion.div>
             )}
