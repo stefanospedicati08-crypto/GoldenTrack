@@ -155,6 +155,29 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Acqua + Integratori */}
+      <div className="flex items-center gap-3">
+        {widgets.water && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex-1 rounded-l-2xl rounded-r-none overflow-hidden"
+          >
+            <WaterTrackerWidget />
+          </motion.div>
+        )}
+        {widgets.supplements && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="flex-1 rounded-r-2xl rounded-l-none overflow-hidden"
+          >
+            <SupplementsWidget supplements={supplements} />
+          </motion.div>
+        )}
+      </div>
+
       {/* Piano Alimentare */}
       {widgets.meal && user?.meal_plan_url && (
         <a href={user.meal_plan_url} target="_blank" rel="noopener noreferrer"
@@ -170,11 +193,7 @@ export default function Dashboard() {
       )}
 
 
-      {/* Acqua */}
-      {widgets.water && <WaterTrackerWidget />}
 
-      {/* Integratori */}
-      {widgets.supplements && <SupplementsWidget supplements={supplements} />}
     </div>
     </PullToRefresh>
   );
