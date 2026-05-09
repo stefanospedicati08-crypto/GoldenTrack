@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Plus, Square } from "lucide-react";
+import { Square } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 function playBeep() {
@@ -23,6 +23,10 @@ function playBeep() {
   } catch (e) {}
 }
 
+// Oval SVG perimeter approximation
+const OW = 140, OH = 56, RX = 28, RY = 27;
+const OVAL_PERIMETER = 2 * Math.PI * Math.sqrt((RX * RX + RY * RY) / 2);
+
 export default function RestTimer({ defaultSeconds = 90, onClose }) {
   const [total] = useState(defaultSeconds);
   const [remaining, setRemaining] = useState(defaultSeconds);
@@ -40,7 +44,6 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
             setRunning(false);
             if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
             playBeep();
-            // Auto-disappear after 2s
             setTimeout(() => {
               setVisible(false);
               setTimeout(onClose, 400);
@@ -70,63 +73,78 @@ export default function RestTimer({ defaultSeconds = 90, onClose }) {
   const min = Math.floor(remaining / 60);
   const sec = remaining % 60;
   const isDone = remaining === 0;
-
-  // Oval SVG dimensions
-  const W = 200, H = 80, rx = 40, ry = 38;
-  const perimeter = 2 * Math.PI * Math.sqrt((rx * rx + ry * ry) / 2);
+  const dashOffset = (1 - progress) * OVAL_PERIMETER;
 
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, y: 60, x: "-50%" }}
+          initial={{ opacity: 0, y: 80, x: "-50%" }}
           animate={{ opacity: 1, y: 0, x: "-50%" }}
-          exit={{ opacity: 0, y: 60, x: "-50%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 28 }}
+          exit={{ opacity: 0, y: 80, x: "-50%" }}
+          transition={{ type: "spring", stiffness: 320, damping: 30 }}
           className="fixed bottom-28 lg:bottom-8 left-1/2 z-50"
-          style={{ width: "min(300px, calc(100vw - 32px))" }}
         >
-          <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-full shadow-2xl px-6 py-3 flex items-center gap-4">
-            {/* Oval progress ring */}
-            <div className="relative shrink-0" style={{ width: 52, height: 52 }}>
-              <svg width="52" height="52" viewBox="0 0 52 52" className="-rotate-90">
-                <circle cx="26" cy="26" r="22" fill="none" stroke="hsl(var(--border))" strokeWidth="3.5" />
-                <circle
-                  cx="26" cy="26" r="22" fill="none"
+          {/* Outer pill container */}
+          <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-full shadow-2xl px-5 py-3 flex items-center gap-4"
+            style={{ minWidth: 260 }}>
+
+            {/* Oval SVG progress ring */}
+            <div className="relative shrink-0" style={{ width: OW, height: OH }}>
+              <svg width={OW} height={OH} viewBox={`0 0 ${OW} ${OH}`} className="-rotate-90">
+                {/* Track */}
+                <ellipse
+                  cx={OW / 2} cy={OH / 2}
+                  rx={RX} ry={RY}
+                  fill="none"
+                  stroke="hsl(var(--border))"
+                  strokeWidth="3.5"
+                />
+                {/* Progress */}
+                <ellipse
+                  cx={OW / 2} cy={OH / 2}
+                  rx={RX} ry={RY}
+                  fill="none"
                   stroke={isDone ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-                  strokeWidth="3.5" strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 22}
-                  strokeDashoffset={(1 - progress) * 2 * Math.PI * 22}
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeDasharray={OVAL_PERIMETER}
+                  strokeDashoffset={dashOffset}
                   style={{ transition: "stroke-dashoffset 1s linear" }}
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs font-bold font-heading text-foreground">
+              {/* Time label inside oval */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-sm font-bold font-heading text-foreground leading-none">
                   {isDone ? "✓" : `${min}:${sec.toString().padStart(2, "0")}`}
                 </span>
+                {!isDone && (
+                  <span className="text-[9px] text-muted-foreground mt-0.5 uppercase tracking-widest">recupero</span>
+                )}
               </div>
             </div>
 
-            {/* Text + add buttons */}
-            <div className="flex-1 min-w-0">
+            {/* Right side: label + quick-add buttons */}
+            <div className="flex-1 min-w-0 space-y-1.5">
               <p className="text-xs font-semibold truncate">
-                {isDone ? "Recupero completato! 💪" : "Recupero..."}
+                {isDone ? "Recupero completato! 💪" : "Recupero in corso…"}
               </p>
               {!isDone && (
-                <div className="flex gap-1 mt-1">
-                  <button onClick={() => addTime(15)} className="text-[10px] bg-secondary hover:bg-secondary/80 px-2 py-0.5 rounded-full transition-colors">
-                    +15s
-                  </button>
-                  <button onClick={() => addTime(30)} className="text-[10px] bg-secondary hover:bg-secondary/80 px-2 py-0.5 rounded-full transition-colors">
-                    +30s
-                  </button>
+                <div className="flex gap-1.5">
+                  {[15, 30].map(s => (
+                    <button key={s} onClick={() => addTime(s)}
+                      className="text-[10px] bg-secondary hover:bg-secondary/80 px-2.5 py-1 rounded-full transition-colors font-medium">
+                      +{s}s
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Stop / close */}
+            {/* Stop button */}
             {!isDone && (
-              <button onClick={stopTimer} className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors">
+              <button onClick={stopTimer}
+                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors">
                 <Square className="w-3.5 h-3.5 fill-current" />
               </button>
             )}
