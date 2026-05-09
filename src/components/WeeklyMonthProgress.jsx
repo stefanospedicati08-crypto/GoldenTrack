@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import ProgressCircle from "./ProgressCircle";
 import WeekSessionModal from "./WeekSessionModal";
@@ -35,14 +35,55 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
   const [selectedWeek, setSelectedWeek] = useState(null);
   const currentWeekIdx = weeks.findIndex(w => today >= w.start && today <= w.end);
   const [focusedIdx, setFocusedIdx] = useState(currentWeekIdx >= 0 ? currentWeekIdx : 0);
+  const [dragging, setDragging] = useState(false);
+  const dragStartX = useRef(0);
+  const dragVel = useRef(0);
 
   function getItemStyle(i) {
     const diff = i - focusedIdx;
     const absDiff = Math.abs(diff);
-    if (absDiff === 0) return { scale: 1, opacity: 1, y: 0, z: 10 };
-    if (absDiff === 1) return { scale: 0.72, opacity: 0.45, y: 14, z: 5 };
-    return { scale: 0.52, opacity: 0.18, y: 26, z: 1 };
+    if (absDiff === 0) return { scale: 1.35, opacity: 1, y: 0, z: 10 };
+    if (absDiff === 1) return { scale: 0.68, opacity: 0.4, y: 16, z: 5 };
+    return { scale: 0.45, opacity: 0.12, y: 32, z: 1 };
   }
+
+  function handleDragStart(e) {
+    setDragging(true);
+    dragStartX.current = e.type.includes('mouse') ? e.clientX : e.touches?.[0]?.clientX || 0;
+    dragVel.current = 0;
+  }
+
+  function handleDragMove(e) {
+    if (!dragging) return;
+    const currentX = e.type.includes('mouse') ? e.clientX : e.touches?.[0]?.clientX || 0;
+    const delta = currentX - dragStartX.current;
+    dragVel.current = delta;
+  }
+
+  function handleDragEnd() {
+    setDragging(false);
+    const threshold = 30;
+    if (Math.abs(dragVel.current) > threshold) {
+      if (dragVel.current > 0 && focusedIdx > 0) {
+        setFocusedIdx(focusedIdx - 1);
+      } else if (dragVel.current < 0 && focusedIdx < weeks.length - 1) {
+        setFocusedIdx(focusedIdx + 1);
+      }
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener('touchmove', handleDragMove);
+    document.addEventListener('touchend', handleDragEnd);
+    return () => {
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener('touchmove', handleDragMove);
+      document.removeEventListener('touchend', handleDragEnd);
+    };
+  }, [focusedIdx, dragging]);
 
   const circleSize = compact ? 54 : 82;
   const containerHeight = compact ? 110 : 160;
@@ -70,11 +111,11 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
               return (
                 <motion.button
                   key={i}
+                  onMouseDown={handleDragStart}
+                  onTouchStart={handleDragStart}
                   onClick={() => {
-                    if (i === focusedIdx && !isFuture) {
+                    if (i === focusedIdx && !isFuture && Math.abs(dragVel.current) < 10) {
                       setSelectedWeek({ ...week, sessions: weekSessions });
-                    } else {
-                      setFocusedIdx(i);
                     }
                   }}
                   disabled={isFuture && !isFocused}
@@ -84,9 +125,9 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
                     opacity: style.opacity,
                     y: style.y,
                   }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  style={{ position: "absolute", zIndex: style.z }}
-                  className={`flex flex-col items-center ${compact ? "gap-1" : "gap-2"} ${isFuture ? "cursor-default" : "cursor-pointer"}`}
+                  transition={{ type: "spring", stiffness: 350, damping: 35 }}
+                  style={{ position: "absolute", zIndex: style.z, userSelect: "none" }}
+                  className={`flex flex-col items-center ${compact ? "gap-1" : "gap-2"} ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
                 >
                   <p className={`${compact ? "text-[9px]" : "text-xs"} font-bold uppercase tracking-widest ${
                     isFocused && isCurrent ? "text-primary" : isFocused ? "text-foreground" : "text-muted-foreground"
@@ -101,19 +142,7 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
               );
             })}
           </div>
-          {/* Nav arrows */}
-          {focusedIdx > 0 && (
-            <button onClick={() => setFocusedIdx(f => f - 1)}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center text-muted-foreground/60 hover:text-foreground transition-colors">
-              ‹
-            </button>
-          )}
-          {focusedIdx < weeks.length - 1 && (
-            <button onClick={() => setFocusedIdx(f => f + 1)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center text-muted-foreground/60 hover:text-foreground transition-colors">
-              ›
-            </button>
-          )}
+
         </div>
       </div>
 
