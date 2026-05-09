@@ -114,7 +114,7 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
               </span>
             </div>
             <p className="font-semibold mt-0.5">{exercises.map(e => e.name).join(" + ")}</p>
-            <p className="text-sm text-muted-foreground">{totalSets} serie · senza recupero tra gli esercizi</p>
+            <p className="text-sm text-muted-foreground">{totalSets} serie · esegui entrambi, poi recupera</p>
           </div>
           {allDone && (
             <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-accent/10 text-accent">✓ Completato</span>
