@@ -40,7 +40,10 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
   const dragVel = useRef(0);
 
   function getItemStyle(i) {
-    const diff = i - focusedIdx;
+    let diff = i - focusedIdx;
+    if (Math.abs(diff) > weeks.length / 2) {
+      diff = diff > 0 ? diff - weeks.length : diff + weeks.length;
+    }
     const absDiff = Math.abs(diff);
     if (absDiff === 0) return { scale: 1.35, opacity: 1, y: 0, z: 10 };
     if (absDiff === 1) return { scale: 0.68, opacity: 0.4, y: 16, z: 5 };
@@ -64,10 +67,10 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
     setDragging(false);
     const threshold = 30;
     if (Math.abs(dragVel.current) > threshold) {
-      if (dragVel.current > 0 && focusedIdx > 0) {
-        setFocusedIdx(focusedIdx - 1);
-      } else if (dragVel.current < 0 && focusedIdx < weeks.length - 1) {
-        setFocusedIdx(focusedIdx + 1);
+      if (dragVel.current > 0) {
+        setFocusedIdx((focusedIdx - 1 + weeks.length) % weeks.length);
+      } else if (dragVel.current < 0) {
+        setFocusedIdx((focusedIdx + 1) % weeks.length);
       }
     }
   }
