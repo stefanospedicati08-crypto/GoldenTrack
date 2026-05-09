@@ -126,24 +126,32 @@ export default function Dashboard() {
         ))}
       </AnimatePresence>
 
-      {/* Scheda Corrente */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        onClick={() => activePlan && navigate(`/schede/${activePlan.id}`)}
-        className={`flex flex-col items-center justify-center ${activePlan ? "cursor-pointer" : ""}`}
-      >
-        <div className={`relative w-52 h-52 rounded-full flex flex-col items-center justify-center border-4 transition-all ${
-          activePlan ? "border-primary bg-primary/10 hover:bg-primary/20 shadow-lg shadow-primary/20" : "border-border bg-card"
-        }`}>
-          <ClipboardList className="w-8 h-8 text-primary mb-2" />
-          <p className="text-xs text-muted-foreground uppercase tracking-widest">Scheda Corrente</p>
-          <p className="text-lg font-heading font-bold mt-1 text-center px-4 leading-tight">{activePlan ? activePlan.title : "—"}</p>
-          {activePlan?.description && (
-            <p className="text-xs text-muted-foreground mt-1 text-center px-6 line-clamp-2">{activePlan.description}</p>
-          )}
-        </div>
-      </motion.div>
+      {/* Scheda Corrente + Progresso Mensile */}
+      <div className="flex items-center justify-center gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => activePlan && navigate(`/schede/${activePlan.id}`)}
+          className={`flex flex-col items-center justify-center ${activePlan ? "cursor-pointer" : ""}`}
+        >
+          <div className={`relative w-36 h-36 rounded-full flex flex-col items-center justify-center border-4 transition-all ${
+            activePlan ? "border-primary bg-primary/10 hover:bg-primary/20 shadow-lg shadow-primary/20" : "border-border bg-card"
+          }`}>
+            <ClipboardList className="w-6 h-6 text-primary mb-1" />
+            <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Scheda</p>
+            <p className="text-sm font-heading font-bold mt-0.5 text-center px-2 leading-tight line-clamp-2">{activePlan ? activePlan.title : "—"}</p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="bg-card rounded-2xl border border-border p-3 flex-1"
+        >
+          <WeeklyMonthProgress sessions={sessions} compact />
+        </motion.div>
+      </div>
 
       {/* Piano Alimentare */}
       {widgets.meal && user?.meal_plan_url && (
@@ -159,10 +167,6 @@ export default function Dashboard() {
         </a>
       )}
 
-      {/* Progresso mensile (4 settimane) */}
-      <div className="bg-card rounded-2xl border border-border p-6">
-        <WeeklyMonthProgress sessions={sessions} />
-      </div>
 
       {/* Acqua */}
       {widgets.water && <WaterTrackerWidget />}

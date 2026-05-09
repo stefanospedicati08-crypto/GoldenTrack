@@ -29,7 +29,7 @@ function getMonthWeeks() {
   return weeks;
 }
 
-export default function WeeklyMonthProgress({ sessions }) {
+export default function WeeklyMonthProgress({ sessions, compact = false }) {
   const weeks = getMonthWeeks();
   const today = new Date().toISOString().split("T")[0];
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -37,8 +37,8 @@ export default function WeeklyMonthProgress({ sessions }) {
   return (
     <>
       <div className="space-y-3">
-        <h3 className="font-heading font-semibold text-lg">Progresso Mensile</h3>
-        <div className="flex items-center gap-6 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory px-1" ref={el => el && (el.style.msOverflowStyle = 'none')}>
+        {!compact && <h3 className="font-heading font-semibold text-lg">Progresso Mensile</h3>}
+        <div className={`flex items-center overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory ${compact ? "gap-3 justify-around" : "gap-6 px-1 pb-3"}`} ref={el => el && (el.style.msOverflowStyle = 'none')}>
           {weeks.map((week, i) => {
             const weekSessions = sessions.filter(s => s.date >= week.start && s.date <= week.end);
             const uniqueDays = [...new Set(weekSessions.map(s => s.date))].length;
@@ -54,12 +54,12 @@ export default function WeeklyMonthProgress({ sessions }) {
                   isFuture ? "opacity-25 cursor-default" : "cursor-pointer hover:scale-105 active:scale-95"
                 }`}
               >
-                <p className={`text-xs font-semibold uppercase tracking-widest ${
+                <p className={`${compact ? "text-[9px]" : "text-xs"} font-semibold uppercase tracking-widest ${
                   isCurrent ? "text-primary" : "text-muted-foreground"
                 }`}>
-                  {week.label}
+                  {compact ? `S${i+1}` : week.label}
                 </p>
-                <ProgressCircle completed={uniqueDays} total={SESSIONS_PER_WEEK} size={88} />
+                <ProgressCircle completed={uniqueDays} total={SESSIONS_PER_WEEK} size={compact ? 52 : 88} />
                 {isCurrent && (
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 )}
