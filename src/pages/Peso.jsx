@@ -188,25 +188,12 @@ export default function Peso() {
 
         {/* Obiettivo cerchio */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="w-32 h-32 rounded-full border-4 border-accent/40 bg-accent/5 flex flex-col items-center justify-center relative">
-            <button onClick={() => setEditingGoal(!editingGoal)} className="absolute top-2 right-2 p-1 rounded-lg hover:bg-secondary/50 transition-colors">
-              <Pencil className="w-3 h-3 text-muted-foreground" />
-            </button>
-            {editingGoal ? (
-              <div className="flex flex-col items-center gap-1.5 w-full px-2">
-                <Input type="number" placeholder="kg" value={goal} onChange={e => setGoal(e.target.value)} className="h-7 rounded-lg text-xs text-center" />
-                <Button size="sm" onClick={handleSaveGoal} disabled={savingGoal} className="h-6 px-2 text-[10px] rounded-lg">
-                  {savingGoal ? "..." : <Check className="w-2.5 h-2.5" />}
-                </Button>
-              </div>
-            ) : (
-              <>
-                <p className="text-xs text-muted-foreground">Obiettivo</p>
-                <p className="text-2xl font-heading font-bold text-accent">{weightGoal || "—"}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">kg</p>
-              </>
-            )}
-          </div>
+          <button onClick={() => setEditingGoal(true)} className="w-32 h-32 rounded-full border-4 border-accent/40 bg-accent/5 flex flex-col items-center justify-center relative hover:bg-accent/10 transition-colors">
+            <Pencil className="absolute top-2 right-2 w-3 h-3 text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Obiettivo</p>
+            <p className="text-2xl font-heading font-bold text-accent">{weightGoal || "—"}</p>
+            <p className="text-[10px] text-muted-foreground mt-1">kg</p>
+          </button>
         </motion.div>
       </div>
 
@@ -317,6 +304,31 @@ export default function Peso() {
         className="fixed bottom-24 right-4 lg:bottom-6 lg:right-8 z-40 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-xl flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all">
         <Plus className="w-6 h-6" />
       </button>
+
+      {/* Goal modal */}
+      <AnimatePresence>
+        {editingGoal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setEditingGoal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card rounded-2xl border border-border p-6 w-full max-w-sm shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-lg">Obiettivo Peso</h2>
+                <button onClick={() => setEditingGoal(false)} className="p-1.5 rounded-xl hover:bg-secondary transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <Input type="number" placeholder="es. 75 kg" value={goal} onChange={e => setGoal(e.target.value)} className="h-11 rounded-xl" autoFocus />
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" onClick={() => setEditingGoal(false)} className="rounded-xl">Annulla</Button>
+                <Button onClick={handleSaveGoal} disabled={savingGoal} className="rounded-xl">
+                  {savingGoal ? "Salvataggio..." : "Salva Obiettivo"}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Photo lightbox */}
       <AnimatePresence>
