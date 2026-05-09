@@ -38,7 +38,7 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
     <>
       <div className="space-y-3">
         {!compact && <h3 className="font-heading font-semibold text-lg">Progresso Mensile</h3>}
-        <div className={`flex items-center overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory ${compact ? "gap-3 justify-around" : "gap-6 px-1 pb-3"}`} ref={el => el && (el.style.msOverflowStyle = 'none')}>
+        <div className={`flex items-center overflow-x-auto scrollbar-none snap-x snap-mandatory ${compact ? "gap-2 pb-1" : "gap-6 px-1 pb-3"}`} ref={el => el && (el.style.msOverflowStyle = 'none')}>
           {weeks.map((week, i) => {
             const weekSessions = sessions.filter(s => s.date >= week.start && s.date <= week.end);
             const uniqueDays = [...new Set(weekSessions.map(s => s.date))].length;
