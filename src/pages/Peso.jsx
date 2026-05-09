@@ -242,7 +242,7 @@ export default function Peso() {
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddWeight(false)}>
             <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-5 w-full sm:max-w-sm shadow-2xl space-y-3">
+              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-5 w-full sm:max-w-sm shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto">
               <h2 className="font-heading font-semibold">Registra Peso</h2>
               <Input type="number" step="0.1" placeholder="es. 75.5 kg" value={newWeight} onChange={e => setNewWeight(e.target.value)} className="h-11 rounded-xl" autoFocus />
               <Input placeholder="Note (opzionale)" value={notes} onChange={e => setNotes(e.target.value)} className="h-11 rounded-xl" />
