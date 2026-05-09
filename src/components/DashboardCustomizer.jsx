@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Settings, X, Droplets, FileText, Activity } from "lucide-react";
+import { Settings, X, Droplets, FileText, Activity, Pill } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const WIDGETS = [
   { key: "water", label: "Acqua giornaliera", icon: Droplets, color: "text-blue-400" },
   { key: "meal", label: "Piano alimentare", icon: FileText, color: "text-accent" },
+  { key: "supplements", label: "Integratori del giorno", icon: Pill, color: "text-purple-400" },
   { key: "fit", label: "Google Fit", icon: Activity, color: "text-green-500", disabled: true, badge: "Presto" },
 ];
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
-import { ClipboardList, X, Bell } from "lucide-react";
+import { ClipboardList, X, Bell, Pill } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
 import WaterTrackerWidget from "../components/WaterTrackerWidget";
@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [plans, setPlans] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [supplements, setSupplements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [watermarkUrl, setWatermarkUrl] = useState(null);
@@ -30,15 +31,17 @@ export default function Dashboard() {
       const u = await base44.auth.me();
       setUser(u);
       if (!u.birth_year) setShowProfileModal(true);
-      const [p, sess, notifs, gs] = await Promise.all([
+      const [p, sess, notifs, gs, supps] = await Promise.all([
         base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "active" }),
         base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100),
         base44.entities.Notification.filter({ user_email: u.email, read: false }),
         base44.entities.GymSettings.list(),
+        base44.entities.Supplement.filter({ created_by: u.email, active: true }),
       ]);
       setPlans(p);
       setSessions(sess);
       setNotifications(notifs);
+      setSupplements(supps);
       if (gs[0]?.watermark_url) setWatermarkUrl(gs[0].watermark_url);
       setLoading(false);
     }
@@ -63,15 +66,17 @@ export default function Dashboard() {
   async function handleRefresh() {
     setLoading(true);
     const u = await base44.auth.me();
-    const [p, sess, notifs, gs] = await Promise.all([
+    const [p, sess, notifs, gs, supps] = await Promise.all([
       base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "active" }),
       base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100),
       base44.entities.Notification.filter({ user_email: u.email, read: false }),
       base44.entities.GymSettings.list(),
+      base44.entities.Supplement.filter({ created_by: u.email, active: true }),
     ]);
     setPlans(p);
     setSessions(sess);
     setNotifications(notifs);
+    setSupplements(supps);
     if (gs[0]?.watermark_url) setWatermarkUrl(gs[0].watermark_url);
     setLoading(false);
   }
@@ -162,6 +167,26 @@ export default function Dashboard() {
 
       {/* Acqua */}
       {widgets.water && <WaterTrackerWidget />}
+
+      {/* Integratori */}
+      {widgets.supplements && supplements.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Pill className="w-5 h-5 text-purple-400" />
+            <h3 className="font-heading font-semibold">Integratori del giorno</h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {supplements.map(s => (
+              <div key={s.id} className="flex items-center gap-2 bg-purple-400/10 text-purple-400 px-3 py-1.5 rounded-xl text-sm font-medium">
+                <Pill className="w-3.5 h-3.5" />
+                <span>{s.name}</span>
+                {s.dose && <span className="text-purple-400/60 text-xs">{s.dose}</span>}
+                {s.timing && <span className="text-purple-400/60 text-xs">· {s.timing}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
     </PullToRefresh>
   );
