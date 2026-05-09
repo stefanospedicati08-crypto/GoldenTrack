@@ -14,8 +14,8 @@ export default function Peso() {
   const [newWeight, setNewWeight] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
-  const [showAddWeight, setShowAddWeight] = useState(true);
-  const [showHistoryModal, setShowHistoryModal] = useState(true);
+  const [showAddWeight, setShowAddWeight] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showResetMenu, setShowResetMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
@@ -243,7 +243,12 @@ export default function Peso() {
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
               className="bg-card rounded-2xl border border-border p-6 w-full max-w-sm shadow-2xl space-y-4">
-              <h2 className="font-heading font-semibold text-lg">Registra Peso</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-lg">Registra Peso</h2>
+                <button onClick={() => setShowAddWeight(false)} className="p-1.5 rounded-xl hover:bg-secondary transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               <div className="space-y-3">
                 <Input type="number" step="0.1" placeholder="es. 75.5 kg" value={newWeight} onChange={e => setNewWeight(e.target.value)} className="h-11 rounded-xl" autoFocus />
                 <Input placeholder="Note (opzionale)" value={notes} onChange={e => setNotes(e.target.value)} className="h-11 rounded-xl" />
