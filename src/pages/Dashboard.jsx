@@ -148,7 +148,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="bg-card rounded-2xl border border-border p-2 flex-1 min-w-0"
+            className="p-2 flex-1 min-w-0"
           >
             <WeeklyMonthProgress sessions={sessions} compact />
           </motion.div>
