@@ -18,7 +18,9 @@ export default function SupplementsWidget({ supplements }) {
   const [notifStatus, setNotifStatus] = useState("default"); // default | granted | denied
 
   useEffect(() => {
-    setNotifStatus(Notification?.permission || "default");
+    if ("Notification" in window) {
+      setNotifStatus(Notification.permission);
+    }
   }, []);
 
   function toggleTaken(id) {
@@ -55,6 +57,7 @@ export default function SupplementsWidget({ supplements }) {
   }
 
   function scheduleReminder(time) {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
     const [h, m] = time.split(":").map(Number);
     const now = new Date();
     const target = new Date();
