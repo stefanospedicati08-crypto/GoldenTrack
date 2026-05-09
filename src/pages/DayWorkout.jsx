@@ -71,7 +71,9 @@ export default function DayWorkout() {
   // Group exercises by superset letter (e.g. "A", "B") detected from name prefix like "A1", "A2", or notes
   // We detect superset by looking at the first character of the exercise name if it's a letter followed by a number
   function getSupersetKey(ex) {
-    const match = ex.name?.match(/^([A-Z])\d/i);
+    // Match names like "A CHIN UPS", "A.", "A-", "A1", or just single letter "A"
+    const name = ex.name?.trim() || "";
+    const match = name.match(/^([A-Z])(?:[\s\-\.\d]|$)/i);
     return match ? match[1].toUpperCase() : null;
   }
 
