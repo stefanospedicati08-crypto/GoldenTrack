@@ -83,7 +83,7 @@ export default function Admin() {
                 sets: { type: "number", description: "Serie" },
                 reps: { type: "string", description: "Ripetizioni ESATTAMENTE come scritte nel PDF, senza modifiche (es. '3x12', '4x8-10', '15', '3x15+failure')" },
                 rest_seconds: { type: "number" },
-                notes: { type: "string" },
+                notes: { type: "string", description: "Note aggiuntive. Se l'esercizio è parte di un superset (contrassegnato con una lettera come A, B, C), metti SOLO la lettera qui (es. 'A'). Non includere altro testo." },
                 day_label: { type: "string", description: "Giorno o nome gruppo (es. 'Giorno A', 'Push', 'Lunedì')" },
               },
             },
