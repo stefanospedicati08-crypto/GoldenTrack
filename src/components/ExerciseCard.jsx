@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,6 +22,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved, setNoteSaved] = useState(!!exercise.athlete_note);
   const [editingNote, setEditingNote] = useState(false);
+  const [isWarmup, setIsWarmup] = useState(false);
 
 
   const isDoubleReps = exercise.reps && exercise.reps.includes("/");
@@ -44,6 +45,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
       reps_done: exercise.reps ? parseInt(exercise.reps) : 0,
       weight_kg: weightKg ? Number(weightKg) : undefined,
       weight_kg_2: isDoubleReps && weightKg2 ? Number(weightKg2) : undefined,
+      is_warmup: isWarmup,
       date: today,
     };
     onLogSaved(optimistic);
@@ -61,6 +63,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
       reps_done: optimistic.reps_done,
       weight_kg: optimistic.weight_kg,
       weight_kg_2: optimistic.weight_kg_2,
+      is_warmup: isWarmup,
       date: today,
     });
     // Replace optimistic entry with real one
@@ -69,11 +72,21 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
 
   async function handleEditWeight(log) {
     setSaving(true);
-    await base44.entities.WorkoutLog.update(log.id, { weight_kg: editWeight ? Number(editWeight) : undefined });
-    log.weight_kg = editWeight ? Number(editWeight) : undefined;
+    const newWeight = editWeight ? Number(editWeight) : undefined;
+    await base44.entities.WorkoutLog.update(log.id, { weight_kg: newWeight });
+    log.weight_kg = newWeight;
     setEditingLog(null);
     setEditWeight("");
     setSaving(false);
+  }
+
+  async function adjustWeight(log, delta) {
+    const current = log.weight_kg || 0;
+    const updated = Math.max(0, parseFloat((current + delta).toFixed(1)));
+    await base44.entities.WorkoutLog.update(log.id, { weight_kg: updated });
+    log.weight_kg = updated;
+    // force re-render by triggering onLogSaved with updated log
+    onLogSaved({ ...log, weight_kg: updated, _replaceId: log.id });
   }
 
   async function handleSaveNote() {
@@ -152,86 +165,78 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
                       {todayLogs
                         .sort((a, b) => a.set_number - b.set_number)
                         .map((log) => (
-                          <div key={log.id} className="flex items-center gap-3 bg-secondary/40 rounded-xl px-3 py-2.5">
-                            <span className="text-xs text-muted-foreground w-14">Serie {log.set_number}</span>
-                            <span className="text-sm font-medium">{exercise.reps || log.reps_done} rep</span>
-                            {editingLog === log.id ? (
-                              <>
-                                <Input
-                                  type="number"
-                                  placeholder="kg"
-                                  value={editWeight}
-                                  onChange={e => setEditWeight(e.target.value)}
-                                  className="h-8 w-24 rounded-lg text-sm ml-auto"
-                                  autoFocus
-                                />
-                                <Button size="sm" onClick={() => handleEditWeight(log)} disabled={saving} className="h-8 rounded-lg px-3">
-                                  <Check className="w-3.5 h-3.5" />
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <span className="text-sm font-bold text-primary ml-auto">
-                                  {log.weight_kg ? `${log.weight_kg} kg` : "—"}
-                                  {log.weight_kg_2 ? <span className="text-muted-foreground font-normal"> / {log.weight_kg_2} kg</span> : null}
-                                </span>
-                                <button
-                                  onClick={() => { setEditingLog(log.id); setEditWeight(log.weight_kg ? String(log.weight_kg) : ""); }}
-                                  className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
-                                >
-                                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                                </button>
-                              </>
+                          <div key={log.id} className="flex flex-col gap-2 bg-secondary/40 rounded-xl px-3 py-2.5">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-muted-foreground w-14 shrink-0">
+                                {log.is_warmup ? <span className="text-chart-3">🔥 W/U</span> : `Serie ${log.set_number}`}
+                              </span>
+                              <span className="text-sm font-medium">{exercise.reps || log.reps_done} rep</span>
+                              {editingLog === log.id ? (
+                                <>
+                                  <Input
+                                    type="number"
+                                    placeholder="kg"
+                                    value={editWeight}
+                                    onChange={e => setEditWeight(e.target.value)}
+                                    className="h-8 w-24 rounded-lg text-sm ml-auto"
+                                    autoFocus
+                                  />
+                                  <Button size="sm" onClick={() => handleEditWeight(log)} disabled={saving} className="h-8 rounded-lg px-3">
+                                    <Check className="w-3.5 h-3.5" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-sm font-bold text-primary ml-auto">
+                                    {log.weight_kg ? `${log.weight_kg} kg` : "—"}
+                                    {log.weight_kg_2 ? <span className="text-muted-foreground font-normal"> / {log.weight_kg_2} kg</span> : null}
+                                  </span>
+                                  <button
+                                    onClick={() => { setEditingLog(log.id); setEditWeight(log.weight_kg ? String(log.weight_kg) : ""); }}
+                                    className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                            {/* Quick weight adjust buttons */}
+                            {editingLog !== log.id && log.weight_kg != null && (
+                              <div className="flex items-center gap-1 flex-wrap">
+                                <span className="text-[10px] text-muted-foreground mr-1">Modifica rapida:</span>
+                                {[-5, -2, -1, +1, +2, +5].map(d => (
+                                  <button key={d} onClick={() => adjustWeight(log, d)}
+                                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full transition-colors ${
+                                      d > 0
+                                        ? "bg-primary/10 text-primary hover:bg-primary/20"
+                                        : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+                                    }`}>
+                                    {d > 0 ? `+${d}` : d}kg
+                                  </button>
+                                ))}
+                              </div>
                             )}
                           </div>
                         ))}
-                    </div>
-                  </div>
-                )}
+                      </div>
+                      </div>
+                      )}
 
                 {!allSetsCompleted && (
                   <div className="space-y-3">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registra Serie</p>
-                    <div className="flex gap-3">
-                      <div className="flex-1">
-                        <label className="text-xs text-muted-foreground mb-1 block">Seleziona Serie</label>
-                        <Select value={setNumber} onValueChange={setSetNumber}>
-                          <SelectTrigger className="h-10 rounded-xl">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: totalSets }, (_, i) => i + 1)
-                              .filter(n => !completedSetNumbers.includes(n))
-                              .map(n => (
-                                <SelectItem key={n} value={String(n)}>Serie {n}</SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-xs text-muted-foreground mb-1 block">{isDoubleReps ? "Carico 1° (kg)" : "Carico (kg)"}</label>
-                        <Input
-                          type="number"
-                          placeholder="es. 50"
-                          value={weightKg}
-                          onChange={e => setWeightKg(e.target.value)}
-                          className="h-10 rounded-xl"
-                        />
-                      </div>
-                      {isDoubleReps && (
-                        <div className="flex-1">
-                          <label className="text-xs text-muted-foreground mb-1 block">Carico 2° (kg)</label>
-                          <Input
-                            type="number"
-                            placeholder="es. 30"
-                            value={weightKg2}
-                            onChange={e => setWeightKg2(e.target.value)}
-                            className="h-10 rounded-xl"
-                          />
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registra Serie</p>
+                      <button
+                        onClick={() => setIsWarmup(v => !v)}
+                        className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-all ${
+                          isWarmup ? "bg-chart-3/10 text-chart-3 border-chart-3/40" : "bg-secondary text-muted-foreground border-border"
+                        }`}
+                      >
+                        <Flame className="w-3 h-3" />
+                        Warm Up
+                      </button>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl h-10">
                         <Plus className="w-4 h-4 mr-1" />
                         {saving ? "Salvataggio..." : "Salva Serie"}
