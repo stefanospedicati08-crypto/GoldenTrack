@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, ClipboardList, Weight, Camera, Dumbbell, TrendingDown, TrendingUp, Minus, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ClipboardList, Weight, Camera, Dumbbell, TrendingDown, TrendingUp, Minus, ChevronDown, ChevronUp, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import moment from "moment";
@@ -18,6 +18,8 @@ export default function ClientDetail() {
   const [expandedPlan, setExpandedPlan] = useState(null);
   const [expandedPhoto, setExpandedPhoto] = useState(null);
   const [activeTab, setActiveTab] = useState("plans");
+  const [allLogsLoaded, setAllLogsLoaded] = useState(false);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -63,11 +65,21 @@ export default function ClientDetail() {
   const diff = latest && previous ? (latest - previous).toFixed(1) : null;
   const photos = weights.filter(w => w.photo_url);
 
+  async function loadAllLogs() {
+    if (allLogsLoaded) return;
+    setLoadingLogs(true);
+    const allLogs = await Promise.all(plans.map(p => base44.entities.WorkoutLog.filter({ plan_id: p.id }, "-date", 1000)));
+    setLogs(allLogs.flat());
+    setAllLogsLoaded(true);
+    setLoadingLogs(false);
+  }
+
   const tabs = [
     { id: "plans", label: "Schede", icon: ClipboardList },
     { id: "weight", label: "Peso", icon: Weight },
     { id: "photos", label: "Foto", icon: Camera },
     { id: "sessions", label: "Sessioni", icon: Dumbbell },
+    { id: "training", label: "Allenamento", icon: BarChart2 },
   ];
 
   return (
@@ -92,7 +104,7 @@ export default function ClientDetail() {
         {tabs.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => { setActiveTab(tab.id); if (tab.id === "training") loadAllLogs(); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground"
             }`}
@@ -263,7 +275,7 @@ export default function ClientDetail() {
               <p className="text-muted-foreground">Nessuna sessione registrata</p>
             </div>
           ) : (
-            sessions.slice(0, 30).map((s, i) => (
+            sessions.slice(0, 50).map((s, i) => (
               <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
                 className="bg-card rounded-xl border border-border p-4 space-y-2">
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -279,6 +291,73 @@ export default function ClientDetail() {
               </motion.div>
             ))
           )}
+        </div>
+      )}
+
+      {/* Allenamento - storico log */}
+      {activeTab === "training" && (
+        <div className="space-y-4">
+          {loadingLogs ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : logs.length === 0 ? (
+            <div className="bg-card rounded-2xl border border-border p-10 text-center">
+              <BarChart2 className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="text-muted-foreground">Nessun dato di allenamento registrato</p>
+            </div>
+          ) : (() => {
+            // Group logs by date
+            const byDate = {};
+            logs.forEach(l => {
+              if (!byDate[l.date]) byDate[l.date] = [];
+              byDate[l.date].push(l);
+            });
+            return Object.entries(byDate)
+              .sort(([a], [b]) => b.localeCompare(a))
+              .slice(0, 40)
+              .map(([date, dayLogs], i) => {
+                // Group by exercise within the day
+                const byEx = {};
+                dayLogs.forEach(l => {
+                  if (!byEx[l.exercise_name]) byEx[l.exercise_name] = [];
+                  byEx[l.exercise_name].push(l);
+                });
+                return (
+                  <motion.div key={date} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                    className="bg-card rounded-2xl border border-border overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-secondary/40 border-b border-border">
+                      <BarChart2 className="w-4 h-4 text-primary" />
+                      <p className="font-semibold text-sm">{moment(date).format("dddd DD MMMM YYYY")}</p>
+                      <span className="ml-auto text-xs text-muted-foreground">{Object.keys(byEx).length} esercizi</span>
+                    </div>
+                    <div className="divide-y divide-border">
+                      {Object.entries(byEx).map(([exName, exLogs]) => {
+                        const maxWeight = Math.max(...exLogs.map(l => l.weight_kg || 0));
+                        const sortedSets = [...exLogs].sort((a, b) => a.set_number - b.set_number);
+                        return (
+                          <div key={exName} className="px-4 py-3 space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium">{exName}</p>
+                              {maxWeight > 0 && <span className="text-xs font-bold text-primary">{maxWeight} kg max</span>}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {sortedSets.map(l => (
+                                <span key={l.id} className={`text-xs px-2.5 py-1 rounded-lg font-medium ${
+                                  l.is_warmup ? "bg-chart-3/10 text-chart-3" : "bg-secondary text-foreground"
+                                }`}>
+                                  {l.is_warmup ? "W/U" : `S${l.set_number}`} · {l.reps_done || "—"} rep{l.weight_kg ? ` · ${l.weight_kg}kg` : ""}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                );
+              });
+          })()}
         </div>
       )}
 
