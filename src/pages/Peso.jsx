@@ -130,9 +130,9 @@ export default function Peso() {
       {/* Reset confirm */}
       <AnimatePresence>
         {showResetConfirm && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
-              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-6 w-full sm:max-w-sm shadow-2xl space-y-4">
+              className="bg-card rounded-2xl border border-border p-6 w-full max-w-md shadow-2xl space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
                   <Trash2 className="w-5 h-5 text-destructive" />
@@ -239,13 +239,15 @@ export default function Peso() {
       {/* Add weight slide-up */}
       <AnimatePresence>
         {showAddWeight && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddWeight(false)}>
-            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddWeight(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-5 w-full sm:max-w-sm shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto">
-              <h2 className="font-heading font-semibold">Registra Peso</h2>
-              <Input type="number" step="0.1" placeholder="es. 75.5 kg" value={newWeight} onChange={e => setNewWeight(e.target.value)} className="h-11 rounded-xl" autoFocus />
-              <Input placeholder="Note (opzionale)" value={notes} onChange={e => setNotes(e.target.value)} className="h-11 rounded-xl" />
+              className="bg-card rounded-2xl border border-border p-6 w-full max-w-sm shadow-2xl space-y-4">
+              <h2 className="font-heading font-semibold text-lg">Registra Peso</h2>
+              <div className="space-y-3">
+                <Input type="number" step="0.1" placeholder="es. 75.5 kg" value={newWeight} onChange={e => setNewWeight(e.target.value)} className="h-11 rounded-xl" autoFocus />
+                <Input placeholder="Note (opzionale)" value={notes} onChange={e => setNotes(e.target.value)} className="h-11 rounded-xl" />
+              </div>
               <Button onClick={async () => { await handleSave(); setShowAddWeight(false); }} disabled={saving || !newWeight} className="w-full h-11 rounded-xl">
                 <Plus className="w-4 h-4 mr-1" />{saving ? "Salvataggio..." : "Aggiungi"}
               </Button>
@@ -257,10 +259,10 @@ export default function Peso() {
       {/* History modal */}
       <AnimatePresence>
         {showHistoryModal && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowHistoryModal(false)}>
-            <motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowHistoryModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border w-full sm:max-w-md shadow-2xl max-h-[80vh] flex flex-col">
+              className="bg-card rounded-2xl border border-border w-full max-w-md shadow-2xl max-h-[85vh] flex flex-col">
               <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
                 <h2 className="font-heading font-semibold text-lg">Storico Pesate</h2>
                 <button onClick={() => setShowHistoryModal(false)} className="p-1.5 rounded-xl hover:bg-secondary transition-colors">
