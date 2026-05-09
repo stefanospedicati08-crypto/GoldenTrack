@@ -16,6 +16,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
   const [setNumber, setSetNumber] = useState("1");
   const [weightKg, setWeightKg] = useState("");
   const [weightKg2, setWeightKg2] = useState("");
+  const [repsDone, setRepsDone] = useState("");
   const [editingLog, setEditingLog] = useState(null);
   const [editWeight, setEditWeight] = useState("");
   const [exerciseNote, setExerciseNote] = useState(exercise.athlete_note || "");
@@ -42,7 +43,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
       plan_id: exercise.plan_id,
       exercise_name: exercise.name,
       set_number: Number(setNumber),
-      reps_done: exercise.reps ? parseInt(exercise.reps) : 0,
+      reps_done: repsDone ? Number(repsDone) : (exercise.reps ? parseInt(exercise.reps) : 0),
       weight_kg: weightKg ? Number(weightKg) : undefined,
       weight_kg_2: isDoubleReps && weightKg2 ? Number(weightKg2) : undefined,
       is_warmup: isWarmup,
@@ -53,6 +54,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
     setSetNumber(next);
     setWeightKg("");
     setWeightKg2("");
+    setRepsDone("");
     setSaving(false);
     setShowTimer(true);
     const newLog = await base44.entities.WorkoutLog.create({
@@ -170,7 +172,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
                               <span className="text-xs text-muted-foreground w-14 shrink-0">
                                 {log.is_warmup ? <span className="text-chart-3">🔥 W/U</span> : `Serie ${log.set_number}`}
                               </span>
-                              <span className="text-sm font-medium">{exercise.reps || log.reps_done} rep</span>
+                              <span className="text-sm font-medium">{log.reps_done || exercise.reps || "—"} rep</span>
                               {editingLog === log.id ? (
                                 <>
                                   <Input
@@ -236,8 +238,59 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, index }) {
                         Warm Up
                       </button>
                     </div>
-                    <div className="flex gap-3">
-                      <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl h-10">
+                    <div className="space-y-3">
+                       <div className="flex gap-2">
+                         <div className="flex-1">
+                           <label className="text-xs text-muted-foreground mb-1 block">Serie</label>
+                           <Select value={setNumber} onValueChange={setSetNumber}>
+                             <SelectTrigger className="h-10 rounded-xl">
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {Array.from({ length: totalSets }, (_, i) => i + 1)
+                                 .filter(n => !completedSetNumbers.includes(n))
+                                 .map(n => (
+                                   <SelectItem key={n} value={String(n)}>Serie {n}</SelectItem>
+                                 ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         <div className="w-20 shrink-0">
+                           <label className="text-xs text-muted-foreground mb-1 block">Rep fatte</label>
+                           <Input
+                             type="number"
+                             placeholder={exercise.reps ? exercise.reps.split(/[^0-9]/)[0] : "—"}
+                             value={repsDone}
+                             onChange={e => setRepsDone(e.target.value)}
+                             className="h-10 rounded-xl"
+                           />
+                         </div>
+                         <div className="flex-1">
+                           <label className="text-xs text-muted-foreground mb-1 block">{isDoubleReps ? "Carico 1° (kg)" : "Carico (kg)"}</label>
+                           <Input
+                             type="number"
+                             placeholder="es. 50"
+                             value={weightKg}
+                             onChange={e => setWeightKg(e.target.value)}
+                             className="h-10 rounded-xl"
+                           />
+                         </div>
+                         {isDoubleReps && (
+                           <div className="flex-1">
+                             <label className="text-xs text-muted-foreground mb-1 block">Carico 2° (kg)</label>
+                             <Input
+                               type="number"
+                               placeholder="es. 30"
+                               value={weightKg2}
+                               onChange={e => setWeightKg2(e.target.value)}
+                               className="h-10 rounded-xl"
+                             />
+                           </div>
+                         )}
+                       </div>
+                     </div>
+                     <div className="flex gap-2">
+                       <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl h-10">
                         <Plus className="w-4 h-4 mr-1" />
                         {saving ? "Salvataggio..." : "Salva Serie"}
                       </Button>

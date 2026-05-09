@@ -16,6 +16,7 @@ export default function Peso() {
   const [saving, setSaving] = useState(false);
   const [showAddWeight, setShowAddWeight] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [lastClickTime, setLastClickTime] = useState(0);
   const [showChart, setShowChart] = useState(false);
   const [showResetMenu, setShowResetMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -229,11 +230,17 @@ export default function Peso() {
         </div>
       )}
 
-      {/* History - collapsible */}
+      {/* History - collapsible, opens on double click */}
       {weights.length > 0 && (
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
-          <button onClick={() => setShowHistory(!showHistory)} className="w-full flex items-center justify-between p-5">
-            <h2 className="font-heading font-semibold">Storico Pesate</h2>
+          <button
+            onDoubleClick={() => setShowHistory(v => !v)}
+            className="w-full flex items-center justify-between p-5 select-none"
+          >
+            <div>
+              <h2 className="font-heading font-semibold">Storico Pesate</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Doppio click per {showHistory ? "chiudere" : "aprire"}</p>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{weights.length} misurazioni</span>
               {showHistory ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
