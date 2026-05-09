@@ -28,16 +28,15 @@ export default function DashboardCustomizer({ widgets, onChange }) {
 
       <AnimatePresence>
         {open && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)}>
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card rounded-t-3xl border-t border-x border-border p-5 w-full sm:max-w-sm shadow-2xl space-y-4"
+              className="bg-card rounded-2xl border border-border p-5 w-full max-w-sm shadow-2xl space-y-4"
             >
-              <div className="w-10 h-1 bg-border rounded-full mx-auto mb-1" />
+
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-semibold text-lg">Personalizza Dashboard</h3>
                 <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-secondary">
