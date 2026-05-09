@@ -1,0 +1,22 @@
+{
+  "name": "WaterLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "ml_drank": {
+      "type": "number",
+      "title": "ml bevuti"
+    },
+    "goal_ml": {
+      "type": "number",
+      "title": "Obiettivo ml"
+    }
+  },
+  "required": [
+    "date"
+  ]
+}

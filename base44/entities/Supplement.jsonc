@@ -1,0 +1,29 @@
+{
+  "name": "Supplement",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Nome"
+    },
+    "dose": {
+      "type": "string",
+      "title": "Dosaggio"
+    },
+    "timing": {
+      "type": "string",
+      "title": "Quando"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Note"
+    },
+    "active": {
+      "type": "boolean",
+      "title": "Attivo"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

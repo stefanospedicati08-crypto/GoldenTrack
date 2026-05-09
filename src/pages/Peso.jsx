@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, TrendingDown, TrendingUp, Minus, Trash2, Target, Camera, X, MoreVertical, Pencil, Check } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
+import { Plus, TrendingDown, TrendingUp, Minus, Trash2, Camera, X, MoreVertical, Pencil, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
 
@@ -14,6 +14,9 @@ export default function Peso() {
   const [newWeight, setNewWeight] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showAddWeight, setShowAddWeight] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showChart, setShowChart] = useState(false);
   const [showResetMenu, setShowResetMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
@@ -21,7 +24,6 @@ export default function Peso() {
   const photoInputRef = useRef(null);
   const [photoForId, setPhotoForId] = useState(null);
 
-  // Goal
   const [goal, setGoal] = useState("");
   const [goalDate, setGoalDate] = useState("");
   const [editingGoal, setEditingGoal] = useState(false);
@@ -48,11 +50,7 @@ export default function Peso() {
     setWeights(prev => [optimistic, ...prev]);
     setNewWeight("");
     setNotes("");
-    const entry = await base44.entities.BodyWeight.create({
-      weight_kg: optimistic.weight_kg,
-      date: today,
-      notes: optimistic.notes,
-    });
+    const entry = await base44.entities.BodyWeight.create({ weight_kg: optimistic.weight_kg, date: today, notes: optimistic.notes });
     setWeights(prev => prev.map(w => w.id === optimistic.id ? entry : w));
     setSaving(false);
   }
@@ -84,10 +82,7 @@ export default function Peso() {
 
   async function handleSaveGoal() {
     setSavingGoal(true);
-    await base44.auth.updateMe({
-      weight_goal: goal ? Number(goal) : undefined,
-      weight_goal_date: goalDate || undefined,
-    });
+    await base44.auth.updateMe({ weight_goal: goal ? Number(goal) : undefined, weight_goal_date: goalDate || undefined });
     setSavingGoal(false);
     setEditingGoal(false);
   }
@@ -101,42 +96,29 @@ export default function Peso() {
   }
 
   const sorted = [...weights].sort((a, b) => a.date.localeCompare(b.date));
-  const chartData = sorted.slice(-30).map(w => ({
-    date: moment(w.date).format("DD/MM"),
-    kg: w.weight_kg,
-  }));
-
+  const chartData = sorted.slice(-30).map(w => ({ date: moment(w.date).format("DD/MM"), kg: w.weight_kg }));
   const latest = weights[0]?.weight_kg;
   const previous = weights[1]?.weight_kg;
   const diff = latest && previous ? (latest - previous).toFixed(1) : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-3xl font-bold">Peso Corporeo</h1>
-          <p className="text-muted-foreground mt-1">Monitora i tuoi progressi</p>
+          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">Non perderti l'opportunità di avere a portata di click le progressioni e il monitoraggio del tuo peso corporeo.</p>
         </div>
-        {/* 3-dot menu for reset */}
         <div className="relative">
-          <button
-            onClick={() => setShowResetMenu(!showResetMenu)}
-            className="p-2 rounded-xl hover:bg-secondary transition-colors"
-          >
+          <button onClick={() => setShowResetMenu(!showResetMenu)} className="p-2 rounded-xl hover:bg-secondary transition-colors">
             <MoreVertical className="w-5 h-5 text-muted-foreground" />
           </button>
           <AnimatePresence>
             {showResetMenu && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="absolute right-0 top-10 bg-card border border-border rounded-xl shadow-xl z-20 min-w-[180px] overflow-hidden"
-              >
-                <button
-                  onClick={() => { setShowResetMenu(false); setShowResetConfirm(true); }}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                >
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                className="absolute right-0 top-10 bg-card border border-border rounded-xl shadow-xl z-20 min-w-[180px] overflow-hidden">
+                <button onClick={() => { setShowResetMenu(false); setShowResetConfirm(true); }}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors">
                   <Trash2 className="w-4 h-4" /> Reset storico peso
                 </button>
               </motion.div>
@@ -145,16 +127,12 @@ export default function Peso() {
         </div>
       </div>
 
-      {/* Reset confirm modal */}
+      {/* Reset confirm */}
       <AnimatePresence>
         {showResetConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-card rounded-2xl border border-border p-6 max-w-sm w-full shadow-2xl space-y-4"
-            >
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
+              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-6 w-full sm:max-w-sm shadow-2xl space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
                   <Trash2 className="w-5 h-5 text-destructive" />
@@ -165,9 +143,7 @@ export default function Peso() {
                 Se si vuole effettuare il reset del peso <strong>tutti i dati presenti nello storico verranno cancellati</strong> e non sarà più possibile recuperarli.
               </p>
               <div className="flex gap-3 justify-end">
-                <Button variant="outline" onClick={() => setShowResetConfirm(false)} className="rounded-xl">
-                  Annulla
-                </Button>
+                <Button variant="outline" onClick={() => setShowResetConfirm(false)} className="rounded-xl">Annulla</Button>
                 <Button onClick={handleReset} disabled={saving} className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   <Trash2 className="w-4 h-4 mr-1" /> Conferma Reset
                 </Button>
@@ -184,7 +160,6 @@ export default function Peso() {
           <p className="text-3xl font-heading font-bold mt-1">{latest || "—"}</p>
           <p className="text-xs text-muted-foreground">kg</p>
         </motion.div>
-
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-2xl border border-border p-5">
           <p className="text-sm text-muted-foreground">Variazione</p>
           <div className="flex items-center gap-2 mt-1">
@@ -197,8 +172,6 @@ export default function Peso() {
           </div>
           <p className="text-xs text-muted-foreground">kg dall'ultima</p>
         </motion.div>
-
-        {/* Goal stat */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-2xl border border-border p-5 col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm text-muted-foreground">Obiettivo</p>
@@ -223,99 +196,111 @@ export default function Peso() {
         </motion.div>
       </div>
 
-      {/* Chart */}
+      {/* Chart - collapsible */}
       {chartData.length > 1 && (
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-2xl border border-border p-5">
-          <h2 className="font-heading font-semibold mb-4">Andamento Peso</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit=" kg" domain={["dataMin - 1", "dataMax + 1"]} />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 13 }} />
-              <Area type="monotone" dataKey="kg" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#weightGrad)" dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </motion.div>
-      )}
-
-      {/* Add weight */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card rounded-2xl border border-border p-5">
-        <h2 className="font-heading font-semibold mb-4">Registra Peso</h2>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <Input type="number" step="0.1" placeholder="es. 75.5" value={newWeight} onChange={e => setNewWeight(e.target.value)} className="h-11 rounded-xl" />
-          </div>
-          <div className="flex-1">
-            <Input placeholder="Note (opzionale)" value={notes} onChange={e => setNotes(e.target.value)} className="h-11 rounded-xl" />
-          </div>
-          <Button onClick={handleSave} disabled={saving || !newWeight} className="h-11 rounded-xl px-6">
-            <Plus className="w-4 h-4 mr-1" />
-            {saving ? "Salvataggio..." : "Aggiungi"}
-          </Button>
-        </div>
-      </motion.div>
-
-      {/* History */}
-      {weights.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="font-heading font-semibold">Storico</h2>
-          <div className="space-y-2">
-            {weights.slice(0, 30).map((w, i) => (
-              <motion.div key={w.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }} className="bg-card rounded-xl border border-border overflow-hidden">
-                <div className="flex items-center gap-4 p-4">
-                  <div className="flex-1">
-                    <p className="font-semibold">{w.weight_kg} kg</p>
-                    <p className="text-sm text-muted-foreground">{moment(w.date).format("DD MMMM YYYY")}</p>
-                    {w.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{w.notes}</p>}
-                  </div>
-
-                  {/* Photo thumbnail */}
-                  {w.photo_url && (
-                    <button onClick={() => setExpandedPhoto(w.photo_url)} className="shrink-0">
-                      <img src={w.photo_url} alt="forma fisica" className="w-12 h-12 rounded-xl object-cover border border-border" />
-                    </button>
-                  )}
-
-                  {/* Add photo button */}
-                  {!w.photo_url && (
-                    <button
-                      onClick={() => { setPhotoForId(w.id); photoInputRef.current?.click(); }}
-                      disabled={uploadingPhoto === w.id}
-                      className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0 text-muted-foreground"
-                    >
-                      {uploadingPhoto === w.id ? (
-                        <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                      ) : (
-                        <Camera className="w-4 h-4" />
-                      )}
-                    </button>
-                  )}
-
-                  <button onClick={() => handleDelete(w.id)} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive transition-colors shrink-0">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <button onClick={() => setShowChart(!showChart)} className="w-full flex items-center justify-between p-5">
+            <h2 className="font-heading font-semibold">Andamento Peso</h2>
+            {showChart ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+          </button>
+          <AnimatePresence>
+            {showChart && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <div className="px-5 pb-5 border-t border-border pt-2">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit=" kg" domain={["dataMin - 1", "dataMax + 1"]} />
+                      <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 13 }} />
+                      <Area type="monotone" dataKey="kg" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#weightGrad)" dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </motion.div>
-            ))}
-          </div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* History - collapsible */}
+      {weights.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <button onClick={() => setShowHistory(!showHistory)} className="w-full flex items-center justify-between p-5">
+            <h2 className="font-heading font-semibold">Storico Pesate</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{weights.length} misurazioni</span>
+              {showHistory ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            </div>
+          </button>
+          <AnimatePresence>
+            {showHistory && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <div className="border-t border-border divide-y divide-border">
+                  {weights.slice(0, 30).map((w) => (
+                    <div key={w.id} className="flex items-center gap-4 px-5 py-3">
+                      <div className="flex-1">
+                        <p className="font-semibold">{w.weight_kg} kg</p>
+                        <p className="text-sm text-muted-foreground">{moment(w.date).format("DD MMMM YYYY")}</p>
+                        {w.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{w.notes}</p>}
+                      </div>
+                      {w.photo_url && (
+                        <button onClick={() => setExpandedPhoto(w.photo_url)} className="shrink-0">
+                          <img src={w.photo_url} alt="forma fisica" className="w-12 h-12 rounded-xl object-cover border border-border" />
+                        </button>
+                      )}
+                      {!w.photo_url && (
+                        <button onClick={() => { setPhotoForId(w.id); photoInputRef.current?.click(); }} disabled={uploadingPhoto === w.id}
+                          className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0 text-muted-foreground">
+                          {uploadingPhoto === w.id
+                            ? <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                            : <Camera className="w-4 h-4" />}
+                        </button>
+                      )}
+                      <button onClick={() => handleDelete(w.id)} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive transition-colors shrink-0">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
       {/* Hidden file input */}
-      <input
-        ref={photoInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={e => handlePhotoUpload(e, photoForId)}
-      />
+      <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={e => handlePhotoUpload(e, photoForId)} />
+
+      {/* Add weight slide-up */}
+      <AnimatePresence>
+        {showAddWeight && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddWeight(false)}>
+            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-5 w-full sm:max-w-sm shadow-2xl space-y-3">
+              <h2 className="font-heading font-semibold">Registra Peso</h2>
+              <Input type="number" step="0.1" placeholder="es. 75.5 kg" value={newWeight} onChange={e => setNewWeight(e.target.value)} className="h-11 rounded-xl" autoFocus />
+              <Input placeholder="Note (opzionale)" value={notes} onChange={e => setNotes(e.target.value)} className="h-11 rounded-xl" />
+              <Button onClick={async () => { await handleSave(); setShowAddWeight(false); }} disabled={saving || !newWeight} className="w-full h-11 rounded-xl">
+                <Plus className="w-4 h-4 mr-1" />{saving ? "Salvataggio..." : "Aggiungi"}
+              </Button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* FAB */}
+      <button onClick={() => setShowAddWeight(true)}
+        className="fixed bottom-24 right-4 lg:bottom-6 lg:right-8 z-40 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-xl flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all">
+        <Plus className="w-6 h-6" />
+      </button>
 
       {/* Photo lightbox */}
       <AnimatePresence>

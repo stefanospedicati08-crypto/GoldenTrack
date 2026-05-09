@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X, Download, Image, Search, ArrowRight } from "lucide-react";
+import { Upload, Users, ClipboardList, Loader2, FileText, Trash2, Inbox, Check, X, Download, Image, Search, ArrowRight, UserX } from "lucide-react";
 import AdminNotifications from "../components/AdminNotifications";
 import TrainerRequests from "../components/TrainerRequests";
 import { toast } from "sonner";
@@ -155,6 +155,28 @@ export default function Admin() {
     });
 
     toast.success(status === "approved" ? "Richiesta approvata" : "Richiesta rifiutata");
+  }
+
+  async function handleDeleteUser(userId, userEmail) {
+    if (!confirm(`Sei sicuro di voler eliminare l'account di ${userEmail}?`)) return;
+    // Delete user's data
+    const [userPlans, userWeights, userSessions, userLogs, userNotifs] = await Promise.all([
+      base44.entities.WorkoutPlan.filter({ assigned_to: userEmail }),
+      base44.entities.BodyWeight.filter({ created_by: userEmail }),
+      base44.entities.WorkoutSession.filter({ created_by: userEmail }),
+      base44.entities.WorkoutLog.filter({ created_by: userEmail }),
+      base44.entities.Notification.filter({ user_email: userEmail }),
+    ]);
+    await Promise.all([
+      ...userPlans.map(p => base44.entities.WorkoutPlan.delete(p.id)),
+      ...userWeights.map(w => base44.entities.BodyWeight.delete(w.id)),
+      ...userSessions.map(s => base44.entities.WorkoutSession.delete(s.id)),
+      ...userLogs.map(l => base44.entities.WorkoutLog.delete(l.id)),
+      ...userNotifs.map(n => base44.entities.Notification.delete(n.id)),
+    ]);
+    await base44.entities.User.delete(userId);
+    setUsers(prev => prev.filter(u => u.id !== userId));
+    toast.success("Account eliminato");
   }
 
   async function handleDeletePlan(planId) {
@@ -412,6 +434,10 @@ export default function Admin() {
                 className="flex items-center gap-1 text-xs text-primary font-medium hover:underline shrink-0">
                 Dettagli <ArrowRight className="w-3.5 h-3.5" />
               </a>
+              <button onClick={() => handleDeleteUser(u.id, u.email)} title="Elimina account"
+                className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors shrink-0">
+                <UserX className="w-4 h-4" />
+              </button>
             </motion.div>
           ))}
         </div>

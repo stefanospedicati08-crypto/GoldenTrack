@@ -11,10 +11,6 @@
       ],
       "title": "Ruolo"
     },
-    "birth_year": {
-      "type": "number",
-      "title": "Anno di Nascita"
-    },
     "first_name": {
       "type": "string",
       "title": "Nome"
@@ -23,13 +19,9 @@
       "type": "string",
       "title": "Cognome"
     },
-    "height_cm": {
+    "birth_year": {
       "type": "number",
-      "title": "Altezza (cm)"
-    },
-    "initial_weight_kg": {
-      "type": "number",
-      "title": "Peso Iniziale (kg)"
+      "title": "Anno di Nascita"
     },
     "weight_goal": {
       "type": "number",
@@ -37,7 +29,20 @@
     },
     "weight_goal_date": {
       "type": "string",
-      "title": "Data Obiettivo Peso"
+      "format": "date",
+      "title": "Data Obiettivo"
+    },
+    "height_cm": {
+      "type": "number",
+      "title": "Altezza (cm)"
+    },
+    "photo_url": {
+      "type": "string",
+      "title": "Foto Profilo"
+    },
+    "meal_plan_url": {
+      "type": "string",
+      "title": "Piano Alimentare"
     }
   }
 }

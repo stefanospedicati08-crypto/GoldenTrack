@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Send, X, Clock } from "lucide-react";
+import { ClipboardList, Send, X, Clock, Loader2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 function isWithinAllowedTime() {
@@ -28,8 +28,22 @@ export default function RichiestaSchedaForm({ user, compact = false }) {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [sent, setSent] = useState(false);
+  const [daysLeft, setDaysLeft] = useState(0);
+  const [checking, setChecking] = useState(false);
 
-  function handleOpen() {
+  async function handleOpen() {
+    setChecking(true);
+    const recent = await base44.entities.SchedaRequest.filter({ user_email: user.email }, "-created_date", 1);
+    if (recent.length > 0) {
+      const daysSince = (Date.now() - new Date(recent[0].created_date)) / (1000 * 60 * 60 * 24);
+      if (daysSince < 28) {
+        setDaysLeft(Math.ceil(28 - daysSince));
+        setOpen("too_soon");
+        setChecking(false);
+        return;
+      }
+    }
+    setChecking(false);
     if (!isWithinAllowedTime()) {
       setOpen("blocked");
     } else {
@@ -56,10 +70,36 @@ export default function RichiestaSchedaForm({ user, compact = false }) {
 
   return (
     <>
-      <Button onClick={handleOpen} variant="outline" className={`rounded-xl h-10 gap-2 ${compact ? "" : "w-full sm:w-auto"}`}>
-        <ClipboardList className="w-4 h-4" />
+      <Button onClick={handleOpen} variant="outline" disabled={checking} className={`rounded-xl h-10 gap-2 ${compact ? "" : "w-full sm:w-auto"}`}>
+        {checking ? <Loader2 className="w-4 h-4 animate-spin" /> : <ClipboardList className="w-4 h-4" />}
         Richiedi Nuova Scheda
       </Button>
+
+      {/* Too soon modal */}
+      <AnimatePresence>
+        {open === "too_soon" && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-6 w-full sm:max-w-sm shadow-2xl space-y-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-chart-3/10 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-chart-3" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg">Troppo presto</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Puoi richiedere una nuova scheda solo dopo <strong>4 settimane</strong> dall'ultima richiesta.<br /><br />
+                Mancano ancora <strong>{daysLeft} giorni</strong>.
+              </p>
+              <Button onClick={() => setOpen(false)} className="w-full rounded-xl">Chiudi</Button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Blocked modal */}
       <AnimatePresence>

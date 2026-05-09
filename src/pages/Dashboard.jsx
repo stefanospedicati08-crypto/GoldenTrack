@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ClipboardList, X, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
+import WaterTrackerWidget from "../components/WaterTrackerWidget";
 import PullToRefresh from "../components/PullToRefresh";
 import WeeklyMonthProgress from "../components/WeeklyMonthProgress";
 import ProfileCompleteModal from "../components/ProfileCompleteModal";
@@ -131,6 +132,9 @@ export default function Dashboard() {
       <div className="bg-card rounded-2xl border border-border p-6">
         <WeeklyMonthProgress sessions={sessions} />
       </div>
+
+      {/* Acqua */}
+      <WaterTrackerWidget />
     </div>
     </PullToRefresh>
   );
