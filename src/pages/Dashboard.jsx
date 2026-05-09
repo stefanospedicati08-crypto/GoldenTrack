@@ -10,6 +10,7 @@ import WeeklyMonthProgress from "../components/WeeklyMonthProgress";
 import ProfileCompleteModal from "../components/ProfileCompleteModal";
 import RichiestaSchedaForm from "../components/RichiestaSchedaForm";
 import DashboardCustomizer from "../components/DashboardCustomizer";
+import SupplementsWidget from "../components/SupplementsWidget";
 import { FileText } from "lucide-react";
 
 export default function Dashboard() {
@@ -169,24 +170,7 @@ export default function Dashboard() {
       {widgets.water && <WaterTrackerWidget />}
 
       {/* Integratori */}
-      {widgets.supplements && supplements.length > 0 && (
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <Pill className="w-5 h-5 text-purple-400" />
-            <h3 className="font-heading font-semibold">Integratori del giorno</h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {supplements.map(s => (
-              <div key={s.id} className="flex items-center gap-2 bg-purple-400/10 text-purple-400 px-3 py-1.5 rounded-xl text-sm font-medium">
-                <Pill className="w-3.5 h-3.5" />
-                <span>{s.name}</span>
-                {s.dose && <span className="text-purple-400/60 text-xs">{s.dose}</span>}
-                {s.timing && <span className="text-purple-400/60 text-xs">· {s.timing}</span>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {widgets.supplements && <SupplementsWidget supplements={supplements} />}
     </div>
     </PullToRefresh>
   );
