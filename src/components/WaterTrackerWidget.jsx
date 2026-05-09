@@ -58,40 +58,52 @@ export default function WaterTrackerWidget() {
 
   return (
     <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Droplets className="w-5 h-5 text-blue-400" />
           <h3 className="font-heading font-semibold">Idratazione</h3>
         </div>
         <div className="flex items-center gap-2">
-          {editingGoal ? (
-            <div className="flex items-center gap-1.5">
-              <input
-                type="number"
-                value={goalInput}
-                onChange={e => setGoalInput(e.target.value)}
-                className="w-20 text-xs h-7 px-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                placeholder="ml"
-                autoFocus
-              />
-              <button onClick={saveGoal} className="w-7 h-7 flex items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Check className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : (
-            <>
-              <span className="text-sm font-bold text-blue-400">{drank} / {goal} ml</span>
-              <button onClick={() => setEditingGoal(true)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
-                <Settings className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-            </>
-          )}
+          <span className="text-sm font-bold text-blue-400">{drank} / {goal} ml</span>
+          <button onClick={() => setEditingGoal(v => !v)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
+            <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
         </div>
       </div>
+
+      {/* Goal editor — stepper +/- 250ml */}
+      {editingGoal && (
+        <div className="flex items-center justify-between bg-secondary/40 rounded-xl px-3 py-2">
+          <span className="text-xs text-muted-foreground">Obiettivo</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setGoalInput(String(Math.max(500, Number(goalInput) - 250)))}
+              className="w-8 h-8 rounded-lg bg-secondary hover:bg-secondary/80 flex items-center justify-center text-base font-bold transition-colors"
+            >
+              −
+            </button>
+            <span className="text-sm font-bold text-blue-400 w-20 text-center">{Number(goalInput)} ml</span>
+            <button
+              onClick={() => setGoalInput(String(Number(goalInput) + 250))}
+              className="w-8 h-8 rounded-lg bg-secondary hover:bg-secondary/80 flex items-center justify-center text-base font-bold transition-colors"
+            >
+              +
+            </button>
+            <button onClick={saveGoal} className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-primary-foreground ml-1 transition-colors hover:bg-primary/90">
+              <Check className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Progress bar */}
       <div className="h-2.5 bg-secondary rounded-full overflow-hidden">
         <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
       </div>
       <p className="text-xs text-muted-foreground">{pct}% dell'obiettivo giornaliero</p>
+
+      {/* Quick add buttons */}
       <div className="flex gap-2">
         {[150, 250, 500].map(ml => (
           <button key={ml} onClick={() => addWater(ml)}
