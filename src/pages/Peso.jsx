@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, TrendingDown, TrendingUp, Minus, Trash2, Camera, X, MoreVertical, Pencil, Check, ChevronDown, ChevronUp } from "lucide-react";
-import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from "recharts";
+import { Plus, TrendingDown, TrendingUp, Minus, Trash2, Camera, X, MoreVertical, Pencil, Check } from "lucide-react";
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area, ReferenceLine } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
 
@@ -15,9 +15,7 @@ export default function Peso() {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [showAddWeight, setShowAddWeight] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [lastClickTime, setLastClickTime] = useState(0);
-  const [showChart, setShowChart] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showResetMenu, setShowResetMenu] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(null);
@@ -26,7 +24,6 @@ export default function Peso() {
   const [photoForId, setPhotoForId] = useState(null);
 
   const [goal, setGoal] = useState("");
-  const [goalDate, setGoalDate] = useState("");
   const [editingGoal, setEditingGoal] = useState(false);
   const [savingGoal, setSavingGoal] = useState(false);
 
@@ -35,7 +32,6 @@ export default function Peso() {
       const u = await base44.auth.me();
       setUser(u);
       setGoal(u.weight_goal ? String(u.weight_goal) : "");
-      setGoalDate(u.weight_goal_date || "");
       const w = await base44.entities.BodyWeight.filter({ created_by: u.email }, "-date", 100);
       setWeights(w);
       setLoading(false);
@@ -83,7 +79,9 @@ export default function Peso() {
 
   async function handleSaveGoal() {
     setSavingGoal(true);
-    await base44.auth.updateMe({ weight_goal: goal ? Number(goal) : undefined, weight_goal_date: goalDate || undefined });
+    const newGoal = goal ? Number(goal) : undefined;
+    await base44.auth.updateMe({ weight_goal: newGoal });
+    setUser(prev => ({ ...prev, weight_goal: newGoal }));
     setSavingGoal(false);
     setEditingGoal(false);
   }
@@ -101,6 +99,7 @@ export default function Peso() {
   const latest = weights[0]?.weight_kg;
   const previous = weights[1]?.weight_kg;
   const diff = latest && previous ? (latest - previous).toFixed(1) : null;
+  const weightGoal = user?.weight_goal;
 
   return (
     <div className="space-y-6 pb-20">
@@ -108,7 +107,7 @@ export default function Peso() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-3xl font-bold">Peso Corporeo</h1>
-          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">Non perderti l'opportunità di avere a portata di click le progressioni e il monitoraggio del tuo peso corporeo.</p>
+          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">Monitoraggio e progressioni del tuo peso corporeo.</p>
         </div>
         <div className="relative">
           <button onClick={() => setShowResetMenu(!showResetMenu)} className="p-2 rounded-xl hover:bg-secondary transition-colors">
@@ -154,52 +153,47 @@ export default function Peso() {
         )}
       </AnimatePresence>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          onDoubleClick={() => setShowHistory(v => !v)}
-          className="bg-card rounded-2xl border border-border p-5 cursor-pointer select-none"
-        >
-          <p className="text-sm text-muted-foreground">Peso Attuale</p>
-          <p className="text-3xl font-heading font-bold mt-1">{latest || "—"}</p>
-          <p className="text-xs text-muted-foreground">kg</p>
-          <p className="text-[10px] text-muted-foreground/50 mt-1">doppio click per {showHistory ? "chiudere" : "storico"}</p>
-          <AnimatePresence>
-            {showHistory && weights.length > 0 && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                <div className="mt-3 border-t border-border divide-y divide-border">
-                  {weights.slice(0, 30).map((w) => (
-                    <div key={w.id} className="flex items-center gap-4 py-3">
-                      <div className="flex-1">
-                        <p className="font-semibold">{w.weight_kg} kg</p>
-                        <p className="text-sm text-muted-foreground">{moment(w.date).format("DD MMMM YYYY")}</p>
-                        {w.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{w.notes}</p>}
-                      </div>
-                      {w.photo_url && (
-                        <button onClick={e => { e.stopPropagation(); setExpandedPhoto(w.photo_url); }} className="shrink-0">
-                          <img src={w.photo_url} alt="forma fisica" className="w-12 h-12 rounded-xl object-cover border border-border" />
-                        </button>
-                      )}
-                      {!w.photo_url && (
-                        <button onClick={e => { e.stopPropagation(); setPhotoForId(w.id); photoInputRef.current?.click(); }} disabled={uploadingPhoto === w.id}
-                          className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0 text-muted-foreground">
-                          {uploadingPhoto === w.id
-                            ? <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                            : <Camera className="w-4 h-4" />}
-                        </button>
-                      )}
-                      <button onClick={e => { e.stopPropagation(); handleDelete(w.id); }} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive transition-colors shrink-0">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+      {/* Peso Attuale — doppio click apre storico */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        onDoubleClick={() => setShowHistoryModal(true)}
+        className="bg-card rounded-2xl border border-border p-5 cursor-pointer select-none"
+      >
+        <p className="text-sm text-muted-foreground">Peso Attuale</p>
+        <p className="text-3xl font-heading font-bold mt-1">{latest || "—"}</p>
+        <p className="text-xs text-muted-foreground">kg</p>
+        <p className="text-[10px] text-muted-foreground/40 mt-1">doppio click per storico</p>
+      </motion.div>
+
+      {/* Andamento Peso — visible when data exists */}
+      {chartData.length > 1 && (
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-5">
+          <h2 className="font-heading font-semibold mb-4">Andamento Peso</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit=" kg" domain={["dataMin - 1", "dataMax + 1"]} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 13 }} />
+              {weightGoal && (
+                <ReferenceLine y={weightGoal} stroke="hsl(var(--accent))" strokeDasharray="4 3" strokeWidth={2}
+                  label={{ value: `Obiettivo: ${weightGoal} kg`, position: "insideTopRight", fontSize: 10, fill: "hsl(var(--accent))" }} />
+              )}
+              <Area type="monotone" dataKey="kg" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#weightGrad)" dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
+            </AreaChart>
+          </ResponsiveContainer>
         </motion.div>
+      )}
+
+      {/* Variazione + Obiettivo */}
+      <div className="grid grid-cols-2 gap-4">
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-card rounded-2xl border border-border p-5">
           <p className="text-sm text-muted-foreground">Variazione</p>
           <div className="flex items-center gap-2 mt-1">
@@ -212,7 +206,8 @@ export default function Peso() {
           </div>
           <p className="text-xs text-muted-foreground">kg dall'ultima</p>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-2xl border border-border p-5 col-span-2 sm:col-span-1">
+
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-2xl border border-border p-5">
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm text-muted-foreground">Obiettivo</p>
             <button onClick={() => setEditingGoal(!editingGoal)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
@@ -222,52 +217,18 @@ export default function Peso() {
           {editingGoal ? (
             <div className="space-y-2">
               <Input type="number" placeholder="kg" value={goal} onChange={e => setGoal(e.target.value)} className="h-8 rounded-lg text-sm" />
-    
               <Button size="sm" onClick={handleSaveGoal} disabled={savingGoal} className="h-7 rounded-lg px-3 text-xs w-full">
                 {savingGoal ? "..." : <><Check className="w-3 h-3 mr-1" />Salva</>}
               </Button>
             </div>
           ) : (
             <>
-              <p className="text-3xl font-heading font-bold">{user?.weight_goal ? `${user.weight_goal}` : "—"}</p>
+              <p className="text-3xl font-heading font-bold">{weightGoal || "—"}</p>
               <p className="text-xs text-muted-foreground">kg obiettivo</p>
             </>
           )}
         </motion.div>
       </div>
-
-      {/* Chart - collapsible */}
-      {chartData.length > 1 && (
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
-          <button onClick={() => setShowChart(!showChart)} className="w-full flex items-center justify-between p-5">
-            <h2 className="font-heading font-semibold">Andamento Peso</h2>
-            {showChart ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-          </button>
-          <AnimatePresence>
-            {showChart && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                <div className="px-5 pb-5 border-t border-border pt-2">
-                  <ResponsiveContainer width="100%" height={250}>
-                    <AreaChart data={chartData}>
-                      <defs>
-                        <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit=" kg" domain={["dataMin - 1", "dataMax + 1"]} />
-                      <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 13 }} />
-                      <Area type="monotone" dataKey="kg" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#weightGrad)" dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
 
       {/* Hidden file input */}
       <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={e => handlePhotoUpload(e, photoForId)} />
@@ -285,6 +246,54 @@ export default function Peso() {
               <Button onClick={async () => { await handleSave(); setShowAddWeight(false); }} disabled={saving || !newWeight} className="w-full h-11 rounded-xl">
                 <Plus className="w-4 h-4 mr-1" />{saving ? "Salvataggio..." : "Aggiungi"}
               </Button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* History modal */}
+      <AnimatePresence>
+        {showHistoryModal && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowHistoryModal(false)}>
+            <motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border w-full sm:max-w-md shadow-2xl max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
+                <h2 className="font-heading font-semibold text-lg">Storico Pesate</h2>
+                <button onClick={() => setShowHistoryModal(false)} className="p-1.5 rounded-xl hover:bg-secondary transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="overflow-y-auto divide-y divide-border">
+                {weights.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-10">Nessuna pesata registrata</p>
+                )}
+                {weights.slice(0, 50).map((w) => (
+                  <div key={w.id} className="flex items-center gap-4 px-5 py-3">
+                    <div className="flex-1">
+                      <p className="font-semibold">{w.weight_kg} kg</p>
+                      <p className="text-sm text-muted-foreground">{moment(w.date).format("DD MMMM YYYY")}</p>
+                      {w.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{w.notes}</p>}
+                    </div>
+                    {w.photo_url && (
+                      <button onClick={() => setExpandedPhoto(w.photo_url)} className="shrink-0">
+                        <img src={w.photo_url} alt="forma fisica" className="w-12 h-12 rounded-xl object-cover border border-border" />
+                      </button>
+                    )}
+                    {!w.photo_url && (
+                      <button onClick={() => { setPhotoForId(w.id); photoInputRef.current?.click(); }} disabled={uploadingPhoto === w.id}
+                        className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0 text-muted-foreground">
+                        {uploadingPhoto === w.id
+                          ? <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                          : <Camera className="w-4 h-4" />}
+                      </button>
+                    )}
+                    <button onClick={() => handleDelete(w.id)} className="p-2 rounded-xl hover:bg-destructive/10 text-destructive transition-colors shrink-0">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </div>
         )}
