@@ -91,7 +91,7 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
 
   return (
     <>
-      <div className="space-y-1">
+      <div className="space-y-1 relative z-0">
         {!compact && <h3 className="font-heading font-semibold text-lg">Progresso Mensile</h3>}
         <div
           className="relative overflow-hidden"
