@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { ClipboardList, X, Bell, Pill } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WelcomeBanner from "../components/WelcomeBanner";
@@ -16,6 +17,7 @@ import { FileText } from "lucide-react";
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [plans, setPlans] = useState([]);
+  const [archivedPlans, setArchivedPlans] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [supplements, setSupplements] = useState([]);
@@ -32,14 +34,16 @@ export default function Dashboard() {
       const u = await base44.auth.me();
       setUser(u);
       if (!u.birth_year) setShowProfileModal(true);
-      const [p, sess, notifs, gs, supps] = await Promise.all([
+      const [p, archived, sess, notifs, gs, supps] = await Promise.all([
         base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "active" }),
+        base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "completed" }, "-updated_date", 5),
         base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100),
         base44.entities.Notification.filter({ user_email: u.email, read: false }),
         base44.entities.GymSettings.list(),
         base44.entities.Supplement.filter({ created_by: u.email, active: true }),
       ]);
       setPlans(p);
+      setArchivedPlans(archived);
       setSessions(sess);
       setNotifications(notifs);
       setSupplements(supps);
@@ -67,14 +71,16 @@ export default function Dashboard() {
   async function handleRefresh() {
     setLoading(true);
     const u = await base44.auth.me();
-    const [p, sess, notifs, gs, supps] = await Promise.all([
+    const [p, archived, sess, notifs, gs, supps] = await Promise.all([
       base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "active" }),
+      base44.entities.WorkoutPlan.filter({ assigned_to: u.email, status: "completed" }, "-updated_date", 5),
       base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100),
       base44.entities.Notification.filter({ user_email: u.email, read: false }),
       base44.entities.GymSettings.list(),
       base44.entities.Supplement.filter({ created_by: u.email, active: true }),
     ]);
     setPlans(p);
+    setArchivedPlans(archived);
     setSessions(sess);
     setNotifications(notifs);
     setSupplements(supps);
@@ -154,6 +160,31 @@ export default function Dashboard() {
           </motion.div>
         )}
       </div>
+
+      {/* Schede Archiviate */}
+      {archivedPlans.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="bg-card rounded-2xl border border-border p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Schede Completate</p>
+              <p className="font-semibold text-sm mt-0.5">{archivedPlans.length} scheda{archivedPlans.length > 1 ? "e" : ""}</p>
+            </div>
+            <Link to="/schede">
+              <Button variant="outline" size="sm" className="rounded-xl h-9">Visualizza</Button>
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {archivedPlans.slice(0, 3).map(p => (
+              <Link key={p.id} to={`/schede/${p.id}`}
+                className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                <span className="text-xs font-medium truncate">{p.title}</span>
+                <span className="text-[10px] text-muted-foreground ml-2 shrink-0">✓</span>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Piano Alimentare */}
       {widgets.meal && user?.meal_plan_url && (
