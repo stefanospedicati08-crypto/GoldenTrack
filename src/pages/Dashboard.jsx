@@ -161,9 +161,9 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex-1 rounded-l-2xl rounded-r-none overflow-hidden"
+            className="w-28 h-28 shrink-0 rounded-full overflow-hidden"
           >
-            <WaterTrackerWidget />
+            <WaterTrackerWidget compact />
           </motion.div>
         )}
         {widgets.supplements && (
@@ -173,7 +173,7 @@ export default function Dashboard() {
             transition={{ delay: 0.05 }}
             className="flex-1 rounded-r-2xl rounded-l-none overflow-hidden"
           >
-            <SupplementsWidget supplements={supplements} />
+            <SupplementsWidget supplements={supplements} compact />
           </motion.div>
         )}
       </div>
