@@ -19,22 +19,24 @@ export default function DashboardCustomizer({ widgets, onChange }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-xl hover:bg-secondary transition-colors"
+        className="w-9 h-9 flex items-center justify-center rounded-full bg-card border border-border shadow-sm hover:bg-secondary transition-colors text-foreground"
+        title="Personalizza dashboard"
       >
-        <Settings className="w-3.5 h-3.5" />
-        Personalizza
+        <Settings className="w-4 h-4" />
       </button>
 
       <AnimatePresence>
         {open && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)}>
             <motion.div
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 60, opacity: 0 }}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
               onClick={e => e.stopPropagation()}
-              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border p-5 w-full sm:max-w-sm shadow-2xl space-y-4"
+              className="bg-card rounded-t-3xl border-t border-x border-border p-5 w-full sm:max-w-sm shadow-2xl space-y-4"
             >
+              <div className="w-10 h-1 bg-border rounded-full mx-auto mb-1" />
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-semibold text-lg">Personalizza Dashboard</h3>
                 <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-secondary">

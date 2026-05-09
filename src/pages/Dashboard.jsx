@@ -88,13 +88,18 @@ export default function Dashboard() {
         <ProfileCompleteModal user={user} onComplete={() => setShowProfileModal(false)} />
       )}
 
-      <WelcomeBanner
-        userName={user?.first_name || user?.full_name?.split(" ")[0] || "Atleta"}
-        hasActivePlan={plans.length > 0}
-        planId={activePlan?.id}
-        watermarkUrl={watermarkUrl}
-        user={user}
-      />
+      <div className="relative">
+        <WelcomeBanner
+          userName={user?.first_name || user?.full_name?.split(" ")[0] || "Atleta"}
+          hasActivePlan={plans.length > 0}
+          planId={activePlan?.id}
+          watermarkUrl={watermarkUrl}
+          user={user}
+        />
+        <div className="absolute top-3 right-3 z-10">
+          <DashboardCustomizer widgets={widgets} onChange={handleWidgetsChange} />
+        </div>
+      </div>
 
       {/* Notifiche */}
       <AnimatePresence>
@@ -114,11 +119,6 @@ export default function Dashboard() {
           </motion.div>
         ))}
       </AnimatePresence>
-
-      {/* Header personalizza */}
-      <div className="flex justify-end -mt-4">
-        <DashboardCustomizer widgets={widgets} onChange={handleWidgetsChange} />
-      </div>
 
       {/* Scheda Corrente */}
       <motion.div
