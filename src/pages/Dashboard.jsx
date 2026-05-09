@@ -89,7 +89,7 @@ export default function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="space-y-8">
+    <div className="space-y-3">
       {showProfileModal && (
         <ProfileCompleteModal user={user} onComplete={() => setShowProfileModal(false)} />
       )}
