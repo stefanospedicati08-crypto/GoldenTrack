@@ -75,15 +75,17 @@ export default function Admin() {
         properties: {
           exercises: {
             type: "array",
+            description: "Lista di tutti gli esercizi presenti nella scheda. IMPORTANTE: nelle schede di allenamento italiane, gli esercizi possono essere raggruppati in SUPERSET contrassegnati con una lettera (A, B, C...). Se due o più esercizi hanno la stessa lettera di fianco (es. entrambi hanno 'A', oppure 'A A', oppure sono nella stessa riga con la lettera A), assegna quella lettera nel campo 'superset_key'. Esercizi senza lettera o con lettere diverse NON sono superset.",
             items: {
               type: "object",
               properties: {
-                name: { type: "string", description: "Nome esercizio esatto" },
+                name: { type: "string", description: "Nome esercizio esatto come scritto nella scheda" },
                 muscle_group: { type: "string" },
-                sets: { type: "number", description: "Serie" },
-                reps: { type: "string", description: "Ripetizioni ESATTAMENTE come scritte nel PDF, senza modifiche (es. '3x12', '4x8-10', '15', '3x15+failure')" },
-                rest_seconds: { type: "number" },
-                notes: { type: "string", description: "Note aggiuntive. Se l'esercizio è parte di un superset (contrassegnato con una lettera come A, B, C), metti SOLO la lettera qui (es. 'A'). Non includere altro testo." },
+                sets: { type: "number", description: "Numero di serie" },
+                reps: { type: "string", description: "Ripetizioni ESATTAMENTE come scritte nel PDF senza modifiche (es. '3x12', '4x8-10', '15', '3x15+failure')" },
+                rest_seconds: { type: "number", description: "Recupero in secondi" },
+                notes: { type: "string", description: "Note aggiuntive del trainer. NON mettere qui la lettera di superset." },
+                superset_key: { type: "string", description: "Se l'esercizio fa parte di un superset, metti qui la lettera maiuscola (es. 'A', 'B', 'C'). Stessa lettera per esercizi dello stesso superset. Lascia vuoto se non è un superset." },
                 day_label: { type: "string", description: "Giorno o nome gruppo (es. 'Giorno A', 'Push', 'Lunedì')" },
               },
             },
@@ -116,7 +118,7 @@ export default function Admin() {
         sets: ex.sets || undefined,
         reps: ex.reps || undefined,
         rest_seconds: ex.rest_seconds || undefined,
-        notes: ex.notes || undefined,
+        notes: ex.superset_key ? ex.superset_key.toUpperCase() : (ex.notes || undefined),
         day_label: ex.day_label || undefined,
         order_index: i,
       }));
