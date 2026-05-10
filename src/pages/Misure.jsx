@@ -6,7 +6,7 @@ import { Plus, Ruler, X, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import moment from "moment";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 
 const MISURE_FIELDS = [
   { key: "petto", label: "Petto", unit: "cm" },
@@ -27,7 +27,7 @@ export default function Misure() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
-  const [selectedField, setSelectedField] = useState("petto");
+
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
@@ -61,13 +61,23 @@ export default function Misure() {
   const latest = logs[0];
   const previous = logs[1];
 
+  // Build chart data: one entry per date with all fields
   const chartData = [...logs]
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(-20)
-    .map(l => ({ date: moment(l.date).format("DD/MM"), value: l[selectedField] }))
-    .filter(d => d.value);
+    .map(l => ({
+      date: moment(l.date).format("DD/MM"),
+      ...Object.fromEntries(MISURE_FIELDS.map(f => [f.key, l[f.key] || null]))
+    }));
 
-  const selectedLabel = MISURE_FIELDS.find(f => f.key === selectedField)?.label;
+  // Only show fields that have at least one value
+  const activeFields = MISURE_FIELDS.filter(f => logs.some(l => l[f.key]));
+
+  const FIELD_COLORS = [
+    "#f87171", "#60a5fa", "#34d399", "#a78bfa",
+    "#fb923c", "#f472b6", "#38bdf8", "#4ade80",
+    "#facc15", "#c084fc"
+  ];
 
   if (loading) return (
     <div className="flex items-center justify-center h-[60vh]">
@@ -118,32 +128,31 @@ export default function Misure() {
       )}
 
       {/* Grafico */}
-      {logs.length > 1 && (
+      {logs.length > 1 && activeFields.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-5">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <h2 className="font-heading font-semibold">Andamento — {selectedLabel}</h2>
-            <select
-              value={selectedField}
-              onChange={e => setSelectedField(e.target.value)}
-              className="text-sm bg-secondary border border-border rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-              {MISURE_FIELDS.map(f => <option key={f.key} value={f.key}>{f.label}</option>)}
-            </select>
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="misureGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
+          <h2 className="font-heading font-semibold mb-4">Andamento Misure nel Tempo</h2>
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit=" cm" domain={["dataMin - 1", "dataMax + 1"]} />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 13 }} />
-              <Area type="monotone" dataKey="value" stroke="hsl(var(--accent))" strokeWidth={2.5} fill="url(#misureGrad)" dot={{ fill: "hsl(var(--accent))", r: 4 }} />
-            </AreaChart>
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" unit=" cm" domain={["dataMin - 2", "dataMax + 2"]} />
+              <Tooltip
+                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: 12 }}
+                formatter={(value, name) => [value ? `${value} cm` : "—", MISURE_FIELDS.find(f => f.key === name)?.label || name]}
+              />
+              <Legend formatter={(value) => MISURE_FIELDS.find(f => f.key === value)?.label || value} wrapperStyle={{ fontSize: 11 }} />
+              {activeFields.map((f, i) => (
+                <Line
+                  key={f.key}
+                  type="monotone"
+                  dataKey={f.key}
+                  stroke={FIELD_COLORS[i % FIELD_COLORS.length]}
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  connectNulls
+                />
+              ))}
+            </LineChart>
           </ResponsiveContainer>
         </motion.div>
       )}
