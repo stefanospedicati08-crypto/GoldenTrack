@@ -132,7 +132,7 @@ export default function Misure() {
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 justify-items-center">
             {MISURE_FIELDS.map((f, i) => {
               const val = latest[f.key];
               const prevVal = previous?.[f.key];
@@ -142,13 +142,14 @@ export default function Misure() {
                 <button
                   key={f.key}
                   onClick={() => setSelectedField(f)}
-                  className="bg-secondary/40 rounded-xl p-3 text-left hover:bg-secondary/70 transition-colors active:scale-95"
+                  className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-2 border-primary/30 bg-primary/5 hover:bg-primary/15 transition-colors active:scale-95"
                 >
-                  <p className="text-xs text-muted-foreground">{f.label}</p>
-                  <p className="text-lg font-heading font-bold mt-0.5">{val} <span className="text-xs font-normal text-muted-foreground">cm</span></p>
+                  <p className="text-[10px] text-muted-foreground text-center leading-tight px-1">{f.label}</p>
+                  <p className="text-base font-heading font-bold mt-0.5">{val}</p>
+                  <p className="text-[10px] text-muted-foreground">cm</p>
                   {diff !== null && (
-                    <p className={`text-xs font-medium mt-0.5 ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-accent" : "text-muted-foreground"}`}>
-                      {Number(diff) > 0 ? "+" : ""}{diff} cm
+                    <p className={`text-[10px] font-medium ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-accent" : "text-muted-foreground"}`}>
+                      {Number(diff) > 0 ? "+" : ""}{diff}
                     </p>
                   )}
                 </button>
