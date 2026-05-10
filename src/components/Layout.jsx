@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog, Users, User } from "lucide-react";
+import { Dumbbell, LayoutDashboard, ClipboardList, Weight, Settings, Menu, X, Bell, LogOut, UserCog, Users, User, BookOpen } from "lucide-react";
 import BottomTabBar from "./BottomTabBar";
 import GlobalRestTimer from "./GlobalRestTimer";
 import { AnimatePresence, motion } from "framer-motion";
@@ -16,6 +16,7 @@ const navItems = [
 { path: "/trainer-request", label: "Accesso Trainer", icon: UserCog, userOnly: true },
 { path: "/clienti", label: "Clienti", icon: Users, trainerOnly: true },
 { path: "/admin", label: "Admin", icon: Settings, adminOnly: true },
+{ path: "/libreria-esercizi", label: "Libreria Esercizi", icon: BookOpen },
 { path: "/account", label: "Account", icon: User }];
 
 
