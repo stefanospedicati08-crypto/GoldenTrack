@@ -44,5 +44,16 @@
       "type": "string",
       "title": "Piano Alimentare"
     }
-  }
+  },
+  "required": [
+    "role",
+    "first_name",
+    "last_name",
+    "birth_year",
+    "weight_goal",
+    "weight_goal_date",
+    "height_cm",
+    "photo_url",
+    "meal_plan_url"
+  ]
 }

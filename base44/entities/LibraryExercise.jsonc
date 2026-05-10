@@ -1,0 +1,45 @@
+{
+  "name": "LibraryExercise",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Nome Esercizio"
+    },
+    "description": {
+      "type": "string",
+      "title": "Descrizione"
+    },
+    "muscle_groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Gruppi Muscolari"
+    },
+    "equipment": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Attrezzatura"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "Principiante",
+        "Intermedio",
+        "Avanzato"
+      ],
+      "title": "Difficolt\u00e0"
+    },
+    "media_url": {
+      "type": "string",
+      "title": "URL Media"
+    }
+  },
+  "required": [
+    "name",
+    "muscle_groups"
+  ]
+}
