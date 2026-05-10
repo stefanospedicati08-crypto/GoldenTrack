@@ -1,0 +1,62 @@
+{
+  "name": "BodyMeasurement",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "petto": {
+      "type": "number",
+      "title": "Petto (cm)"
+    },
+    "vita": {
+      "type": "number",
+      "title": "Vita (cm)"
+    },
+    "fianchi": {
+      "type": "number",
+      "title": "Fianchi (cm)"
+    },
+    "coscia_sx": {
+      "type": "number",
+      "title": "Coscia SX (cm)"
+    },
+    "coscia_dx": {
+      "type": "number",
+      "title": "Coscia DX (cm)"
+    },
+    "braccio_sx": {
+      "type": "number",
+      "title": "Braccio SX (cm)"
+    },
+    "braccio_dx": {
+      "type": "number",
+      "title": "Braccio DX (cm)"
+    },
+    "polpaccio_sx": {
+      "type": "number",
+      "title": "Polpaccio SX (cm)"
+    },
+    "polpaccio_dx": {
+      "type": "number",
+      "title": "Polpaccio DX (cm)"
+    },
+    "collo": {
+      "type": "number",
+      "title": "Collo (cm)"
+    },
+    "spalle": {
+      "type": "number",
+      "title": "Spalle (cm)"
+    },
+    "addome": {
+      "type": "number",
+      "title": "Addome (cm)"
+    }
+  },
+  "required": [
+    "date"
+  ]
+}

@@ -17,7 +17,7 @@ import TrainerClients from './pages/TrainerClients';
 import ClientDetail from './pages/ClientDetail';
 import DayWorkout from './pages/DayWorkout';
 import Account from './pages/Account';
-import ExerciseLibrary from './pages/ExerciseLibrary';
+import Misure from './pages/Misure';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -57,7 +57,7 @@ const AuthenticatedApp = () => {
         <Route path="/clienti" element={<TrainerClients />} />
         <Route path="/cliente/:email" element={<ClientDetail />} />
         <Route path="/account" element={<Account />} />
-        <Route path="/libreria-esercizi" element={<ExerciseLibrary />} />
+        <Route path="/misure" element={<Misure />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
