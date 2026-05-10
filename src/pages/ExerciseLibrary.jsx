@@ -48,7 +48,7 @@ export default function ExerciseLibrary() {
   }
 
   const filtered = exercises.filter(ex => {
-    const matchSearch = ex.name.toLowerCase().includes(search.toLowerCase()) || (ex.description || "").toLowerCase().includes(search.toLowerCase());
+    const matchSearch = ex.name.toLowerCase().includes(search.toLowerCase()) || ex.description?.toLowerCase().includes(search.toLowerCase());
     const matchMuscle = !filterMuscle || ex.muscle_groups?.includes(filterMuscle);
     const matchEquip = !filterEquipment || ex.equipment?.includes(filterEquipment);
     const matchDiff = !filterDifficulty || ex.difficulty === filterDifficulty;
