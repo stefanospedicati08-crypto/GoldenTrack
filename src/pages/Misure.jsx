@@ -121,8 +121,7 @@ export default function Misure() {
 
       {/* Ultima misurazione — clickable cards */}
       {latest && (
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-2xl border border-border p-5">
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-heading font-semibold">Ultima Misurazione</h2>
             <div className="flex items-center gap-2">
