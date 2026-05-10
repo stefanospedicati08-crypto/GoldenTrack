@@ -206,10 +206,11 @@ export default function Misure() {
                   </button>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 {MISURE_FIELDS.map(f => log[f.key] ? (
-                  <span key={f.key} className="text-xs bg-secondary px-2 py-1 rounded-lg">
-                    <span className="text-muted-foreground">{f.label}: </span>{log[f.key]} cm
+                  <span key={f.key} className="text-xs bg-secondary px-2 py-1.5 rounded-lg flex items-center justify-between">
+                    <span className="text-muted-foreground">{f.label}</span>
+                    <span className="font-semibold ml-2">{log[f.key]} cm</span>
                   </span>
                 ) : null)}
               </div>
