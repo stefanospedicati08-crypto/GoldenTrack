@@ -43,14 +43,6 @@
       "type": "number",
       "title": "Polpaccio DX (cm)"
     },
-    "collo": {
-      "type": "number",
-      "title": "Collo (cm)"
-    },
-    "spalle": {
-      "type": "number",
-      "title": "Spalle (cm)"
-    },
     "addome": {
       "type": "number",
       "title": "Addome (cm)"

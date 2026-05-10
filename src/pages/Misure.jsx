@@ -18,8 +18,6 @@ const MISURE_FIELDS = [
   { key: "braccio_dx", label: "Braccio DX", unit: "cm" },
   { key: "polpaccio_sx", label: "Polpaccio SX", unit: "cm" },
   { key: "polpaccio_dx", label: "Polpaccio DX", unit: "cm" },
-  { key: "collo", label: "Collo", unit: "cm" },
-  { key: "spalle", label: "Spalle", unit: "cm" },
   { key: "addome", label: "Addome", unit: "cm" },
 ];
 
