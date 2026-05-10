@@ -8,7 +8,7 @@ import ExerciseForm from "@/components/ExerciseForm";
 import { toast } from "sonner";
 
 const MUSCLE_GROUP_ORDER = [
-  "Petto", "Dorso", "Gambe", "Deltoidi", "Bicipiti", "Tricipiti", "Addome", "Corpo Libero", "Total Body", "Fiato"
+  "Petto", "Dorso", "Gambe", "Deltoidi", "Bicipiti", "Tricipiti", "Addome", "Corpo Libero", "Total Body", "Cardio"
 ];
 
 const MUSCLE_GROUP_COLORS = {
@@ -21,7 +21,7 @@ const MUSCLE_GROUP_COLORS = {
   Addome:     { bg: "bg-pink-500/10",   text: "text-pink-400",   border: "border-pink-500/30",   dot: "bg-pink-400" },
   "Corpo Libero": { bg: "bg-cyan-500/10", text: "text-cyan-400", border: "border-cyan-500/30",   dot: "bg-cyan-400" },
   "Total Body":   { bg: "bg-indigo-500/10", text: "text-indigo-400", border: "border-indigo-500/30", dot: "bg-indigo-400" },
-  "Fiato":        { bg: "bg-teal-500/10",  text: "text-teal-400",  border: "border-teal-500/30",  dot: "bg-teal-400" },
+  "Cardio":       { bg: "bg-teal-500/10",  text: "text-teal-400",  border: "border-teal-500/30",  dot: "bg-teal-400" },
 };
 
 const DIFFICULTY_BADGE = {
