@@ -38,7 +38,9 @@ export default function ExerciseLibrary() {
   const [editingExercise, setEditingExercise] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [collapsedGroups, setCollapsedGroups] = useState(() =>
+    Object.fromEntries(MUSCLE_GROUP_ORDER.map(g => [g, true]))
+  );
 
   useEffect(() => {
     async function init() {
