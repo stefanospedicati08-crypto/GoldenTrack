@@ -141,7 +141,7 @@ export default function Misure() {
                 <button
                   key={f.key}
                   onClick={() => setSelectedField(f)}
-                  className="flex flex-col items-center justify-center w-32 h-32 rounded-full border-4 border-accent bg-white shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95"
+                  className="flex flex-col items-center justify-center w-32 h-32 rounded-full border-4 border-accent bg-transparent shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95"
                 >
                   <p className="text-[11px] text-accent font-bold text-center leading-tight px-2">{f.label}</p>
                   <p className="text-xl font-heading font-extrabold text-accent mt-0.5">{val}</p>
