@@ -13,14 +13,14 @@ export default function WelcomeBanner({ userName, hasActivePlan, planId, waterma
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative overflow-hidden bg-gradient-to-br from-primary/90 to-primary rounded-2xl p-4 text-primary-foreground shadow-xl shadow-primary/20"
-    >
+      className="relative overflow-hidden from-primary/90 to-primary rounded-2xl p-4 text-primary-foreground shadow-xl shadow-primary/20 bg-[#93c322]">
+      
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
       <div className="absolute bottom-0 right-16 w-24 h-24 bg-white/5 rounded-full translate-y-8" />
-      {watermarkUrl && (
-        <img src={watermarkUrl} alt="" className="absolute inset-0 w-full h-full object-contain opacity-5 pointer-events-none select-none" />
-      )}
+      {watermarkUrl &&
+      <img src={watermarkUrl} alt="" className="absolute inset-0 w-full h-full object-contain opacity-5 pointer-events-none select-none" />
+      }
 
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-4">
@@ -36,35 +36,35 @@ export default function WelcomeBanner({ userName, hasActivePlan, planId, waterma
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {hasActivePlan && (
-            <>
+          {hasActivePlan &&
+          <>
               <Link to={planId ? `/schede/${planId}` : "/schede"}>
                 <Button
-                  size="sm"
-                  className="bg-white text-primary hover:bg-white/90 font-semibold rounded-xl px-5 h-10 shadow-lg"
-                >
+                size="sm"
+                className="bg-white text-primary hover:bg-white/90 font-semibold rounded-xl px-5 h-10 shadow-lg">
+                
                   <Flame className="w-4 h-4 mr-1.5" />
                   Inizia Allenamento
                 </Button>
               </Link>
               <Link to="/schede">
                 <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-white hover:bg-white/15 rounded-xl h-10 px-4"
-                >
+                size="sm"
+                variant="ghost"
+                className="text-white hover:bg-white/15 rounded-xl h-10 px-4">
+                
                   Vedi Schede
                 </Button>
               </Link>
             </>
-          )}
-          {user && (
-            <div className="[&_button]:text-white [&_button]:border-white/30 [&_button]:hover:bg-white/15">
+          }
+          {user &&
+          <div className="[&_button]:text-white [&_button]:border-white/30 [&_button]:hover:bg-white/15">
               <RichiestaSchedaForm user={user} compact />
             </div>
-          )}
+          }
         </div>
       </div>
-    </motion.div>
-  );
+    </motion.div>);
+
 }
