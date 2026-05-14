@@ -111,7 +111,7 @@ export default function Misure() {
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Misure Corporee</h1>
+          <h1 className="font-heading text-3xl font-bold text-[hsl(var(--accent))]">Misure Corporee</h1>
           <p className="text-muted-foreground mt-1 text-sm">Tocca una misura per vedere il grafico</p>
         </div>
         <Button onClick={() => {setEditingLog(null);setForm({});setShowForm(true);}} className="rounded-xl">
@@ -123,7 +123,7 @@ export default function Misure() {
       {latest &&
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Ultima Misurazione</h2>
+            <h2 className="font-heading font-semibold text-[hsl(var(--popover))]">Ultima Misurazione</h2>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{moment(latest.date).format("DD MMMM YYYY")}</span>
               <button onClick={() => openEdit(latest)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
@@ -191,11 +191,11 @@ export default function Misure() {
       {/* Storico */}
       {logs.length > 0 &&
       <div className="space-y-2">
-          <h2 className="font-heading font-semibold">Storico</h2>
+          <h2 className="font-heading font-semibold text-[hsl(var(--popover))]">Storico</h2>
           {logs.map((log, i) =>
         <motion.div key={log.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}>
               <div className="flex items-center justify-between mb-2">
-                <p className="font-semibold text-sm">{moment(log.date).format("DD MMMM YYYY")}</p>
+                <p className="font-semibold text-sm text-[hsl(var(--popover))]">{moment(log.date).format("DD MMMM YYYY")}</p>
                 <div className="flex gap-1">
                   <button onClick={() => openEdit(log)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
                     <Pencil className="w-4 h-4 text-muted-foreground" />
@@ -208,7 +208,7 @@ export default function Misure() {
               <div className="grid grid-cols-2 gap-1.5">
                 {MISURE_FIELDS.map((f) => log[f.key] ?
             <span key={f.key} className="text-xs px-1.5 py-1 rounded-md flex items-center justify-between bg-[hsl(var(--chart-2))]">
-                    <span className="text-[hsl(var(--foreground))]">{f.label}</span>
+                    <span className="text-[hsl(var(--popover))]">{f.label}</span>
                     <span className="font-semibold ml-2 text-[hsl(var(--popover))]">{log[f.key]} cm</span>
                   </span> :
             null)}
