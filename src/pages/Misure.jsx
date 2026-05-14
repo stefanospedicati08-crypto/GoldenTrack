@@ -207,7 +207,7 @@ export default function Misure() {
               </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {MISURE_FIELDS.map((f) => log[f.key] ?
-            <span key={f.key} className="text-xs bg-secondary px-2 py-1.5 rounded-lg flex items-center justify-between">
+            <span key={f.key} className="text-xs bg-secondary px-1.5 py-1 rounded-md flex items-center justify-between">
                     <span className="text-[hsl(var(--foreground))]">{f.label}</span>
                     <span className="font-semibold ml-2 text-[hsl(var(--accent))]">{log[f.key]} cm</span>
                   </span> :
