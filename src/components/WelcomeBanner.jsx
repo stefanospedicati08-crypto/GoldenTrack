@@ -13,7 +13,7 @@ export default function WelcomeBanner({ userName, hasActivePlan, planId, waterma
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative overflow-hidden from-primary/90 to-primary rounded-2xl p-4 text-primary-foreground shadow-xl shadow-primary/20 bg-[#93c322]">
+      className="relative overflow-hidden from-primary/90 to-primary rounded-2xl p-4 text-primary-foreground shadow-xl shadow-primary/20 bg-[#fafa37]">
       
       {/* Background decoration */}
       <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
