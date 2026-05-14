@@ -123,7 +123,7 @@ export default function Misure() {
       {latest &&
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading font-semibold">Ultima Misurazione</h2>
+            <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Ultima Misurazione</h2>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">{moment(latest.date).format("DD MMMM YYYY")}</span>
               <button onClick={() => openEdit(latest)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
@@ -145,7 +145,7 @@ export default function Misure() {
                 
                   <p className="text-[11px] font-bold text-center leading-tight px-2 text-[hsl(var(--popover))]">{f.label}</p>
                   <p className="text-xl font-heading font-extrabold mt-0.5 text-[hsl(var(--popover))]">{val}</p>
-                  <p className="text-[10px] font-semibold text-accent/70">cm</p>
+                  <p className="text-[10px] font-semibold text-[hsl(var(--popover))]">cm</p>
                   {diff !== null &&
                 <p className={`text-[10px] font-bold ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-green-500" : "text-muted-foreground"}`}>
                       {Number(diff) > 0 ? "+" : ""}{diff}
