@@ -193,8 +193,7 @@ export default function Misure() {
       <div className="space-y-2">
           <h2 className="font-heading font-semibold">Storico</h2>
           {logs.map((log, i) =>
-        <motion.div key={log.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}
-        className="bg-card rounded-xl border border-border p-4">
+        <motion.div key={log.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}>
               <div className="flex items-center justify-between mb-2">
                 <p className="font-semibold text-sm">{moment(log.date).format("DD MMMM YYYY")}</p>
                 <div className="flex gap-1">
