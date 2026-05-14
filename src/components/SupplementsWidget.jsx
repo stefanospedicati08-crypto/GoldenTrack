@@ -106,7 +106,7 @@ export default function SupplementsWidget({ supplements }) {
           {allTaken && <Check className="w-3 h-3 text-white" />}
           {someTaken && <div className="w-2 h-2 rounded-full bg-purple-400" />}
         </div>
-        <span className={`text-sm font-medium ${allTaken ? "text-purple-400" : "text-foreground"}`}>
+        <span className={`text-sm font-medium text-[#fcd12a] ${allTaken ? "text-purple-400" : ""}`}>
           {allTaken ? "Tutti presi! 🎉" : "Segna tutti come presi"}
         </span>
       </button>
