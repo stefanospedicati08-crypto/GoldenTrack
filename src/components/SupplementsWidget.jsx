@@ -133,7 +133,7 @@ export default function SupplementsWidget({ supplements }) {
                   {s.name}
                 </span>
                 {(s.dose || s.timing) &&
-                <p className="text-xs mt-0.5 text-[hsl(var(--foreground))]">
+                <p className="text-xs mt-0.5 text-[hsl(var(--primary))]">
                     {[s.dose, s.timing].filter(Boolean).join(" · ")}
                   </p>
                 }
