@@ -100,7 +100,7 @@ export default function SupplementsWidget({ supplements }) {
         allTaken ? "border-purple-400 bg-purple-400/10" : "border-border bg-secondary/30 hover:border-purple-400/40"}`
         }>
         
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all text-[hsl(var(--primary))] ${
         allTaken ? "bg-purple-400 border-purple-400" : someTaken ? "border-purple-400" : "border-muted-foreground/40"}`
         }>
           {allTaken && <Check className="w-3 h-3 text-white" />}
@@ -129,11 +129,11 @@ export default function SupplementsWidget({ supplements }) {
                 {isTaken && <Check className="w-3 h-3 text-white" />}
               </div>
               <div className="flex-1 text-left">
-                <span className={`text-sm font-medium ${isTaken ? "line-through text-muted-foreground" : ""}`}>
+                <span className={`text-sm font-medium text-[#fcd12a] ${isTaken ? "line-through text-muted-foreground" : ""}`}>
                   {s.name}
                 </span>
                 {(s.dose || s.timing) &&
-                <p className="text-xs mt-0.5 text-muted-foreground">
+                <p className="text-xs mt-0.5 text-[hsl(var(--foreground))]">
                     {[s.dose, s.timing].filter(Boolean).join(" · ")}
                   </p>
                 }
