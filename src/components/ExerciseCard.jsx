@@ -256,7 +256,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                          <div className="flex-1">
                            <label className="text-xs text-muted-foreground mb-1 block">Serie</label>
                            <Select value={setNumber} onValueChange={setSetNumber}>
-                             <SelectTrigger className="h-10 rounded-xl">
+                             <SelectTrigger className="h-10 rounded-xl text-[hsl(var(--primary))]">
                                <SelectValue />
                              </SelectTrigger>
                              <SelectContent>
