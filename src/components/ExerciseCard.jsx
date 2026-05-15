@@ -148,7 +148,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
         </button>
 
         <AnimatePresence>
-          {expanded &&
+          {expanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -327,9 +327,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                       </Button>
                     </div>
                   </div>
-              </div>
 
-                <div className="space-y-2">
+                  <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <MessageSquare className="w-3.5 h-3.5" /> Note personali esercizio
@@ -362,15 +361,15 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                 </div>
 
                 <AnimatePresence>
-                  {showChart &&
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
+                  {showChart && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
                       <LoadChart logs={logs} />
                     </motion.div>
-                }
+                  )}
                 </AnimatePresence>
               </div>
             </motion.div>
-          }
+          )}
         </AnimatePresence>
       </motion.div>
     </>);
