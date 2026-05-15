@@ -12,7 +12,10 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
   const [hr, setHr] = useState(existingSession?.heart_rate_avg ? String(existingSession.heart_rate_avg) : "");
   const [note, setNote] = useState(existingSession?.athlete_note || "");
   const [calories, setCalories] = useState(existingSession?.calories ? String(existingSession.calories) : "");
-  const [trainingMinutes, setTrainingMinutes] = useState(existingSession?.training_minutes ? String(existingSession.training_minutes) : "");
+  const existingTotalMinutes = existingSession?.training_minutes || 0;
+  const [durationHours, setDurationHours] = useState(existingTotalMinutes ? String(Math.floor(existingTotalMinutes / 60)) : "");
+  const [durationMinutes, setDurationMinutes] = useState(existingTotalMinutes ? String(Math.floor(existingTotalMinutes % 60)) : "");
+  const [durationSeconds, setDurationSeconds] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(!!existingSession);
   const [editing, setEditing] = useState(false);
@@ -29,7 +32,9 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
       rpe: rpe ? Number(rpe) : undefined,
       heart_rate_avg: hr ? Number(hr) : undefined,
       calories: calories ? Number(calories) : undefined,
-      training_minutes: trainingMinutes ? Number(trainingMinutes) : undefined,
+      training_minutes: (durationHours || durationMinutes || durationSeconds)
+        ? (Number(durationHours || 0) * 60) + Number(durationMinutes || 0) + (Number(durationSeconds || 0) / 60)
+        : undefined,
       athlete_note: note || undefined,
     };
 
@@ -77,9 +82,10 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
               <Flame className="w-4 h-4" /> {calories} kcal
             </span>
           )}
-          {trainingMinutes && (
+          {(durationHours || durationMinutes) && (
             <span className="flex items-center gap-1.5 text-sm bg-secondary text-muted-foreground px-3 py-1.5 rounded-xl">
-              <Clock className="w-4 h-4" /> {trainingMinutes} min
+              <Clock className="w-4 h-4" />
+              {durationHours ? `${durationHours}h ` : ""}{durationMinutes ? `${durationMinutes}min` : ""}{durationSeconds ? ` ${durationSeconds}s` : ""}
             </span>
           )}
           {note && (
@@ -119,11 +125,24 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
               </label>
               <Input type="number" placeholder="es. 450" value={calories} onChange={e => setCalories(e.target.value)} className="h-10 rounded-xl" />
             </div>
-            <div>
+            <div className="col-span-2">
               <label className="text-xs text-muted-foreground mb-1 block">
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Durata (min)</span>
+                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Durata allenamento</span>
               </label>
-              <Input type="number" placeholder="es. 60" value={trainingMinutes} onChange={e => setTrainingMinutes(e.target.value)} className="h-10 rounded-xl" />
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Input type="number" min="0" placeholder="0" value={durationHours} onChange={e => setDurationHours(e.target.value)} className="h-10 rounded-xl text-center" />
+                  <p className="text-[10px] text-center text-muted-foreground mt-0.5">ore</p>
+                </div>
+                <div>
+                  <Input type="number" min="0" max="59" placeholder="0" value={durationMinutes} onChange={e => setDurationMinutes(e.target.value)} className="h-10 rounded-xl text-center" />
+                  <p className="text-[10px] text-center text-muted-foreground mt-0.5">minuti</p>
+                </div>
+                <div>
+                  <Input type="number" min="0" max="59" placeholder="0" value={durationSeconds} onChange={e => setDurationSeconds(e.target.value)} className="h-10 rounded-xl text-center" />
+                  <p className="text-[10px] text-center text-muted-foreground mt-0.5">secondi</p>
+                </div>
+              </div>
             </div>
           </div>
           <div>

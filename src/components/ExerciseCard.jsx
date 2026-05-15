@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { startTimer } from "@/lib/timerStore";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame, Trash2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,6 +24,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const [editingNote, setEditingNote] = useState(false);
   const [isWarmup, setIsWarmup] = useState(false);
   const [deletingLog, setDeletingLog] = useState(null);
+  const [completed, setCompleted] = useState(false);
 
   const isDoubleReps = exercise.reps && exercise.reps.includes("/");
   const today = new Date().toISOString().split("T")[0];
@@ -58,7 +59,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
     setWeightKg2("");
     setRepsDone("");
     setSaving(false);
-    startTimer(exercise.rest_seconds || 90);
+    startTimer(exercise.rest_seconds > 0 ? exercise.rest_seconds : 90);
     const newLog = await base44.entities.WorkoutLog.create({
       exercise_id: exercise.id,
       plan_id: exercise.plan_id,
@@ -130,9 +131,12 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
             {exercise.rest_seconds && ` • ${exercise.rest_seconds}s rec.`}
           </p>
         </div>
-        {todayLogs.length > 0 && (
+        {completed && (
+          <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
+        )}
+        {todayLogs.length > 0 && !completed && (
           <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${allSetsCompleted ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
-            {allSetsCompleted ? `✓ ${trainingSets.length}/${totalSets}` : `${trainingSets.length}/${totalSets} serie`}
+            {trainingSets.length}/{totalSets}
             {warmupLogs.length > 0 && <span className="text-chart-3"> +{warmupLogs.length}WU</span>}
           </span>
         )}
@@ -165,7 +169,19 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
 
               {todayLogs.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Serie di oggi</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Serie di oggi</p>
+                    <div className="flex items-center gap-2">
+                      {warmupLogs.length > 0 && (
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-chart-3/10 text-chart-3">
+                          🔥 {warmupLogs.length} WU
+                        </span>
+                      )}
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${allSetsCompleted ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
+                        💪 {trainingSets.length}/{totalSets} serie
+                      </span>
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     {[...todayLogs].sort((a, b) => a.set_number - b.set_number).map((log) => (
                       <div key={log.id} className="flex flex-col gap-2 bg-secondary/40 rounded-xl px-3 py-2.5">
@@ -312,6 +328,14 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                     <TrendingUp className="w-4 h-4" />
                   </Button>
                 </div>
+                <Button
+                  onClick={() => { setCompleted(true); setExpanded(false); }}
+                  variant={completed ? "default" : "outline"}
+                  className={`w-full rounded-xl h-10 ${completed ? "bg-accent text-accent-foreground hover:bg-accent/90" : "border-accent/50 text-accent hover:bg-accent/10"}`}
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  {completed ? "Esercizio completato ✓" : "Segna come completato"}
+                </Button>
               </div>
 
               <div className="space-y-2">
