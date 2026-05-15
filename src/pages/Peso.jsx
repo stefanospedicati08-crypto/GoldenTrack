@@ -111,7 +111,7 @@ export default function Peso() {
         </div>
         <div className="relative">
           <button onClick={() => setShowResetMenu(!showResetMenu)} className="p-2 rounded-xl hover:bg-secondary transition-colors">
-            <MoreVertical className="w-5 h-5 text-muted-foreground" />
+            <MoreVertical className="w-5 h-5 text-[hsl(var(--primary))]" />
           </button>
           <AnimatePresence>
             {showResetMenu &&
