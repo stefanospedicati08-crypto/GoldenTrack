@@ -89,7 +89,7 @@ export default function SupplementsWidget({ supplements }) {
           }
         </div>
         <button onClick={() => setShowSettings(true)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
-          <Settings className="w-4 h-4 text-muted-foreground" />
+          <Settings className="w-4 h-4 text-[hsl(var(--primary))]" />
         </button>
       </div>
 
