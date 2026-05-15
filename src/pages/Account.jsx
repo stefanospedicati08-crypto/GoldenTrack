@@ -113,7 +113,7 @@ export default function Account() {
   return (
     <div className="space-y-6 max-w-lg mx-auto">
       <div>
-        <h1 className="font-heading text-3xl font-bold">Account</h1>
+        <h1 className="font-heading text-3xl font-bold text-[hsl(var(--primary))]">Account</h1>
         <p className="text-muted-foreground mt-1">Gestisci il tuo profilo e preferenze</p>
       </div>
 
@@ -134,7 +134,7 @@ export default function Account() {
           <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
         </div>
         <div>
-          <p className="font-semibold text-lg">{user?.full_name || "—"}</p>
+          <p className="font-semibold text-lg text-[hsl(var(--primary))]">{user?.full_name || "—"}</p>
           <p className="text-sm text-muted-foreground">{user?.email}</p>
           <p className="text-xs text-muted-foreground mt-0.5 capitalize">{user?.role || "user"}</p>
         </div>
@@ -183,7 +183,7 @@ export default function Account() {
       {/* Meal Plan */}
       <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-heading font-semibold">Piano Alimentare</h2>
+          <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Piano Alimentare</h2>
           <button onClick={() => mealRef.current?.click()} className="flex items-center gap-1.5 text-xs text-primary font-medium px-3 py-1.5 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors">
             {uploadingMeal ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
             {user?.meal_plan_url ? "Aggiorna" : "Carica"}
@@ -205,7 +205,7 @@ export default function Account() {
         <button onClick={() => setShowSupps(!showSupps)} className="w-full flex items-center justify-between p-5">
           <div className="flex items-center gap-2">
             <Pill className="w-5 h-5 text-accent" />
-            <h2 className="font-heading font-semibold">Integratori</h2>
+            <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Integratori</h2>
             {supplements.length > 0 && <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">{supplements.length}</span>}
           </div>
           {showSupps ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
