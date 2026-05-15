@@ -127,7 +127,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-[hsl(var(--primary))]">{exercise.name}</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[hsl(var(--popover-foreground))]">
               {exercise.sets && `${exercise.sets} serie`}
               {exercise.reps && ` × ${exercise.reps} rep`}
               {exercise.rest_seconds && ` • ${exercise.rest_seconds}s rec.`}
