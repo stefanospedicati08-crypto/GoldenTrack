@@ -27,13 +27,13 @@ export default function DayWorkout() {
   useEffect(() => {
     async function load() {
       const [p, exs, lgs, sess] = await Promise.all([
-        base44.entities.WorkoutPlan.get(planId),
-        base44.entities.Exercise.filter({ plan_id: planId }, "order_index"),
-        base44.entities.WorkoutLog.filter({ plan_id: planId }, "-date", 500),
-        base44.entities.WorkoutSession.filter({ plan_id: planId }, "-date", 100),
-      ]);
+      base44.entities.WorkoutPlan.get(planId),
+      base44.entities.Exercise.filter({ plan_id: planId }, "order_index"),
+      base44.entities.WorkoutLog.filter({ plan_id: planId }, "-date", 500),
+      base44.entities.WorkoutSession.filter({ plan_id: planId }, "-date", 100)]
+      );
       setPlan(p);
-      setExercises(exs.filter(ex => (ex.day_label || "Generale") === dayLabel));
+      setExercises(exs.filter((ex) => (ex.day_label || "Generale") === dayLabel));
       setLogs(lgs);
       setSessions(sess);
       setLoading(false);
@@ -43,34 +43,34 @@ export default function DayWorkout() {
 
   const handleLogSaved = (newLog) => {
     if (newLog._replaceId) {
-      setLogs(prev => prev.map(l => l.id === newLog._replaceId ? newLog : l));
+      setLogs((prev) => prev.map((l) => l.id === newLog._replaceId ? newLog : l));
     } else {
-      setLogs(prev => [newLog, ...prev]);
+      setLogs((prev) => [newLog, ...prev]);
     }
   };
 
   async function saveSupersetEdits() {
     const updates = Object.entries(supersetEdits);
     await Promise.all(updates.map(([exId, letter]) =>
-      base44.entities.Exercise.update(exId, { notes: letter || undefined })
+    base44.entities.Exercise.update(exId, { notes: letter || undefined })
     ));
-    setExercises(prev => prev.map(ex =>
-      supersetEdits[ex.id] !== undefined
-        ? { ...ex, notes: supersetEdits[ex.id] || undefined }
-        : ex
+    setExercises((prev) => prev.map((ex) =>
+    supersetEdits[ex.id] !== undefined ?
+    { ...ex, notes: supersetEdits[ex.id] || undefined } :
+    ex
     ));
     setSupersetEdits({});
     setEditingSuperset(false);
   }
 
   const handleLogDeleted = (logId) => {
-    setLogs(prev => prev.filter(l => l.id !== logId));
+    setLogs((prev) => prev.filter((l) => l.id !== logId));
   };
 
   const handleSessionSaved = (session) => {
-    setSessions(prev => {
-      const exists = prev.find(s => s.id === session.id);
-      if (exists) return prev.map(s => s.id === session.id ? session : s);
+    setSessions((prev) => {
+      const exists = prev.find((s) => s.id === session.id);
+      if (exists) return prev.map((s) => s.id === session.id ? session : s);
       return [session, ...prev];
     });
     setShowSessionLogger(false);
@@ -80,8 +80,8 @@ export default function DayWorkout() {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   // Group exercises by superset letter (e.g. "A", "B") detected from name prefix like "A1", "A2", or notes
@@ -100,13 +100,13 @@ export default function DayWorkout() {
   const groups = [];
   const seen = new Set();
 
-  exercises.forEach(ex => {
+  exercises.forEach((ex) => {
     if (seen.has(ex.id)) return;
     const key = getSupersetKey(ex);
     if (key) {
-      const siblings = exercises.filter(e => getSupersetKey(e) === key);
+      const siblings = exercises.filter((e) => getSupersetKey(e) === key);
       if (siblings.length > 1) {
-        siblings.forEach(s => seen.add(s.id));
+        siblings.forEach((s) => seen.add(s.id));
         groups.push({ type: "superset", key, exercises: siblings });
         return;
       }
@@ -115,113 +115,113 @@ export default function DayWorkout() {
     groups.push({ type: "single", exercise: ex });
   });
 
-  const todaySessions = sessions.filter(s => s.day_label === dayLabel && s.date === today);
+  const todaySessions = sessions.filter((s) => s.day_label === dayLabel && s.date === today);
 
   return (
     <div className="space-y-5 pb-32">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link to={`/schede/${planId}`} className="p-2 rounded-xl hover:bg-secondary transition-colors">
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 text-[hsl(var(--primary))]" />
         </Link>
         <div className="flex-1">
           <p className="text-xs text-muted-foreground font-medium">{plan?.title}</p>
-          <h1 className="font-heading text-2xl font-bold">{dayLabel}</h1>
+          <h1 className="font-heading text-2xl font-bold text-[hsl(var(--primary))]">{dayLabel}</h1>
         </div>
-        {!editingSuperset ? (
-          <button onClick={() => setEditingSuperset(true)}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground bg-secondary px-3 py-1.5 rounded-xl transition-colors">
+        {!editingSuperset ?
+        <button onClick={() => setEditingSuperset(true)}
+        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground bg-secondary px-3 py-1.5 rounded-xl transition-colors">
             <Pencil className="w-3.5 h-3.5" /> Superset
-          </button>
-        ) : (
-          <div className="flex gap-2">
+          </button> :
+
+        <div className="flex gap-2">
             <button onClick={saveSupersetEdits}
-              className="flex items-center gap-1 text-xs text-accent bg-accent/10 px-3 py-1.5 rounded-xl">
+          className="flex items-center gap-1 text-xs text-accent bg-accent/10 px-3 py-1.5 rounded-xl">
               <Check className="w-3.5 h-3.5" /> Salva
             </button>
-            <button onClick={() => { setSupersetEdits({}); setEditingSuperset(false); }}
-              className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-xl">
+            <button onClick={() => {setSupersetEdits({});setEditingSuperset(false);}}
+          className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-xl">
               <X className="w-3.5 h-3.5" /> Annulla
             </button>
           </div>
-        )}
+        }
       </div>
 
       {/* Superset editing mode */}
-      {editingSuperset && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-2">
+      {editingSuperset &&
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+      className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-2">
           <p className="text-xs font-semibold text-primary uppercase tracking-wider">Assegna lettere superset</p>
           <p className="text-xs text-muted-foreground">Assegna la stessa lettera a due esercizi per raggrupparli come superset.</p>
           <div className="space-y-2 mt-3">
-            {exercises.map(ex => {
-              const current = supersetEdits[ex.id] !== undefined ? supersetEdits[ex.id] : (ex.notes?.match(/^[A-Z]$/i) ? ex.notes.toUpperCase() : "");
-              return (
-                <div key={ex.id} className="flex items-center gap-3 bg-card rounded-xl px-3 py-2.5 border border-border">
+            {exercises.map((ex) => {
+            const current = supersetEdits[ex.id] !== undefined ? supersetEdits[ex.id] : ex.notes?.match(/^[A-Z]$/i) ? ex.notes.toUpperCase() : "";
+            return (
+              <div key={ex.id} className="flex items-center gap-3 bg-card rounded-xl px-3 py-2.5 border border-border">
                   <span className="flex-1 text-sm font-medium truncate">{ex.name}</span>
                   <div className="flex gap-1">
-                    {["", "A", "B", "C", "D", "E"].map(letter => (
-                      <button key={letter}
-                        onClick={() => setSupersetEdits(prev => ({ ...prev, [ex.id]: letter }))}
-                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${
-                          current === letter
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
-                        }`}>
+                    {["", "A", "B", "C", "D", "E"].map((letter) =>
+                  <button key={letter}
+                  onClick={() => setSupersetEdits((prev) => ({ ...prev, [ex.id]: letter }))}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${
+                  current === letter ?
+                  "bg-primary text-primary-foreground" :
+                  "bg-secondary hover:bg-secondary/80 text-muted-foreground"}`
+                  }>
                         {letter || "—"}
                       </button>
-                    ))}
+                  )}
                   </div>
-                </div>
-              );
-            })}
+                </div>);
+
+          })}
           </div>
         </motion.div>
-      )}
+      }
 
       {/* Exercise list */}
       {groups.map((group, gi) =>
-        group.type === "superset" ? (
-          <SupersetGroup
-            key={group.key}
-            supersetKey={group.key}
-            exercises={group.exercises}
-            logs={logs}
-            onLogSaved={handleLogSaved}
-            onLogDeleted={handleLogDeleted}
-            index={gi}
-          />
-        ) : (
-          <ExerciseCard
-            key={group.exercise.id}
-            exercise={group.exercise}
-            logs={logs.filter(l => l.exercise_id === group.exercise.id)}
-            onLogSaved={handleLogSaved}
-            onLogDeleted={handleLogDeleted}
-            index={gi}
-          />
-        )
+      group.type === "superset" ?
+      <SupersetGroup
+        key={group.key}
+        supersetKey={group.key}
+        exercises={group.exercises}
+        logs={logs}
+        onLogSaved={handleLogSaved}
+        onLogDeleted={handleLogDeleted}
+        index={gi} /> :
+
+
+      <ExerciseCard
+        key={group.exercise.id}
+        exercise={group.exercise}
+        logs={logs.filter((l) => l.exercise_id === group.exercise.id)}
+        onLogSaved={handleLogSaved}
+        onLogDeleted={handleLogDeleted}
+        index={gi} />
+
+
       )}
 
       {/* Storico sessioni */}
       <DaySessionHistory
-        sessions={sessions.filter(s => s.day_label === dayLabel && s.date !== today)}
+        sessions={sessions.filter((s) => s.day_label === dayLabel && s.date !== today)}
         dayLabel={dayLabel}
-        logs={logs}
-      />
+        logs={logs} />
+      
 
       {/* Session Logger modal */}
       <AnimatePresence>
-        {showSessionLogger && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowSessionLogger(false)}>
+        {showSessionLogger &&
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm"
+        onClick={() => setShowSessionLogger(false)}>
             <motion.div
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 80, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
-              className="bg-card rounded-t-2xl sm:rounded-2xl border border-border w-full sm:max-w-lg shadow-2xl p-6"
-            >
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-card rounded-t-2xl sm:rounded-2xl border border-border w-full sm:max-w-lg shadow-2xl p-6">
+            
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5 text-accent" />
@@ -232,16 +232,16 @@ export default function DayWorkout() {
                 </div>
               </div>
               <SessionDayLogger
-                planId={planId}
-                dayLabel={dayLabel}
-                date={today}
-                existingSession={todaySessions[0]}
-                onSaved={handleSessionSaved}
-                inline
-              />
+              planId={planId}
+              dayLabel={dayLabel}
+              date={today}
+              existingSession={todaySessions[0]}
+              onSaved={handleSessionSaved}
+              inline />
+            
             </motion.div>
           </div>
-        )}
+        }
       </AnimatePresence>
 
       {/* FAB Termina Sessione */}
@@ -250,12 +250,12 @@ export default function DayWorkout() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           onClick={() => setShowSessionLogger(true)}
-          className="flex items-center gap-2 bg-accent text-accent-foreground font-semibold px-6 py-3.5 rounded-full shadow-xl hover:bg-accent/90 active:scale-95 transition-all"
-        >
+          className="flex items-center gap-2 bg-accent text-accent-foreground font-semibold px-6 py-3.5 rounded-full shadow-xl hover:bg-accent/90 active:scale-95 transition-all">
+          
           <Flag className="w-5 h-5" />
           Termina Sessione
         </motion.button>
       </div>
-    </div>
-  );
+    </div>);
+
 }
