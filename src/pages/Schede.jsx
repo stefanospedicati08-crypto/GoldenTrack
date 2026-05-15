@@ -30,16 +30,16 @@ export default function Schede() {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   async function handleSetActive(planId) {
     setSaving(true);
-    const otherActives = plans.filter(p => p.status === "active" && p.id !== planId);
-    await Promise.all(otherActives.map(p => base44.entities.WorkoutPlan.update(p.id, { status: "archived" })));
+    const otherActives = plans.filter((p) => p.status === "active" && p.id !== planId);
+    await Promise.all(otherActives.map((p) => base44.entities.WorkoutPlan.update(p.id, { status: "archived" })));
     await base44.entities.WorkoutPlan.update(planId, { status: "active" });
-    setPlans(prev => prev.map(p => ({
+    setPlans((prev) => prev.map((p) => ({
       ...p,
       status: p.id === planId ? "active" : p.status === "active" ? "archived" : p.status
     })));
@@ -52,35 +52,35 @@ export default function Schede() {
   const statusConfig = {
     active: { label: "Attiva", color: "bg-accent/10 text-accent", icon: CheckCircle },
     completed: { label: "Completata", color: "bg-chart-3/10 text-chart-3", icon: CheckCircle },
-    archived: { label: "Archiviata", color: "bg-muted text-muted-foreground", icon: Archive },
+    archived: { label: "Archiviata", color: "bg-muted text-muted-foreground", icon: Archive }
   };
 
-  const activePlans = plans.filter(p => p.status === "active");
-  const archivedPlans = plans.filter(p => p.status !== "active");
+  const activePlans = plans.filter((p) => p.status === "active");
+  const archivedPlans = plans.filter((p) => p.status !== "active");
 
   function PlanCard({ plan, i }) {
     const cfg = statusConfig[plan.status] || statusConfig.active;
     return (
       <motion.div key={plan.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="relative">
         <Link to={`/schede/${plan.id}`} className="flex items-center gap-4 bg-card rounded-2xl border border-border p-5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-[hsl(var(--primary))]">
             <ClipboardList className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-heading font-semibold text-lg">{plan.title}</h3>
+            <h3 className="font-heading font-semibold text-lg text-[hsl(var(--primary))]">{plan.title}</h3>
             {plan.description && <p className="text-sm text-muted-foreground mt-0.5 truncate">{plan.description}</p>}
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
           <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mr-6" />
         </Link>
         <button
-          onClick={e => { e.preventDefault(); setActivateModal(plan.id); setActivateChoice(null); }}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-secondary transition-colors z-10"
-        >
+          onClick={(e) => {e.preventDefault();setActivateModal(plan.id);setActivateChoice(null);}}
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-secondary transition-colors z-10">
+          
           <MoreVertical className="w-4 h-4 text-muted-foreground" />
         </button>
-      </motion.div>
-    );
+      </motion.div>);
+
   }
 
   return (
@@ -95,49 +95,49 @@ export default function Schede() {
         </Button>
       </div>
 
-      {activePlans.length === 0 ? (
-        <div className="bg-card rounded-2xl border border-border p-12 text-center">
+      {activePlans.length === 0 ?
+      <div className="bg-card rounded-2xl border border-border p-12 text-center">
           <ClipboardList className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
           <p className="text-lg text-muted-foreground">Nessuna scheda attiva</p>
           <p className="text-sm text-muted-foreground/70 mt-2">Il tuo trainer ti assegnerà presto un programma</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
+        </div> :
+
+      <div className="grid gap-4">
           {activePlans.map((plan, i) => <PlanCard key={plan.id} plan={plan} i={i} />)}
         </div>
-      )}
+      }
 
       {/* Storico schede */}
-      {archivedPlans.length > 0 && (
-        <div className="space-y-3">
+      {archivedPlans.length > 0 &&
+      <div className="space-y-3">
           <button
-            onClick={() => setShowArchived(!showArchived)}
-            className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
-          >
+          onClick={() => setShowArchived(!showArchived)}
+          className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">
+          
             <History className="w-4 h-4" />
             Storico Schede ({archivedPlans.length})
             <span className="text-xs">{showArchived ? "▲" : "▼"}</span>
           </button>
           <AnimatePresence>
-            {showArchived && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+            {showArchived &&
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                 <div className="grid gap-4">
                   {archivedPlans.map((plan, i) => <PlanCard key={plan.id} plan={plan} i={i} />)}
                 </div>
               </motion.div>
-            )}
+          }
           </AnimatePresence>
         </div>
-      )}
+      }
 
       {/* Activate modal */}
       <AnimatePresence>
         {activateModal && (() => {
-          const plan = plans.find(p => p.id === activateModal);
+          const plan = plans.find((p) => p.id === activateModal);
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
               <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-card rounded-2xl border border-border p-6 max-w-sm w-full shadow-2xl space-y-4">
+              className="bg-card rounded-2xl border border-border p-6 max-w-sm w-full shadow-2xl space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-heading font-semibold text-lg">Impostare come attiva?</h3>
                   <button onClick={() => setActivateModal(null)} className="p-2 rounded-xl hover:bg-secondary"><X className="w-4 h-4" /></button>
@@ -157,8 +157,8 @@ export default function Schede() {
                   {saving ? "Salvataggio..." : "Conferma"}
                 </Button>
               </motion.div>
-            </div>
-          );
+            </div>);
+
         })()}
       </AnimatePresence>
 
@@ -166,6 +166,6 @@ export default function Schede() {
       <AnimatePresence>
         {showTimer && <RestTimer defaultSeconds={90} onClose={() => setShowTimer(false)} />}
       </AnimatePresence>
-    </div>
-  );
+    </div>);
+
 }
