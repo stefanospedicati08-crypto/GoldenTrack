@@ -31,15 +31,16 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
     return logs.filter(l => l.exercise_id === ex.id && l.date === today);
   }
 
-  const allDone = exercises.every(ex => todayLogs(ex).length >= totalSets);
+  // Solo le serie allenanti (non warmup) contano verso il completamento
+  const allDone = exercises.every(ex => todayLogs(ex).filter(l => !l.is_warmup).length >= totalSets);
 
   async function handleSaveSet() {
     setSaving(true);
     // Save current exercise in superset
     const ex = exercises[currentExIdx];
     const form = forms[currentExIdx];
-    const completedSets = todayLogs(ex).map(l => l.set_number);
-    const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSets.includes(n)) || totalSets;
+    const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
+    const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSets.includes(n)) || (totalSets + 1);
 
     const optimistic = {
       id: `tmp-${Date.now()}`,

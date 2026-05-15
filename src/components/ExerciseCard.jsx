@@ -32,9 +32,12 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const today = new Date().toISOString().split("T")[0];
   const todayLogs = logs.filter((l) => l.date === today);
   const totalSets = exercise.sets || 5;
-  const allSetsCompleted = todayLogs.length >= totalSets;
 
-  const completedSetNumbers = todayLogs.map((l) => l.set_number);
+  // Solo le serie allenanti (non warmup) contano verso il completamento
+  const trainingSets = todayLogs.filter((l) => !l.is_warmup);
+  const allSetsCompleted = trainingSets.length >= totalSets;
+
+  const completedSetNumbers = trainingSets.map((l) => l.set_number);
   const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find((n) => !completedSetNumbers.includes(n));
 
   async function handleSave() {
@@ -52,7 +55,9 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       date: today
     };
     onLogSaved(optimistic);
-    const next = nextSet ? String(nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : String(totalSets);
+    const next = isWarmup
+      ? String(Number(setNumber) + 1)
+      : (nextSet ? String(nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : String(totalSets + 1));
     setSetNumber(next);
     setWeightKg("");
     setWeightKg2("");
@@ -135,7 +140,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
           </div>
           {todayLogs.length > 0 &&
           <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${allSetsCompleted ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
-              {allSetsCompleted ? "✓ Completato" : `${todayLogs.length}/${totalSets} serie`}
+              {allSetsCompleted ? `✓ ${trainingSets.length}/${totalSets}` : `${trainingSets.length}/${totalSets} serie`}
+              {todayLogs.filter(l => l.is_warmup).length > 0 && <span className="text-chart-3"> +{todayLogs.filter(l => l.is_warmup).length}WU</span>}
             </span>
           }
           {expanded ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
@@ -237,8 +243,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                       </div>
               }
 
-                {!allSetsCompleted &&
-              <div className="space-y-3">
+                <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registra Serie</p>
                       <button
@@ -260,11 +265,21 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                                <SelectValue />
                              </SelectTrigger>
                              <SelectContent>
-                               {Array.from({ length: totalSets }, (_, i) => i + 1).
-                          filter((n) => !completedSetNumbers.includes(n)).
-                          map((n) =>
-                          <SelectItem key={n} value={String(n)}>Serie {n}</SelectItem>
-                          )}
+                               {isWarmup ? (
+                                 // Per warmup: numeri liberi 1-10
+                                 Array.from({ length: 10 }, (_, i) => i + 1).map((n) =>
+                                   <SelectItem key={n} value={String(n)}>WU {n}</SelectItem>
+                                 )
+                               ) : (
+                                 // Serie allenanti: quelle mancanti + extra
+                                 (() => {
+                                   const missing = Array.from({ length: totalSets }, (_, i) => i + 1).filter(n => !completedSetNumbers.includes(n));
+                                   const extra = Array.from({ length: 5 }, (_, i) => totalSets + i + 1);
+                                   return [...missing, ...extra].map(n =>
+                                     <SelectItem key={n} value={String(n)}>{n > totalSets ? `Serie ${n} (extra)` : `Serie ${n}`}</SelectItem>
+                                   );
+                                 })()
+                               )}
                              </SelectContent>
                            </Select>
                          </div>
@@ -312,14 +327,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                       </Button>
                     </div>
                   </div>
-              }
-
-                {allSetsCompleted &&
-              <Button variant="outline" onClick={() => setShowChart(!showChart)} className="w-full rounded-xl h-10">
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    {showChart ? "Nascondi grafico" : "Mostra progressione carico"}
-                  </Button>
-              }
+              </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
