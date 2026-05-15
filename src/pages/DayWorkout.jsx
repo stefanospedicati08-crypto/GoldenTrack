@@ -213,14 +213,14 @@ export default function DayWorkout() {
       {/* Session Logger modal */}
       <AnimatePresence>
         {showSessionLogger &&
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         onClick={() => setShowSessionLogger(false)}>
             <motion.div
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-card rounded-t-2xl sm:rounded-2xl border border-border w-full sm:max-w-lg shadow-2xl p-6">
+            className="bg-card rounded-2xl border border-border w-full max-w-lg shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
             
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
