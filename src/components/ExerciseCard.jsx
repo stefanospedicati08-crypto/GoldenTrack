@@ -244,8 +244,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                     Warm Up
                   </button>
                 </div>
-                <div className="flex gap-2">
-                  <div className="flex-1">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Serie</label>
                     <Select value={setNumber} onValueChange={setSetNumber}>
                       <SelectTrigger className="h-10 rounded-xl text-[hsl(var(--primary))]">
@@ -270,7 +270,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="w-20 shrink-0">
+                  <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Rep fatte</label>
                     <Input
                       type="number"
@@ -280,7 +280,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                       className="h-10 rounded-xl"
                     />
                   </div>
-                  <div className="flex-1">
+                  <div>
                     <label className="text-xs text-muted-foreground mb-1 block">{isDoubleReps ? "Carico 1° (kg)" : "Carico (kg)"}</label>
                     <Input
                       type="number"
@@ -291,7 +291,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                     />
                   </div>
                   {isDoubleReps && (
-                    <div className="flex-1">
+                    <div>
                       <label className="text-xs text-muted-foreground mb-1 block">Carico 2° (kg)</label>
                       <Input
                         type="number"
