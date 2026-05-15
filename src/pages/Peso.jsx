@@ -188,11 +188,11 @@ export default function Peso() {
 
         {/* Obiettivo cerchio */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <button onClick={() => setEditingGoal(true)} className="w-32 h-32 rounded-full border-4 border-accent/40 bg-accent/5 flex flex-col items-center justify-center relative hover:bg-accent/10 transition-colors">
-            <Pencil className="absolute top-2 right-2 w-3 h-3 text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">Obiettivo</p>
+          <button onClick={() => setEditingGoal(true)} className="w-32 h-32 rounded-full border-4 border-accent/40 bg-accent/5 flex flex-col items-center justify-center relative hover:bg-accent/10 transition-colors text-[hsl(var(--chart-2))]">
+            <Pencil className="absolute top-2 right-2 w-3 h-3 text-muted-foreground bg-[hsl(var(--accent))]" />
+            <p className="text-xs text-[hsl(var(--chart-2))]">Obiettivo</p>
             <p className="text-2xl font-heading font-bold text-accent">{weightGoal || "—"}</p>
-            <p className="text-[10px] text-muted-foreground mt-1">kg</p>
+            <p className="text-[10px] mt-1 text-[hsl(var(--accent))]">kg</p>
           </button>
         </motion.div>
       </div>
