@@ -87,10 +87,10 @@ export default function Schede() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Scheda Corrente</h1>
+          <h1 className="font-heading text-3xl font-bold text-[hsl(var(--primary))]">Scheda Corrente</h1>
           <p className="text-muted-foreground mt-1">Il tuo programma di allenamento attivo</p>
         </div>
-        <Button variant="outline" onClick={() => setShowTimer(true)} className="rounded-xl h-10 gap-2">
+        <Button variant="outline" onClick={() => setShowTimer(true)} className="rounded-xl h-10 gap-2 text-[hsl(var(--primary))]">
           <Timer className="w-4 h-4" /> Timer
         </Button>
       </div>
