@@ -161,7 +161,7 @@ export default function Peso() {
         className="flex justify-center cursor-pointer"
         title="Doppio click per storico">
         
-        <div className="w-40 h-40 rounded-full border-4 border-primary flex flex-col items-center justify-center text-[hsl(var(--card-foreground))]">
+        <div className="w-40 h-40 rounded-full border-4 border-primary flex flex-col items-center justify-center text-[hsl(var(--popover-foreground))]">
           <p className="text-sm mb-1 text-[hsl(var(--primary))]">Peso Attuale</p>
           <p className="text-4xl font-heading font-bold text-[hsl(var(--primary))]">{latest || "—"}</p>
           <p className="text-xs mt-1 text-[hsl(var(--primary))]">kg</p>
