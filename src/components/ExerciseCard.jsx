@@ -287,7 +287,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                            <label className="text-xs text-muted-foreground mb-1 block">Rep fatte</label>
                            <Input
                         type="number"
-                        placeholder={exercise.reps ? exercise.reps.split(/[^0-9]/)[0] : "—"}
+                        placeholder={exercise.reps ? exercise.reps.split(/\D/)[0] : "—"}
                         value={repsDone}
                         onChange={(e) => setRepsDone(e.target.value)}
                         className="h-10 rounded-xl" />
@@ -340,24 +340,25 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                       </button>
                   }
                   </div>
-                  {noteSaved && !editingNote ?
-                <p className="text-sm text-muted-foreground bg-secondary/40 rounded-xl px-3 py-2 italic">
+                  {noteSaved && !editingNote && (
+                    <p className="text-sm text-muted-foreground bg-secondary/40 rounded-xl px-3 py-2 italic">
                       {exerciseNote || "—"}
-                    </p> :
-
-                <div className="flex gap-2">
+                    </p>
+                  )}
+                  {(!noteSaved || editingNote) && (
+                    <div className="flex gap-2">
                       <textarea
-                    placeholder="Es. Sento bene il bicipite, aumentare peso..."
-                    value={exerciseNote}
-                    onChange={(e) => setExerciseNote(e.target.value)}
-                    rows={2}
-                    className="flex-1 text-sm bg-background border border-input rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground" />
-                  
+                        placeholder="Es. Sento bene il bicipite, aumentare peso..."
+                        value={exerciseNote}
+                        onChange={(e) => setExerciseNote(e.target.value)}
+                        rows={2}
+                        className="flex-1 text-sm bg-background border border-input rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+                      />
                       <Button size="sm" onClick={handleSaveNote} disabled={savingNote} className="h-9 rounded-xl self-end">
                         {savingNote ? "..." : <Check className="w-3.5 h-3.5" />}
                       </Button>
                     </div>
-                }
+                  )}
                 </div>
 
                 <AnimatePresence>
