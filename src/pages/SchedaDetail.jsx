@@ -15,10 +15,10 @@ export default function SchedaDetail() {
   useEffect(() => {
     async function load() {
       const [p, exs, sess] = await Promise.all([
-        base44.entities.WorkoutPlan.get(id),
-        base44.entities.Exercise.filter({ plan_id: id }, "order_index"),
-        base44.entities.WorkoutSession.filter({ plan_id: id }, "-date", 100),
-      ]);
+      base44.entities.WorkoutPlan.get(id),
+      base44.entities.Exercise.filter({ plan_id: id }, "order_index"),
+      base44.entities.WorkoutSession.filter({ plan_id: id }, "-date", 100)]
+      );
       setPlan(p);
       setExercises(exs);
       setSessions(sess);
@@ -31,12 +31,12 @@ export default function SchedaDetail() {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   const grouped = {};
-  exercises.forEach(ex => {
+  exercises.forEach((ex) => {
     const day = ex.day_label || "Generale";
     if (!grouped[day]) grouped[day] = [];
     grouped[day].push(ex);
@@ -60,21 +60,21 @@ export default function SchedaDetail() {
         </div>
       </div>
 
-      {plan?.notes && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3">
+      {plan?.notes &&
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+      className="flex items-start gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-4 py-3">
           <FileText className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-semibold text-primary mb-1 uppercase tracking-wider">Note del Trainer</p>
             <p className="text-sm text-foreground">{plan.notes}</p>
           </div>
         </motion.div>
-      )}
+      }
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {days.map(([day, exs], gi) => {
-          const recentSessions = sessions.filter(s => s.day_label === day && s.date >= cutoff);
-          const lastSession = sessions.filter(s => s.day_label === day).sort((a, b) => b.date.localeCompare(a.date))[0];
+          const recentSessions = sessions.filter((s) => s.day_label === day && s.date >= cutoff);
+          const lastSession = sessions.filter((s) => s.day_label === day).sort((a, b) => b.date.localeCompare(a.date))[0];
           return (
             <motion.button
               key={day}
@@ -82,32 +82,32 @@ export default function SchedaDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: gi * 0.08 }}
               onClick={() => navigate(`/schede/${id}/giorno/${encodeURIComponent(day)}`)}
-              className="bg-card border border-border rounded-2xl p-5 text-left hover:border-primary/50 hover:shadow-lg transition-all active:scale-95 group"
-            >
+              className="bg-card border border-border rounded-2xl p-5 text-left hover:border-primary/50 hover:shadow-lg transition-all active:scale-95 group">
+              
               <div className="flex items-start justify-between">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
                   <Dumbbell className="w-6 h-6 text-primary" />
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mt-1" />
               </div>
-              <h2 className="font-heading font-bold text-lg">{day}</h2>
+              <h2 className="font-heading font-bold text-lg text-[hsl(var(--primary))]">{day}</h2>
               <p className="text-sm text-muted-foreground mt-1">{exs.length} esercizi</p>
-              {lastSession && (
-                <p className="text-xs text-muted-foreground/60 mt-2">
+              {lastSession &&
+              <p className="text-xs text-muted-foreground/60 mt-2">
                   Ultima sessione: {new Date(lastSession.date).toLocaleDateString("it-IT")}
                 </p>
-              )}
-              {recentSessions.length > 0 && (
-                <div className="mt-3 flex gap-1">
-                  {Array.from({ length: Math.min(recentSessions.length, 8) }).map((_, i) => (
-                    <div key={i} className="w-2 h-2 rounded-full bg-primary/60" />
-                  ))}
+              }
+              {recentSessions.length > 0 &&
+              <div className="mt-3 flex gap-1">
+                  {Array.from({ length: Math.min(recentSessions.length, 8) }).map((_, i) =>
+                <div key={i} className="w-2 h-2 rounded-full bg-primary/60" />
+                )}
                 </div>
-              )}
-            </motion.button>
-          );
+              }
+            </motion.button>);
+
         })}
       </div>
-    </div>
-  );
+    </div>);
+
 }
