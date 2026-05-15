@@ -106,7 +106,7 @@ export default function Peso() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Peso Corporeo</h1>
+          <h1 className="font-heading text-3xl font-bold text-[hsl(var(--primary))]">Peso Corporeo</h1>
           <p className="text-muted-foreground mt-1 text-sm leading-relaxed">Monitoraggio e progressioni del tuo peso corporeo.</p>
         </div>
         <div className="relative">
@@ -200,9 +200,9 @@ export default function Peso() {
       {/* Andamento Peso — visible when data exists */}
       {chartData.length > 1 &&
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-5">
-          <h2 className="font-heading font-semibold mb-4">Andamento Peso</h2>
+          <h2 className="font-heading font-semibold mb-4 text-[hsl(var(--primary))]">Andamento Peso</h2>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={chartData}>
+            <AreaChart data={chartData} className="text-[hsl(var(--destructive))]">
               <defs>
                 <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
@@ -217,7 +217,7 @@ export default function Peso() {
             <ReferenceLine y={weightGoal} stroke="hsl(var(--accent))" strokeDasharray="4 3" strokeWidth={2}
             label={{ value: `Obiettivo: ${weightGoal} kg`, position: "insideTopRight", fontSize: 10, fill: "hsl(var(--accent))" }} />
             }
-              <Area type="monotone" dataKey="kg" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#weightGrad)" dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} />
+              <Area type="monotone" dataKey="kg" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#weightGrad)" dot={{ fill: "hsl(var(--primary))", r: 4 }} activeDot={{ r: 6 }} className="opacity-100" />
             </AreaChart>
           </ResponsiveContainer>
         </motion.div>
