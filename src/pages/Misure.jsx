@@ -114,7 +114,7 @@ export default function Misure() {
           <h1 className="font-heading text-3xl font-bold text-[hsl(var(--primary))]">Misure Corporee</h1>
           <p className="mt-1 text-sm text-[hsl(var(--popover))]">Tocca una misura per vedere il grafico</p>
         </div>
-        <Button onClick={() => {setEditingLog(null);setForm({});setShowForm(true);}} className="rounded-xl bg-[hsl(var(--accent))]">
+        <Button onClick={() => {setEditingLog(null);setForm({});setShowForm(true);}} className="rounded-xl bg-[hsl(var(--primary))]">
           <Plus className="w-4 h-4 mr-1" /> Nuova
         </Button>
       </div>
@@ -191,7 +191,7 @@ export default function Misure() {
       {/* Storico */}
       {logs.length > 0 &&
       <div className="space-y-2">
-          <h2 className="font-heading font-semibold text-[hsl(var(--popover))]">Storico</h2>
+          <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Storico</h2>
           {logs.map((log, i) =>
         <motion.div key={log.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}>
               <div className="flex items-center justify-between mb-2">
@@ -207,7 +207,7 @@ export default function Misure() {
               </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {MISURE_FIELDS.map((f) => log[f.key] ?
-            <span key={f.key} className="text-xs px-1.5 py-1 rounded-md flex items-center justify-between bg-[hsl(var(--chart-2))]">
+            <span key={f.key} className="text-xs px-1.5 py-1 rounded-md flex items-center justify-between bg-[hsl(var(--primary))]">
                     <span className="text-[hsl(var(--popover))]">{f.label}</span>
                     <span className="font-semibold ml-2 text-[hsl(var(--popover))]">{log[f.key]} cm</span>
                   </span> :
