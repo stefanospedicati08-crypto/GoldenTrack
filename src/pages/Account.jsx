@@ -201,7 +201,7 @@ export default function Account() {
       </div>
 
       {/* Supplements */}
-      <div className="border border-border overflow-hidden bg-[hsl(var(--popover))] rounded-[50px] opacity-75">
+      <div className="border border-border overflow-hidden bg-[hsl(var(--popover))] rounded-[50px] opacity-80">
         <button onClick={() => setShowSupps(!showSupps)} className="w-full flex items-center justify-between p-5 bg-[hsl(var(--popover))] rounded-[50px] opacity-70">
           <div className="flex items-center gap-2">
             <Pill className="w-5 h-5 text-accent" />
@@ -251,7 +251,7 @@ export default function Account() {
       </div>
 
       {/* Actions */}
-      <div className="space-y-3">
+      <div className="space-y-3 rounded-[5px]">
         <Button variant="outline" className="w-full h-12 rounded-xl justify-start gap-3" onClick={() => base44.auth.logout()}>
           <LogOut className="w-4 h-4 text-muted-foreground" />
           Esci dall'account
