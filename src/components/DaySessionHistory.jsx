@@ -22,8 +22,8 @@ export default function DaySessionHistory({ sessions, dayLabel, logs }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-secondary/50 transition-colors rounded-[50px]">
         
-        <Calendar className="w-4 h-4 text-muted-foreground" />
-        <span className="text-sm font-medium flex-1">Storico sessioni — {dayLabel}</span>
+        <Calendar className="w-4 h-4 text-[hsl(var(--foreground))]" />
+        <span className="text-sm font-medium flex-1 text-[hsl(var(--primary))]">Storico sessioni — {dayLabel}</span>
         <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">{daySessions.length} sessioni</span>
         {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
       </button>
