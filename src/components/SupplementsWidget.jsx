@@ -120,7 +120,7 @@ export default function SupplementsWidget({ supplements }) {
               key={s.id}
               onClick={() => toggleTaken(s.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
-              isTaken ? "border-purple-400/40 bg-purple-400/5" : "border-border bg-secondary/20 hover:border-purple-400/30"}`
+              isTaken ? "border-white/40 bg-white/5" : "border-border bg-secondary/20 hover:border-white/30"}`
               }>
               
               <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
