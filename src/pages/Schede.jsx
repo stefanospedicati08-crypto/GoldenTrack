@@ -62,7 +62,7 @@ export default function Schede() {
     const cfg = statusConfig[plan.status] || statusConfig.active;
     return (
       <motion.div key={plan.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="relative">
-        <Link to={`/schede/${plan.id}`} className="flex items-center gap-4 bg-card rounded-2xl border border-border p-5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group">
+        <Link to={`/schede/${plan.id}`} className="flex items-center gap-4 bg-card border border-border p-5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group rounded-[50px]">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-[hsl(var(--primary))]">
             <ClipboardList className="w-6 h-6 text-primary" />
           </div>
