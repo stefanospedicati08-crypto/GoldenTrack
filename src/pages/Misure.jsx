@@ -143,7 +143,7 @@ export default function Misure() {
                 onClick={() => setSelectedField(f)}
                 className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-[6px] border-primary shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95">
                 
-                  <p className="text-[10px] font-bold text-center leading-tight px-2 text-[hsl(var(--card-foreground))]">{f.label}</p>
+                  <p className="text-[10px] font-bold text-center leading-tight px-2 text-[hsl(var(--accent))]">{f.label}</p>
                   <p className="text-lg font-heading font-extrabold mt-0.5 text-[hsl(var(--popover))]">{val}</p>
                   <p className="text-[9px] font-semibold text-[hsl(var(--popover))]">cm</p>
                   {diff !== null &&
