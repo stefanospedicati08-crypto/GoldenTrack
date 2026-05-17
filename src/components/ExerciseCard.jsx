@@ -118,7 +118,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-4 p-4 text-left hover:bg-secondary/30 transition-colors rounded-none">
+        className="w-full flex items-center gap-4 p-4 text-left hover:bg-secondary/30 transition-colors rounded-[1px]">
         
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
           <Dumbbell className="w-5 h-5 text-primary" />
