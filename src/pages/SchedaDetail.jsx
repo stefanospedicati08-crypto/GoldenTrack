@@ -82,7 +82,7 @@ export default function SchedaDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: gi * 0.08 }}
               onClick={() => navigate(`/schede/${id}/giorno/${encodeURIComponent(day)}`)}
-              className="bg-card border border-border rounded-2xl p-5 text-left hover:border-primary/50 hover:shadow-lg transition-all active:scale-95 group">
+              className="bg-card border border-border p-5 text-left hover:border-primary/50 hover:shadow-lg transition-all active:scale-95 group rounded-[50px]">
               
               <div className="flex items-start justify-between">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
