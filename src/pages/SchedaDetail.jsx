@@ -92,11 +92,11 @@ export default function SchedaDetail() {
               </div>
               <h2 className="font-heading font-bold text-lg text-[hsl(var(--primary))]">{day}</h2>
               <p className="text-sm text-muted-foreground mt-1">{exs.length} esercizi</p>
-              {lastSession &&
-              <p className="text-xs text-muted-foreground/60 mt-2 hidden">
-                  Ultima sessione: {new Date(lastSession.date).toLocaleDateString("it-IT")}
-                </p>
-              }
+              
+
+
+
+              
               {recentSessions.length > 0 &&
               <div className="mt-3 flex gap-1">
                   {Array.from({ length: Math.min(recentSessions.length, 8) }).map((_, i) =>
