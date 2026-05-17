@@ -137,13 +137,11 @@ export default function Misure() {
             const prevVal = previous?.[f.key];
             const diff = val && prevVal ? (val - prevVal).toFixed(1) : null;
             if (!val) return null;
-            const color = FIELD_COLORS[i % FIELD_COLORS.length];
             return (
               <button
                 key={f.key}
                 onClick={() => setSelectedField(f)}
-                style={{ borderColor: color }}
-                className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-[6px] shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95">
+                className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-[6px] border-primary shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95">
                 
                   <p className="text-[10px] font-bold text-center leading-tight px-2 text-[hsl(var(--popover))]">{f.label}</p>
                   <p className="text-lg font-heading font-extrabold mt-0.5 text-[hsl(var(--popover))]">{val}</p>
