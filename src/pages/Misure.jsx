@@ -111,7 +111,7 @@ export default function Misure() {
     <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold text-[hsl(var(--accent))]">Misure Corporee</h1>
+          <h1 className="font-heading text-3xl font-bold text-[hsl(var(--primary))]">Misure Corporee</h1>
           <p className="mt-1 text-sm text-[hsl(var(--popover))]">Tocca una misura per vedere il grafico</p>
         </div>
         <Button onClick={() => {setEditingLog(null);setForm({});setShowForm(true);}} className="rounded-xl bg-[hsl(var(--accent))]">
@@ -144,8 +144,8 @@ export default function Misure() {
                 className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-[6px] border-primary shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95">
                 
                   <p className="text-[10px] font-bold text-center leading-tight px-2 text-[hsl(var(--accent))]">{f.label}</p>
-                  <p className="text-lg font-heading font-extrabold mt-0.5 text-[hsl(var(--popover))]">{val}</p>
-                  <p className="text-[9px] font-semibold text-[hsl(var(--popover))]">cm</p>
+                  <p className="text-lg font-heading font-extrabold mt-0.5 text-[hsl(var(--accent))]">{val}</p>
+                  <p className="text-[9px] font-semibold text-[hsl(var(--accent))]">cm</p>
                   {diff !== null &&
                 <p className={`text-[9px] font-bold ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-green-500" : "text-muted-foreground"}`}>
                       {Number(diff) > 0 ? "+" : ""}{diff}
