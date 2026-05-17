@@ -57,7 +57,7 @@ export default function WaterTrackerWidget() {
   if (loading) return null;
 
   return (
-    <div className="p-5 space-y-3 bg-[hsl(var(--popover))] rounded-[50px]">
+    <div className="p-5 space-y-3 rounded-[50px] bg-[hsl(var(--background))]">
       {/* Header */}
       <div className="flex items-center justify-between bg-[hsl(var(--background))] rounded-[50px]">
         <div className="flex items-center gap-2">
