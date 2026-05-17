@@ -37,18 +37,6 @@ export default function Misure() {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   // Field detail popup
   const [selectedField, setSelectedField] = useState(null); // { key, label }
-  // Custom colors per field, persisted in localStorage
-  const [fieldColors, setFieldColors] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("misure_colors") || "{}"); } catch { return {}; }
-  });
-
-  function setFieldColor(key, color) {
-    setFieldColors((prev) => {
-      const next = { ...prev, [key]: color };
-      localStorage.setItem("misure_colors", JSON.stringify(next));
-      return next;
-    });
-  }
 
   useEffect(() => {
     async function load() {
@@ -149,36 +137,23 @@ export default function Misure() {
             const prevVal = previous?.[f.key];
             const diff = val && prevVal ? (val - prevVal).toFixed(1) : null;
             if (!val) return null;
-            const color = fieldColors[f.key] || FIELD_COLORS[i % FIELD_COLORS.length];
+            const color = FIELD_COLORS[i % FIELD_COLORS.length];
             return (
-              <div key={f.key} className="relative">
-                <button
-                  onClick={() => setSelectedField(f)}
-                  style={{ borderColor: color }}
-                  className="flex flex-col items-center justify-center w-24 h-24 border-[6px] shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95 rounded-full">
-                  <p className="text-[10px] font-bold text-center leading-tight px-2 text-[hsl(var(--accent-foreground))]">{f.label}</p>
+              <button
+                key={f.key}
+                onClick={() => setSelectedField(f)}
+                style={{ borderColor: color }}
+                className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-[6px] shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95">
+                
+                  <p className="text-[10px] font-bold text-center leading-tight px-2 text-[hsl(var(--popover))]">{f.label}</p>
                   <p className="text-lg font-heading font-extrabold mt-0.5 text-[hsl(var(--popover))]">{val}</p>
                   <p className="text-[9px] font-semibold text-[hsl(var(--popover))]">cm</p>
                   {diff !== null &&
-                    <p className={`text-[9px] font-bold ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-green-500" : "text-muted-foreground"}`}>
+                <p className={`text-[9px] font-bold ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-green-500" : "text-muted-foreground"}`}>
                       {Number(diff) > 0 ? "+" : ""}{diff}
                     </p>
-                  }
-                </button>
-                {/* Color picker trigger */}
-                <label
-                  className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-card border border-border shadow flex items-center justify-center cursor-pointer hover:scale-110 transition-transform"
-                  title="Scegli colore"
-                  style={{ background: color }}
-                >
-                  <input
-                    type="color"
-                    value={color}
-                    onChange={(e) => setFieldColor(f.key, e.target.value)}
-                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer rounded-full"
-                  />
-                </label>
-              </div>);
+                }
+                </button>);
 
           })}
           </div>
@@ -203,7 +178,7 @@ export default function Misure() {
               key={f.key}
               type="monotone"
               dataKey={f.key}
-              stroke={fieldColors[f.key] || FIELD_COLORS[i % FIELD_COLORS.length]}
+              stroke={FIELD_COLORS[i % FIELD_COLORS.length]}
               strokeWidth={2}
               dot={{ r: 3 }}
               connectNulls
