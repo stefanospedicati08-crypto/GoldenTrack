@@ -59,10 +59,10 @@ export default function WaterTrackerWidget() {
   return (
     <div className="p-5 space-y-3 bg-[hsl(var(--popover))] rounded-[50px]">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between bg-[hsl(var(--background))] rounded-[50px]">
         <div className="flex items-center gap-2">
           <Droplets className="w-5 h-5 text-blue-400" />
-          <h3 className="font-heading font-semibold">Idratazione</h3>
+          <h3 className="font-heading font-semibold mx-1">Idratazione</h3>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-blue-400">{drank} / {goal} ml</span>
