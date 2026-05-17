@@ -251,8 +251,8 @@ export default function Account() {
       </div>
 
       {/* Actions */}
-      <div className="space-y-3 rounded-[5px]">
-        <Button variant="outline" className="w-full h-12 rounded-xl justify-start gap-3" onClick={() => base44.auth.logout()}>
+      <div className="space-y-3 rounded-[50px]">
+        <Button variant="outline" className="w-full h-12 justify-start gap-3 rounded-[50px]" onClick={() => base44.auth.logout()}>
           <LogOut className="w-4 h-4 text-muted-foreground" />
           Esci dall'account
         </Button>
