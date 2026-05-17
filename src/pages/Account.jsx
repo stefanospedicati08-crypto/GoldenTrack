@@ -141,7 +141,7 @@ export default function Account() {
       </div>
 
       {/* Body data */}
-      <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+      <div className="rounded-2xl border border-border p-5 space-y-4 bg-[#e4cece]">
         <div className="flex items-center justify-between">
           <h2 className="font-heading font-semibold">Dati Corporei</h2>
           {!editingBody ?
@@ -166,12 +166,12 @@ export default function Account() {
               <p className="text-xl font-heading font-bold text-[hsl(var(--primary))]">{latestWeight ?? "—"}</p>
               <p className="text-xs text-muted-foreground">kg</p>
             </div>
-            <div className="bg-secondary/40 p-3 text-center rounded-[100px]">
+            <div className="p-3 text-center rounded-[100px] bg-[hsl(var(--background))]">
               <Ruler className="w-4 h-4 text-muted-foreground mx-auto mb-1" />
               <p className="text-xl font-heading font-bold text-[hsl(var(--primary))]">{user?.height_cm ?? "—"}</p>
               <p className="text-xs text-muted-foreground">cm</p>
             </div>
-            <div className="bg-secondary/40 p-3 text-center rounded-[100px]">
+            <div className="p-3 text-center rounded-[100px] bg-[hsl(var(--background))]">
               <p className="text-xs text-muted-foreground mb-1">BMI</p>
               <p className="text-xl font-heading font-bold text-[hsl(var(--primary))]">{bmi ?? "—"}</p>
               <p className="text-xs text-muted-foreground">indice</p>
