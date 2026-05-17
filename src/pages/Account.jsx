@@ -252,11 +252,11 @@ export default function Account() {
 
       {/* Actions */}
       <div className="space-y-3 rounded-[50px]">
-        <Button variant="outline" className="w-full h-12 justify-start gap-3 rounded-[50px]" onClick={() => base44.auth.logout()}>
+        <Button variant="outline" className="w-full h-12 justify-start gap-3 rounded-[50px] bg-[hsl(var(--popover))]" onClick={() => base44.auth.logout()}>
           <LogOut className="w-4 h-4 text-muted-foreground" />
           Esci dall'account
         </Button>
-        <Button variant="outline" className="w-full h-12 rounded-xl justify-start gap-3 text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setShowDeleteDialog(true)}>
+        <Button variant="outline" className="w-full h-12 justify-start gap-3 text-destructive border-destructive/30 hover:bg-destructive/5 rounded-[50px]" onClick={() => setShowDeleteDialog(true)}>
           <Trash2 className="w-4 h-4" />
           Richiedi eliminazione account
         </Button>
