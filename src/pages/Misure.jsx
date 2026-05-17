@@ -137,17 +137,19 @@ export default function Misure() {
             const prevVal = previous?.[f.key];
             const diff = val && prevVal ? (val - prevVal).toFixed(1) : null;
             if (!val) return null;
+            const color = FIELD_COLORS[i % FIELD_COLORS.length];
             return (
               <button
                 key={f.key}
                 onClick={() => setSelectedField(f)}
-                className="flex flex-col items-center justify-center w-32 h-32 rounded-full border-4 border-accent shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95 text-[hsl(var(--primary))]">
+                style={{ borderColor: color }}
+                className="flex flex-col items-center justify-center w-24 h-24 rounded-full border-[6px] shadow-md hover:shadow-lg hover:scale-105 transition-all active:scale-95">
                 
-                  <p className="text-[11px] font-bold text-center leading-tight px-2 text-[hsl(var(--popover))]">{f.label}</p>
-                  <p className="text-xl font-heading font-extrabold mt-0.5 text-[hsl(var(--popover))]">{val}</p>
-                  <p className="text-[10px] font-semibold text-[hsl(var(--popover))]">cm</p>
+                  <p className="text-[10px] font-bold text-center leading-tight px-2 text-[hsl(var(--popover))]">{f.label}</p>
+                  <p className="text-lg font-heading font-extrabold mt-0.5 text-[hsl(var(--popover))]">{val}</p>
+                  <p className="text-[9px] font-semibold text-[hsl(var(--popover))]">cm</p>
                   {diff !== null &&
-                <p className={`text-[10px] font-bold ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-green-500" : "text-muted-foreground"}`}>
+                <p className={`text-[9px] font-bold ${Number(diff) > 0 ? "text-chart-3" : Number(diff) < 0 ? "text-green-500" : "text-muted-foreground"}`}>
                       {Number(diff) > 0 ? "+" : ""}{diff}
                     </p>
                 }
