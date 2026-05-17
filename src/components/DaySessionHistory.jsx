@@ -17,7 +17,7 @@ export default function DaySessionHistory({ sessions, dayLabel, logs }) {
   if (daySessions.length === 0) return null;
 
   return (
-    <div className="bg-secondary/30 rounded-2xl border border-border overflow-hidden">
+    <div className="bg-secondary/30 border border-border overflow-hidden rounded-[50px]">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-secondary/50 transition-colors rounded-[50px]">
