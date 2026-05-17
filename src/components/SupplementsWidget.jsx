@@ -124,7 +124,7 @@ export default function SupplementsWidget({ supplements }) {
               }>
               
               <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-              isTaken ? "bg-purple-400 border-purple-400" : "border-muted-foreground/40"}`
+              isTaken ? "bg-white border-white" : "border-muted-foreground/40"}`
               }>
                 {isTaken && <Check className="w-3 h-3 text-white" />}
               </div>
