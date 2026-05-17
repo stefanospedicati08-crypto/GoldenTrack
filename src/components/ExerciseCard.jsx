@@ -114,7 +114,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-card rounded-2xl border border-border overflow-hidden">
+      className="bg-card border border-border overflow-hidden rounded-[50px]">
       
       <button
         onClick={() => setExpanded(!expanded)}
