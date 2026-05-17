@@ -141,7 +141,7 @@ export default function Account() {
       </div>
 
       {/* Body data */}
-      <div className="rounded-2xl border border-border p-5 space-y-4 bg-[#e4cece]">
+      <div className="border border-border p-5 space-y-4 bg-[hsl(var(--popover))] rounded-none">
         <div className="flex items-center justify-between">
           <h2 className="font-heading font-semibold">Dati Corporei</h2>
           {!editingBody ?
