@@ -100,7 +100,7 @@ export default function SupplementsWidget({ supplements }) {
         allTaken ? "border-purple-400 bg-purple-400/10" : "border-border bg-secondary/30 hover:border-purple-400/40"}`
         }>
         
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all text-[hsl(var(--primary))] ${
+        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
         allTaken ? "bg-purple-400 border-purple-400" : someTaken ? "border-purple-400" : "border-muted-foreground/40"}`
         }>
           {allTaken && <Check className="w-3 h-3 text-white" />}
