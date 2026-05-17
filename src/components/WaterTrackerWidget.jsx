@@ -61,13 +61,13 @@ export default function WaterTrackerWidget() {
       {/* Header */}
       <div className="flex items-center justify-between bg-[hsl(var(--background))] rounded-[50px]">
         <div className="flex items-center gap-2">
-          <Droplets className="w-5 h-5 text-blue-400 mx-3" />
+          <Droplets className="w-5 h-5 text-blue-400 mx-1" />
           <h3 className="font-heading font-semibold">Idratazione</h3>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-blue-400">{drank} / {goal} ml</span>
           <button onClick={() => setEditingGoal((v) => !v)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
-            <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+            <Settings className="w-3.5 h-3.5 text-muted-foreground mx-2" />
           </button>
         </div>
       </div>
