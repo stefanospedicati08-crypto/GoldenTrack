@@ -202,10 +202,10 @@ export default function Account() {
 
       {/* Supplements */}
       <div className="border border-border overflow-hidden bg-[hsl(var(--popover))] rounded-[50px]">
-        <button onClick={() => setShowSupps(!showSupps)} className="w-full flex items-center justify-between p-5 bg-[hsl(var(--popover))] rounded-[50px] opacity-70">
+        <button onClick={() => setShowSupps(!showSupps)} className="w-full flex items-center justify-between p-5 bg-[hsl(var(--popover))] rounded-[50px] opacity-60">
           <div className="flex items-center gap-2">
             <Pill className="w-5 h-5 text-accent" />
-            <h2 className="font-heading font-semibold text-[hsl(var(--primary))] bg-[hsl(var(--background))]">Integratori</h2>
+            <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Integratori</h2>
             {supplements.length > 0 && <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">{supplements.length}</span>}
           </div>
           {showSupps ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
