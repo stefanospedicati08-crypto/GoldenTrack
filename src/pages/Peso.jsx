@@ -266,7 +266,7 @@ export default function Peso() {
               <p className="text-sm text-muted-foreground text-center py-10">Nessuna pesata registrata</p>
               }
                 {weights.slice(0, 50).map((w) =>
-              <div key={w.id} className="flex items-center gap-4 px-5 py-3">
+              <div key={w.id} className="flex items-center gap-4 px-5 py-3 rounded-none">
                     <div className="flex-1">
                       <p className="font-semibold">{w.weight_kg} kg</p>
                       <p className="text-sm text-muted-foreground">{moment(w.date).format("DD MMMM YYYY")}</p>
