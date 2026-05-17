@@ -118,7 +118,7 @@ export default function Account() {
       </div>
 
       {/* User info + photo */}
-      <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-4">
+      <div className="rounded-2xl border border-border p-5 flex items-center gap-4 bg-[hsl(var(--popover))]">
         <div className="relative shrink-0">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary overflow-hidden">
             {user?.photo_url ?
@@ -141,7 +141,7 @@ export default function Account() {
       </div>
 
       {/* Body data */}
-      <div className="border border-border p-5 space-y-4 bg-[hsl(var(--popover))] rounded-none">
+      <div className="border border-border p-5 space-y-4 bg-[hsl(var(--popover))] rounded-[50px]">
         <div className="flex items-center justify-between">
           <h2 className="font-heading font-semibold">Dati Corporei</h2>
           {!editingBody ?
