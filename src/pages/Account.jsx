@@ -161,7 +161,7 @@ export default function Account() {
           </div> :
 
         <div className="grid grid-cols-3 gap-3">
-            <div className="bg-secondary/40 p-3 text-center rounded-[1000px]">
+            <div className="p-3 text-center rounded-[1000px] bg-[hsl(var(--background))]">
               <Weight className="w-4 h-4 text-muted-foreground mx-auto mb-1" />
               <p className="text-xl font-heading font-bold text-[hsl(var(--primary))]">{latestWeight ?? "—"}</p>
               <p className="text-xs text-muted-foreground">kg</p>
