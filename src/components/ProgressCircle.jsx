@@ -32,7 +32,7 @@ export default function ProgressCircle({ completed, total, size = 120, faded = f
           transition={{ duration: 0.8, ease: "easeOut" }} />
         
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center bg-transparent text-gray-200">
+      <div className="absolute inset-0 flex items-center justify-center bg-transparent">
         {isFull ?
         <motion.div
           initial={{ scale: 0 }}
