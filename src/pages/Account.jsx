@@ -118,9 +118,9 @@ export default function Account() {
       </div>
 
       {/* User info + photo */}
-      <div className="rounded-2xl border border-border p-5 flex items-center gap-4 bg-[hsl(var(--popover))]">
+      <div className="border border-border p-5 flex items-center gap-4 bg-[hsl(var(--popover))] rounded-[50px]">
         <div className="relative shrink-0">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary overflow-hidden">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-primary overflow-hidden bg-[hsl(var(--background))]">
             {user?.photo_url ?
             <img src={user.photo_url} alt="foto" className="w-full h-full object-cover" /> :
             user?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || "?"}
