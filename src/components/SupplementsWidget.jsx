@@ -96,7 +96,7 @@ export default function SupplementsWidget({ supplements }) {
       {/* Mark all */}
       <button
         onClick={toggleAll}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${
+        className={`w-full flex items-center gap-3 px-4 py-3 border-2 transition-all rounded-[50px] ${
         allTaken ? "border-purple-400 bg-purple-400/10" : "border-border bg-secondary/30 hover:border-purple-400/40"}`
         }>
         
