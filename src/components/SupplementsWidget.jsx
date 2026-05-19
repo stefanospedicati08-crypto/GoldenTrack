@@ -100,11 +100,6 @@ export default function SupplementsWidget({ supplements }) {
         allTaken ? "border-purple-400 bg-purple-400/10" : "border-border bg-secondary/30 hover:border-purple-400/40"}`
         }>
         
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all pointer-events-none ${
-        allTaken ? "bg-purple-400 border-purple-400" : "border-muted-foreground/40"}`
-        }>
-          {allTaken && <Check className="w-3 h-3 text-white" />}
-        </div>
         <span className={`text-sm font-medium pointer-events-none text-[#fcd12a] ${allTaken ? "text-purple-400" : ""}`}>
           {allTaken ? "Tutti presi! 🎉" : "Segna tutti come presi"}
         </span>
@@ -122,11 +117,6 @@ export default function SupplementsWidget({ supplements }) {
               isTaken ? "border-white/40 bg-white/5" : "border-border bg-secondary/20 hover:border-white/30"}`
               }>
               
-              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-              isTaken ? "bg-white border-white" : "border-muted-foreground/40"}`
-              }>
-                {isTaken && <Check className="w-3 h-3 text-white" />}
-              </div>
               <div className="flex-1 text-left">
                 <span className={`text-sm font-medium text-[#fcd12a] ${isTaken ? "line-through text-muted-foreground" : ""}`}>
                   {s.name}
