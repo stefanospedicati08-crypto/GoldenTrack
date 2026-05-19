@@ -318,7 +318,7 @@ export default function Account() {
         </div>
 
         {/* Custom rest toggle */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[hsl(var(--popover))] text-[hsl(var(--background))] rounded-none">
+        <div className="flex items-center justify-between px-4 py-3 bg-[hsl(var(--popover))] text-[hsl(var(--background))] rounded-[50px]">
           <div className="flex items-center gap-3">
             <Timer className="w-5 h-5 text-primary shrink-0" />
             <div>
@@ -333,7 +333,7 @@ export default function Account() {
               localStorage.setItem("customRestEnabled", String(newVal));
               toast.success(newVal ? "Recupero personalizzato attivato" : "Recupero personalizzato disattivato");
             }}
-            className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${customRestEnabled ? "bg-primary" : "bg-muted"}`}>
+            className={`relative w-12 h-6 rounded-full transition-colors shrink-0 bg-[hsl(var(--background))] ${customRestEnabled ? "bg-primary" : ""}`}>
             <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${customRestEnabled ? "left-7" : "left-1"}`} />
           </button>
         </div>
