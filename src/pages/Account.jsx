@@ -251,7 +251,7 @@ export default function Account() {
 
       {/* Supplements */}
       <div className="border border-border overflow-hidden bg-[hsl(var(--popover))] rounded-[50px] opacity-80">
-        <button onClick={() => setShowSupps(!showSupps)} className="w-full flex items-center justify-between p-5 bg-[hsl(var(--popover))] rounded-[50px] opacity-70">
+        <button onClick={() => setShowSupps(!showSupps)} className="w-full flex items-center justify-between p-5 bg-[hsl(var(--popover))] rounded-[50px] opacity-85">
           <div className="flex items-center gap-2">
             <Pill className="w-5 h-5 text-accent" />
             <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Integratori</h2>
