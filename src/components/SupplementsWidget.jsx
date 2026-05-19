@@ -113,16 +113,16 @@ export default function SupplementsWidget({ supplements }) {
             <button
               key={s.id}
               onClick={() => toggleTaken(s.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 border transition-all rounded-[5px] ${
+              className={`w-full flex items-center gap-3 px-4 py-3 border transition-all rounded-[50px] ${
               isTaken ? "border-white/40 bg-white/5" : "border-border bg-secondary/20 hover:border-white/30"}`
               }>
               
               <div className="flex-1 text-left">
-                <span className={`text-sm font-medium text-[#fcd12a] ${isTaken ? "line-through text-muted-foreground" : ""}`}>
+                <span className={`text-sm font-medium text-[#fcd12a] mx-2 ${isTaken ? "line-through text-muted-foreground" : ""}`}>
                   {s.name}
                 </span>
                 {(s.dose || s.timing) &&
-                <p className="text-xs mt-0.5 text-[hsl(var(--primary))]">
+                <p className="text-xs text-[hsl(var(--primary))]">
                     {[s.dose, s.timing].filter(Boolean).join(" · ")}
                   </p>
                 }
