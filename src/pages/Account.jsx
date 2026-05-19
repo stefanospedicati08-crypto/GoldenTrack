@@ -231,7 +231,7 @@ export default function Account() {
 
       {/* Meal Plan */}
       <div className="border border-border p-5 space-y-3 rounded-[50px] bg-[hsl(var(--popover))]">
-        <div className="flex items-center justify-between rounded-[50px] bg-[hsl(var(--popover))]">
+        <div className="flex items-center justify-between rounded-[50px] bg-[hsl(var(--popover))] border-2 border-[hsl(var(--background))]">
           <h2 className="font-heading font-semibold mx-2 text-[hsl(var(--primary))] opacity-100">Piano Alimentare</h2>
           <button onClick={() => mealRef.current?.click()} className="flex items-center gap-1.5 text-xs text-primary font-medium px-3 py-1.5 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors">
             {uploadingMeal ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
