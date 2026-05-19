@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { startTimer } from "@/lib/timerStore";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame, Trash2, CheckCircle2 } from "lucide-react";
@@ -25,6 +25,14 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const [isWarmup, setIsWarmup] = useState(false);
   const [deletingLog, setDeletingLog] = useState(null);
   const [completed, setCompleted] = useState(false);
+  const [showWarmups, setShowWarmups] = useState(false);
+  const [customRestEnabled, setCustomRestEnabled] = useState(false);
+
+  useEffect(() => {
+    // Read custom rest setting from localStorage
+    const setting = localStorage.getItem("customRestEnabled");
+    setCustomRestEnabled(setting === "true");
+  }, []);
 
   const isDoubleReps = exercise.reps && exercise.reps.includes("/");
   const today = new Date().toISOString().split("T")[0];
@@ -35,6 +43,15 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const allSetsCompleted = trainingSets.length >= totalSets;
   const completedSetNumbers = trainingSets.map((l) => l.set_number);
   const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find((n) => !completedSetNumbers.includes(n));
+
+  // Get last session's log for the next set to pre-fill weight
+  const lastSessionLogs = logs.filter((l) => l.date !== today && !l.is_warmup);
+  const lastSessionDates = [...new Set(lastSessionLogs.map((l) => l.date))].sort((a, b) => b.localeCompare(a));
+  const lastSessionDate = lastSessionDates[0];
+  const lastSessionSetLogs = lastSessionDate ? lastSessionLogs.filter((l) => l.date === lastSessionDate) : [];
+  const currentSetNum = Number(isWarmup ? setNumber : (nextSet || totalSets + 1));
+  const prevSetLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === currentSetNum) : null;
+  const suggestedWeight = prevSetLog?.weight_kg ? String(prevSetLog.weight_kg) : "";
 
   async function handleSave() {
     setSaving(true);
@@ -51,15 +68,19 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       date: today
     };
     onLogSaved(optimistic);
-    const next = isWarmup ?
-    String(Number(setNumber) + 1) :
-    nextSet ? String(nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : String(totalSets + 1);
-    setSetNumber(next);
-    setWeightKg("");
+    const nextSetNum = isWarmup ?
+      Number(setNumber) + 1 :
+      (nextSet ? (nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : totalSets + 1);
+    const nextSetStr = String(nextSetNum);
+    setSetNumber(nextSetStr);
+    // Pre-fill weight from last session for next set
+    const nextPrevLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === nextSetNum) : null;
+    setWeightKg(nextPrevLog?.weight_kg ? String(nextPrevLog.weight_kg) : "");
     setWeightKg2("");
     setRepsDone("");
     setSaving(false);
-    startTimer(exercise.rest_seconds > 0 ? exercise.rest_seconds : 90);
+    const restTime = customRestEnabled && exercise.rest_seconds > 0 ? exercise.rest_seconds : (!customRestEnabled ? (exercise.rest_seconds > 0 ? exercise.rest_seconds : 90) : 90);
+    startTimer(restTime);
     const newLog = await base44.entities.WorkoutLog.create({
       exercise_id: exercise.id,
       plan_id: exercise.plan_id,
@@ -173,9 +194,11 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Serie di oggi</p>
                     <div className="flex items-center gap-2">
                       {warmupLogs.length > 0 &&
-                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-chart-3/10 text-chart-3">
-                          🔥 {warmupLogs.length} WU
-                        </span>
+                  <button
+                    onClick={() => setShowWarmups((v) => !v)}
+                    className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-chart-3/10 text-chart-3 flex items-center gap-1">
+                          🔥 {warmupLogs.length} WU {showWarmups ? "▲" : "▼"}
+                        </button>
                   }
                       <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${allSetsCompleted ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
                         💪 {trainingSets.length}/{totalSets} serie
@@ -183,7 +206,9 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {[...todayLogs].sort((a, b) => a.set_number - b.set_number).map((log) =>
+                    {[...todayLogs]
+                      .filter((log) => !log.is_warmup || showWarmups)
+                      .sort((a, b) => a.set_number - b.set_number).map((log) =>
                 <div key={log.id} className="flex flex-col gap-2 bg-secondary/40 rounded-xl px-3 py-2.5">
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-muted-foreground w-14 shrink-0">
@@ -297,10 +322,13 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                   
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">{isDoubleReps ? "Carico 1° (kg)" : "Carico (kg)"}</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      {isDoubleReps ? "Carico 1° (kg)" : "Carico (kg)"}
+                      {suggestedWeight && !weightKg && <span className="text-primary ml-1">(prec. {suggestedWeight}kg)</span>}
+                    </label>
                     <Input
                     type="number"
-                    placeholder="es. 50"
+                    placeholder={suggestedWeight ? suggestedWeight : "es. 50"}
                     value={weightKg}
                     onChange={(e) => setWeightKg(e.target.value)}
                     className="h-10 rounded-xl" />

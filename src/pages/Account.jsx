@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, LogOut, AlertTriangle, X, Pencil, Check, Ruler, Weight, Camera, Loader2, Plus, ChevronDown, ChevronUp, Pill, Upload, FileText } from "lucide-react";
+import { Trash2, LogOut, AlertTriangle, X, Pencil, Check, Ruler, Weight, Camera, Loader2, Plus, ChevronDown, ChevronUp, Pill, Upload, FileText, Settings, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -31,11 +31,16 @@ export default function Account() {
   // Meal plan
   const [uploadingMeal, setUploadingMeal] = useState(false);
 
+  // Settings
+  const [customRestEnabled, setCustomRestEnabled] = useState(false);
+
   useEffect(() => {
     async function load() {
       const u = await base44.auth.me();
       setUser(u);
       setHeightVal(u.height_cm ? String(u.height_cm) : "");
+      const savedRest = localStorage.getItem("customRestEnabled");
+      setCustomRestEnabled(savedRest === "true");
       const [weights, supps] = await Promise.all([
       base44.entities.BodyWeight.filter({ created_by: u.email }, "-date", 1),
       base44.entities.Supplement.filter({ created_by: u.email })]
@@ -260,6 +265,33 @@ export default function Account() {
           <Trash2 className="w-4 h-4" />
           Richiedi eliminazione account
         </Button>
+      </div>
+
+      {/* Settings */}
+      <div className="border border-border p-5 space-y-4 bg-[hsl(var(--popover))] rounded-[50px]">
+        <div className="flex items-center gap-2">
+          <Settings className="w-5 h-5 text-primary" />
+          <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Impostazioni Allenamento</h2>
+        </div>
+        <div className="flex items-center justify-between bg-[hsl(var(--background))] rounded-2xl px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Timer className="w-5 h-5 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-medium">Recupero personalizzato</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Usa il recupero impostato per ogni esercizio nella scheda</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              const newVal = !customRestEnabled;
+              setCustomRestEnabled(newVal);
+              localStorage.setItem("customRestEnabled", String(newVal));
+              toast.success(newVal ? "Recupero personalizzato attivato" : "Recupero personalizzato disattivato");
+            }}
+            className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${customRestEnabled ? "bg-primary" : "bg-muted"}`}>
+            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${customRestEnabled ? "left-7" : "left-1"}`} />
+          </button>
+        </div>
       </div>
 
       <p className="text-xs text-muted-foreground text-center">Golden Track v1.0 · Conforme alle linee guida App Store</p>
