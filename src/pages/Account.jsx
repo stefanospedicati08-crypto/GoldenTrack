@@ -315,7 +315,7 @@ export default function Account() {
       <div className="border border-border overflow-hidden bg-[hsl(var(--popover))] rounded-[50px] opacity-80">
         <button onClick={() => setShowSettings(!showSettings)} className="w-full flex items-center justify-between p-5 bg-[hsl(var(--popover))] rounded-[50px] opacity-70">
           <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-primary" />
+            <Settings className="w-5 h-5 text-[hsl(var(--background))]" />
             <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Impostazioni Allenamento</h2>
           </div>
           {showSettings ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -335,20 +335,20 @@ export default function Account() {
             </div>
           </div>
           <button
-            onClick={() => {
-              const newVal = !customRestEnabled;
-              setCustomRestEnabled(newVal);
-              localStorage.setItem("customRestEnabled", String(newVal));
-              toast.success(newVal ? "Recupero personalizzato attivato" : "Recupero personalizzato disattivato");
-            }}
-            className={`relative w-12 h-6 rounded-full transition-colors shrink-0 bg-[hsl(var(--background))] ${customRestEnabled ? "bg-primary" : ""}`}>
+                  onClick={() => {
+                    const newVal = !customRestEnabled;
+                    setCustomRestEnabled(newVal);
+                    localStorage.setItem("customRestEnabled", String(newVal));
+                    toast.success(newVal ? "Recupero personalizzato attivato" : "Recupero personalizzato disattivato");
+                  }}
+                  className={`relative w-12 h-6 rounded-full transition-colors shrink-0 bg-[hsl(var(--background))] ${customRestEnabled ? "bg-primary" : ""}`}>
             <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${customRestEnabled ? "left-7" : "left-1"}`} />
           </button>
         </div>
 
         {/* Default rest seconds — shown only when custom rest is ENABLED */}
         {customRestEnabled &&
-        <div className="bg-[hsl(var(--background))] rounded-2xl px-4 py-3 space-y-2">
+              <div className="bg-[hsl(var(--background))] rounded-2xl px-4 py-3 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Timer className="w-5 h-5 text-muted-foreground shrink-0" />
@@ -358,20 +358,20 @@ export default function Account() {
               </div>
             </div>
             {!editingRest &&
-            <button onClick={() => setEditingRest(true)} className="flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                  <button onClick={() => setEditingRest(true)} className="flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
                 {defaultRestSeconds}s <Pencil className="w-3 h-3 ml-1" />
               </button>
-            }
+                  }
           </div>
           {editingRest &&
-          <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center">
               <Input
-              type="number"
-              value={defaultRestSeconds}
-              onChange={(e) => setDefaultRestSeconds(e.target.value)}
-              placeholder="es. 90"
-              className="h-9 rounded-xl flex-1"
-              min={10} />
+                    type="number"
+                    value={defaultRestSeconds}
+                    onChange={(e) => setDefaultRestSeconds(e.target.value)}
+                    placeholder="es. 90"
+                    className="h-9 rounded-xl flex-1"
+                    min={10} />
               <span className="text-sm text-muted-foreground shrink-0">secondi</span>
               <Button size="sm" onClick={saveRestDefault} className="rounded-xl h-9 px-4">
                 <Check className="w-3.5 h-3.5" />
@@ -380,9 +380,9 @@ export default function Account() {
                 <X className="w-3.5 h-3.5" />
               </Button>
             </div>
-          }
+                }
         </div>
-        }
+              }
 
         {/* Notifications */}
         <div className="px-4 py-3 space-y-3 rounded-[50px] my-1 bg-[hsl(var(--popover))] border-2 border-[hsl(var(--background))]">
@@ -392,47 +392,47 @@ export default function Account() {
           </div>
 
           {[
-          { key: "workout", label: "Promemoria allenamento" },
-          { key: "supplement", label: "Promemoria integratori" },
-          { key: "water", label: "Promemoria acqua" }].
-          map(({ key, label }) =>
-          <div key={key} className="space-y-1.5">
+                { key: "workout", label: "Promemoria allenamento" },
+                { key: "supplement", label: "Promemoria integratori" },
+                { key: "water", label: "Promemoria acqua" }].
+                map(({ key, label }) =>
+                <div key={key} className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{label}</span>
                 <button
-                onClick={() => {
-                  if (!notifSettings[key].enabled && notifStatus !== "granted") requestNotifPermission();
-                  updateNotif(key, "enabled", !notifSettings[key].enabled);
-                }}
-                className={`relative w-10 h-5 rounded-full transition-colors shrink-0 bg-[hsl(var(--background))] ${notifSettings[key].enabled ? "bg-primary" : ""}`}>
+                      onClick={() => {
+                        if (!notifSettings[key].enabled && notifStatus !== "granted") requestNotifPermission();
+                        updateNotif(key, "enabled", !notifSettings[key].enabled);
+                      }}
+                      className={`relative w-10 h-5 rounded-full transition-colors shrink-0 bg-[hsl(var(--background))] ${notifSettings[key].enabled ? "bg-primary" : ""}`}>
                   <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${notifSettings[key].enabled ? "left-5" : "left-0.5"}`} />
                 </button>
               </div>
               {notifSettings[key].enabled &&
-            <input
-              type="time"
-              value={notifSettings[key].time}
-              onChange={(e) => updateNotif(key, "time", e.target.value)}
-              className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
-            }
+                  <input
+                    type="time"
+                    value={notifSettings[key].time}
+                    onChange={(e) => updateNotif(key, "time", e.target.value)}
+                    className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
+                  }
             </div>
-          )}
+                )}
 
           {notifStatus === "denied" &&
-          <p className="text-xs text-destructive flex items-center gap-1">
+                <p className="text-xs text-destructive flex items-center gap-1">
               <BellOff className="w-3 h-3" /> Notifiche bloccate — abilitale nelle impostazioni del browser
             </p>
-          }
+                }
           {notifStatus === "default" &&
-          <button onClick={requestNotifPermission} className="text-xs text-primary hover:underline flex items-center gap-1">
+                <button onClick={requestNotifPermission} className="text-xs text-primary hover:underline flex items-center gap-1">
               <Bell className="w-3 h-3" /> Richiedi permesso notifiche
             </button>
-          }
+                }
           {notifStatus === "granted" &&
-          <p className="text-xs text-accent flex items-center gap-1">
+                <p className="text-xs text-accent flex items-center gap-1">
               <Bell className="w-3 h-3" /> Notifiche abilitate
             </p>
-          }
+                }
         </div>
 
             </div>
