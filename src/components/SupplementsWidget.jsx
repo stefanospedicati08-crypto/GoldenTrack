@@ -96,7 +96,7 @@ export default function SupplementsWidget({ supplements }) {
       {/* Mark all */}
       <button
         onClick={toggleAll}
-        className={`w-full flex items-center gap-3 px-4 py-3 border-2 transition-all rounded-[50px] ${
+        className={`w-full flex items-center gap-3 px-4 py-3 border-2 transition-all rounded-[50px] mx-1 ${
         allTaken ? "border-purple-400 bg-purple-400/10" : "border-border bg-secondary/30 hover:border-purple-400/40"}`
         }>
         
@@ -122,7 +122,7 @@ export default function SupplementsWidget({ supplements }) {
                   {s.name}
                 </span>
                 {(s.dose || s.timing) &&
-                <p className="text-xs text-[hsl(var(--primary))]">
+                <p className="text-xs text-[hsl(var(--primary))] mx-2">
                     {[s.dose, s.timing].filter(Boolean).join(" · ")}
                   </p>
                 }
