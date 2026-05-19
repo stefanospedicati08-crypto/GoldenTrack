@@ -379,7 +379,7 @@ export default function Account() {
         {/* Notifications */}
         <div className="bg-[hsl(var(--background))] px-4 py-3 space-y-3 rounded-[50px] my-1">
           <div className="flex items-center gap-2 mb-1 mt-2">
-            <Bell className="w-5 h-5 text-primary shrink-0 my-1" />
+            <Bell className="w-5 h-5 text-primary shrink-0 mx-4" />
             <p className="text-sm font-medium">Notifiche</p>
           </div>
 
