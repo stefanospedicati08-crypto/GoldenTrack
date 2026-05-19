@@ -335,7 +335,8 @@ export default function Account() {
           </button>
         </div>
 
-        {/* Default rest seconds */}
+        {/* Default rest seconds — shown only when custom rest is ENABLED */}
+        {customRestEnabled &&
         <div className="bg-[hsl(var(--background))] rounded-2xl px-4 py-3 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -345,11 +346,11 @@ export default function Account() {
                 <p className="text-xs text-muted-foreground mt-0.5">Secondi usati quando l'esercizio non ha recupero impostato</p>
               </div>
             </div>
-            {!editingRest ?
+            {!editingRest &&
             <button onClick={() => setEditingRest(true)} className="flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
                 {defaultRestSeconds}s <Pencil className="w-3 h-3 ml-1" />
-              </button> :
-            null}
+              </button>
+            }
           </div>
           {editingRest &&
           <div className="flex gap-2 items-center">
@@ -360,7 +361,6 @@ export default function Account() {
               placeholder="es. 90"
               className="h-9 rounded-xl flex-1"
               min={10} />
-            
               <span className="text-sm text-muted-foreground shrink-0">secondi</span>
               <Button size="sm" onClick={saveRestDefault} className="rounded-xl h-9 px-4">
                 <Check className="w-3.5 h-3.5" />
@@ -371,6 +371,7 @@ export default function Account() {
             </div>
           }
         </div>
+        }
 
         {/* Notifications */}
         <div className="bg-[hsl(var(--background))] rounded-2xl px-4 py-3 space-y-3">
@@ -378,7 +379,7 @@ export default function Account() {
             <div className="flex items-center gap-3">
               <Bell className="w-5 h-5 text-primary shrink-0" />
               <div>
-                <p className="text-sm font-medium">Promemoria allenamento</p>
+                <p className="text-sm font-medium">Notifiche</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Notifica giornaliera per ricordarti di allenarti</p>
               </div>
             </div>
