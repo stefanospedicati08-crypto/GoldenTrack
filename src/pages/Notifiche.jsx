@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2 } from "lucide-react";
 import PullToRefresh from "../components/PullToRefresh";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,6 +31,11 @@ export default function Notifiche() {
     const unread = notifications.filter(n => !n.read);
     await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { read: true })));
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }
+
+  async function deleteNotif(id) {
+    await base44.entities.Notification.delete(id);
+    setNotifications(prev => prev.filter(n => n.id !== id));
   }
 
   async function handleRefresh() {
@@ -98,15 +103,24 @@ export default function Notifiche() {
                     {moment(notif.created_date).fromNow()}
                   </p>
                 </div>
-                {!notif.read && (
+                <div className="flex items-center gap-1 shrink-0">
+                  {!notif.read && (
+                    <button
+                      onClick={() => markRead(notif.id)}
+                      className="p-2 rounded-xl hover:bg-secondary transition-colors"
+                      title="Segna come letta"
+                    >
+                      <Check className="w-4 h-4 text-accent" />
+                    </button>
+                  )}
                   <button
-                    onClick={() => markRead(notif.id)}
-                    className="p-2 rounded-xl hover:bg-secondary transition-colors shrink-0"
-                    title="Segna come letta"
+                    onClick={() => deleteNotif(notif.id)}
+                    className="p-2 rounded-xl hover:bg-destructive/10 transition-colors"
+                    title="Elimina"
                   >
-                    <Check className="w-4 h-4 text-accent" />
+                    <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
-                )}
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
