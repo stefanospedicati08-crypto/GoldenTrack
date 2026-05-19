@@ -318,7 +318,7 @@ export default function Account() {
         </div>
 
         {/* Custom rest toggle */}
-        <div className="flex items-center justify-between px-4 py-3 bg-[hsl(var(--popover))] text-[hsl(var(--background))] rounded-[50px]">
+        <div className="flex items-center justify-between px-4 py-3 bg-[hsl(var(--popover))] text-[hsl(var(--background))] rounded-[50px] border-2 border-[hsl(var(--background))]">
           <div className="flex items-center gap-3">
             <Timer className="w-5 h-5 text-primary shrink-0" />
             <div>
