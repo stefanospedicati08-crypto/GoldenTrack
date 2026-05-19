@@ -79,7 +79,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
     setWeightKg2("");
     setRepsDone("");
     setSaving(false);
-    const restTime = customRestEnabled && exercise.rest_seconds > 0 ? exercise.rest_seconds : (!customRestEnabled ? (exercise.rest_seconds > 0 ? exercise.rest_seconds : 90) : 90);
+    const defaultRest = Number(localStorage.getItem("defaultRestSeconds") || "90");
+    const restTime = customRestEnabled && exercise.rest_seconds > 0 ? exercise.rest_seconds : (exercise.rest_seconds > 0 ? exercise.rest_seconds : defaultRest);
     startTimer(restTime);
     const newLog = await base44.entities.WorkoutLog.create({
       exercise_id: exercise.id,

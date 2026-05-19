@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, LogOut, AlertTriangle, X, Pencil, Check, Ruler, Weight, Camera, Loader2, Plus, ChevronDown, ChevronUp, Pill, Upload, FileText, Settings, Timer } from "lucide-react";
+import { Trash2, LogOut, AlertTriangle, X, Pencil, Check, Ruler, Weight, Camera, Loader2, Plus, ChevronDown, ChevronUp, Pill, Upload, FileText, Settings, Timer, Bell, BellOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -33,6 +33,11 @@ export default function Account() {
 
   // Settings
   const [customRestEnabled, setCustomRestEnabled] = useState(false);
+  const [defaultRestSeconds, setDefaultRestSeconds] = useState("90");
+  const [editingRest, setEditingRest] = useState(false);
+  const [notifTime, setNotifTime] = useState("");
+  const [notifStatus, setNotifStatus] = useState("default");
+  const [notifEnabled, setNotifEnabled] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -41,6 +46,13 @@ export default function Account() {
       setHeightVal(u.height_cm ? String(u.height_cm) : "");
       const savedRest = localStorage.getItem("customRestEnabled");
       setCustomRestEnabled(savedRest === "true");
+      const savedDefault = localStorage.getItem("defaultRestSeconds");
+      if (savedDefault) setDefaultRestSeconds(savedDefault);
+      const savedNotifTime = localStorage.getItem("workoutNotifTime");
+      if (savedNotifTime) setNotifTime(savedNotifTime);
+      const savedNotifEnabled = localStorage.getItem("workoutNotifEnabled");
+      setNotifEnabled(savedNotifEnabled === "true");
+      if ("Notification" in window) setNotifStatus(Notification.permission);
       const [weights, supps] = await Promise.all([
       base44.entities.BodyWeight.filter({ created_by: u.email }, "-date", 1),
       base44.entities.Supplement.filter({ created_by: u.email })]
@@ -109,6 +121,34 @@ export default function Account() {
     setShowDeleteDialog(false);
     setConfirmText("");
     setDeleting(false);
+  }
+
+  async function requestNotifPermission() {
+    if (!("Notification" in window)) {
+      toast.error("Il tuo browser non supporta le notifiche");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    setNotifStatus(permission);
+    if (permission === "granted") {
+      toast.success("Notifiche abilitate!");
+    } else {
+      toast.error("Permesso negato. Abilita le notifiche nelle impostazioni del browser.");
+    }
+  }
+
+  function saveNotifSettings() {
+    localStorage.setItem("workoutNotifTime", notifTime);
+    localStorage.setItem("workoutNotifEnabled", String(notifEnabled));
+    toast.success("Impostazioni notifiche salvate!");
+  }
+
+  function saveRestDefault() {
+    const val = Number(defaultRestSeconds);
+    if (!val || val < 10) { toast.error("Inserisci un valore valido (min 10s)"); return; }
+    localStorage.setItem("defaultRestSeconds", String(val));
+    setEditingRest(false);
+    toast.success(`Recupero default impostato a ${val}s`);
   }
 
   const bmi = latestWeight && user?.height_cm ?
@@ -273,6 +313,8 @@ export default function Account() {
           <Settings className="w-5 h-5 text-primary" />
           <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Impostazioni Allenamento</h2>
         </div>
+
+        {/* Custom rest toggle */}
         <div className="flex items-center justify-between bg-[hsl(var(--background))] rounded-2xl px-4 py-3">
           <div className="flex items-center gap-3">
             <Timer className="w-5 h-5 text-primary shrink-0" />
@@ -291,6 +333,97 @@ export default function Account() {
             className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${customRestEnabled ? "bg-primary" : "bg-muted"}`}>
             <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${customRestEnabled ? "left-7" : "left-1"}`} />
           </button>
+        </div>
+
+        {/* Default rest seconds */}
+        <div className="bg-[hsl(var(--background))] rounded-2xl px-4 py-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Timer className="w-5 h-5 text-muted-foreground shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Recupero di default</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Secondi usati quando l'esercizio non ha recupero impostato</p>
+              </div>
+            </div>
+            {!editingRest ?
+            <button onClick={() => setEditingRest(true)} className="flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                {defaultRestSeconds}s <Pencil className="w-3 h-3 ml-1" />
+              </button> :
+            null}
+          </div>
+          {editingRest &&
+          <div className="flex gap-2 items-center">
+              <Input
+              type="number"
+              value={defaultRestSeconds}
+              onChange={(e) => setDefaultRestSeconds(e.target.value)}
+              placeholder="es. 90"
+              className="h-9 rounded-xl flex-1"
+              min={10} />
+            
+              <span className="text-sm text-muted-foreground shrink-0">secondi</span>
+              <Button size="sm" onClick={saveRestDefault} className="rounded-xl h-9 px-4">
+                <Check className="w-3.5 h-3.5" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setEditingRest(false)} className="rounded-xl h-9 px-3">
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          }
+        </div>
+
+        {/* Notifications */}
+        <div className="bg-[hsl(var(--background))] rounded-2xl px-4 py-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Bell className="w-5 h-5 text-primary shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Promemoria allenamento</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Notifica giornaliera per ricordarti di allenarti</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                const newVal = !notifEnabled;
+                setNotifEnabled(newVal);
+                if (newVal && notifStatus !== "granted") requestNotifPermission();
+              }}
+              className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${notifEnabled ? "bg-primary" : "bg-muted"}`}>
+              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${notifEnabled ? "left-7" : "left-1"}`} />
+            </button>
+          </div>
+
+          {notifEnabled &&
+          <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground block">Orario promemoria</label>
+              <div className="flex gap-2">
+                <input
+                type="time"
+                value={notifTime}
+                onChange={(e) => setNotifTime(e.target.value)}
+                className="flex-1 h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
+              
+                <Button size="sm" onClick={saveNotifSettings} className="rounded-xl h-9 px-4">
+                  <Check className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+              {notifStatus === "denied" &&
+            <p className="text-xs text-destructive flex items-center gap-1">
+                  <BellOff className="w-3 h-3" /> Notifiche bloccate — abilitale nelle impostazioni del browser
+                </p>
+            }
+              {notifStatus === "default" &&
+            <button onClick={requestNotifPermission} className="text-xs text-primary hover:underline flex items-center gap-1">
+                  <Bell className="w-3 h-3" /> Richiedi permesso notifiche
+                </button>
+            }
+              {notifStatus === "granted" &&
+            <p className="text-xs text-accent flex items-center gap-1">
+                  <Bell className="w-3 h-3" /> Notifiche abilitate
+                </p>
+            }
+            </div>
+          }
         </div>
       </div>
 
