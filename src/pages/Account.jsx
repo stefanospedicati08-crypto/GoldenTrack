@@ -396,7 +396,7 @@ export default function Account() {
                   if (!notifSettings[key].enabled && notifStatus !== "granted") requestNotifPermission();
                   updateNotif(key, "enabled", !notifSettings[key].enabled);
                 }}
-                className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${notifSettings[key].enabled ? "bg-primary" : "bg-muted"}`}>
+                className={`relative w-10 h-5 rounded-full transition-colors shrink-0 bg-[hsl(var(--background))] ${notifSettings[key].enabled ? "bg-primary" : ""}`}>
                   <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${notifSettings[key].enabled ? "left-5" : "left-0.5"}`} />
                 </button>
               </div>
