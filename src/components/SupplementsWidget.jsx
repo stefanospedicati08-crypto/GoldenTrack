@@ -100,13 +100,13 @@ export default function SupplementsWidget({ supplements }) {
         allTaken ? "border-purple-400 bg-purple-400/10" : "border-border bg-secondary/30 hover:border-purple-400/40"}`
         }>
         
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all pointer-events-none ${
         allTaken ? "bg-purple-400 border-purple-400" : someTaken ? "border-purple-400" : "border-muted-foreground/40"}`
         }>
           {allTaken && <Check className="w-3 h-3 text-white" />}
           {someTaken && <div className="w-2 h-2 rounded-full bg-purple-400" />}
         </div>
-        <span className={`text-sm font-medium text-[#fcd12a] ${allTaken ? "text-purple-400" : ""}`}>
+        <span className={`text-sm font-medium pointer-events-none text-[#fcd12a] ${allTaken ? "text-purple-400" : ""}`}>
           {allTaken ? "Tutti presi! 🎉" : "Segna tutti come presi"}
         </span>
       </button>
