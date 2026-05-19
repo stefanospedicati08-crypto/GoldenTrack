@@ -35,9 +35,12 @@ export default function Account() {
   const [customRestEnabled, setCustomRestEnabled] = useState(false);
   const [defaultRestSeconds, setDefaultRestSeconds] = useState("90");
   const [editingRest, setEditingRest] = useState(false);
-  const [notifTime, setNotifTime] = useState("");
   const [notifStatus, setNotifStatus] = useState("default");
-  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [notifSettings, setNotifSettings] = useState({
+    workout: { enabled: false, time: "" },
+    supplement: { enabled: false, time: "" },
+    water: { enabled: false, time: "" },
+  });
 
   useEffect(() => {
     async function load() {
@@ -48,10 +51,8 @@ export default function Account() {
       setCustomRestEnabled(savedRest === "true");
       const savedDefault = localStorage.getItem("defaultRestSeconds");
       if (savedDefault) setDefaultRestSeconds(savedDefault);
-      const savedNotifTime = localStorage.getItem("workoutNotifTime");
-      if (savedNotifTime) setNotifTime(savedNotifTime);
-      const savedNotifEnabled = localStorage.getItem("workoutNotifEnabled");
-      setNotifEnabled(savedNotifEnabled === "true");
+      const saved = localStorage.getItem("notifSettings");
+      if (saved) setNotifSettings(JSON.parse(saved));
       if ("Notification" in window) setNotifStatus(Notification.permission);
       const [weights, supps] = await Promise.all([
       base44.entities.BodyWeight.filter({ created_by: u.email }, "-date", 1),
@@ -137,10 +138,12 @@ export default function Account() {
     }
   }
 
-  function saveNotifSettings() {
-    localStorage.setItem("workoutNotifTime", notifTime);
-    localStorage.setItem("workoutNotifEnabled", String(notifEnabled));
-    toast.success("Impostazioni notifiche salvate!");
+  function updateNotif(key, field, value) {
+    setNotifSettings((prev) => {
+      const updated = { ...prev, [key]: { ...prev[key], [field]: value } };
+      localStorage.setItem("notifSettings", JSON.stringify(updated));
+      return updated;
+    });
   }
 
   function saveRestDefault() {
@@ -375,55 +378,52 @@ export default function Account() {
 
         {/* Notifications */}
         <div className="bg-[hsl(var(--background))] rounded-2xl px-4 py-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bell className="w-5 h-5 text-primary shrink-0" />
-              <div>
-                <p className="text-sm font-medium">Notifiche</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Notifica giornaliera per ricordarti di allenarti</p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                const newVal = !notifEnabled;
-                setNotifEnabled(newVal);
-                if (newVal && notifStatus !== "granted") requestNotifPermission();
-              }}
-              className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${notifEnabled ? "bg-primary" : "bg-muted"}`}>
-              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${notifEnabled ? "left-7" : "left-1"}`} />
-            </button>
+          <div className="flex items-center gap-2 mb-1">
+            <Bell className="w-5 h-5 text-primary shrink-0" />
+            <p className="text-sm font-medium">Notifiche</p>
           </div>
 
-          {notifEnabled &&
-          <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground block">Orario promemoria</label>
-              <div className="flex gap-2">
-                <input
-                type="time"
-                value={notifTime}
-                onChange={(e) => setNotifTime(e.target.value)}
-                className="flex-1 h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
-              
-                <Button size="sm" onClick={saveNotifSettings} className="rounded-xl h-9 px-4">
-                  <Check className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-              {notifStatus === "denied" &&
-            <p className="text-xs text-destructive flex items-center gap-1">
-                  <BellOff className="w-3 h-3" /> Notifiche bloccate — abilitale nelle impostazioni del browser
-                </p>
-            }
-              {notifStatus === "default" &&
-            <button onClick={requestNotifPermission} className="text-xs text-primary hover:underline flex items-center gap-1">
-                  <Bell className="w-3 h-3" /> Richiedi permesso notifiche
+          {[
+            { key: "workout", label: "Promemoria allenamento" },
+            { key: "supplement", label: "Promemoria integratori" },
+            { key: "water", label: "Promemoria acqua" },
+          ].map(({ key, label }) => (
+            <div key={key} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{label}</span>
+                <button
+                  onClick={() => {
+                    if (!notifSettings[key].enabled && notifStatus !== "granted") requestNotifPermission();
+                    updateNotif(key, "enabled", !notifSettings[key].enabled);
+                  }}
+                  className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${notifSettings[key].enabled ? "bg-primary" : "bg-muted"}`}>
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${notifSettings[key].enabled ? "left-5" : "left-0.5"}`} />
                 </button>
-            }
-              {notifStatus === "granted" &&
-            <p className="text-xs text-accent flex items-center gap-1">
-                  <Bell className="w-3 h-3" /> Notifiche abilitate
-                </p>
-            }
+              </div>
+              {notifSettings[key].enabled &&
+              <input
+                type="time"
+                value={notifSettings[key].time}
+                onChange={(e) => updateNotif(key, "time", e.target.value)}
+                className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
+              }
             </div>
+          ))}
+
+          {notifStatus === "denied" &&
+          <p className="text-xs text-destructive flex items-center gap-1">
+              <BellOff className="w-3 h-3" /> Notifiche bloccate — abilitale nelle impostazioni del browser
+            </p>
+          }
+          {notifStatus === "default" &&
+          <button onClick={requestNotifPermission} className="text-xs text-primary hover:underline flex items-center gap-1">
+              <Bell className="w-3 h-3" /> Richiedi permesso notifiche
+            </button>
+          }
+          {notifStatus === "granted" &&
+          <p className="text-xs text-accent flex items-center gap-1">
+              <Bell className="w-3 h-3" /> Notifiche abilitate
+            </p>
           }
         </div>
       </div>
