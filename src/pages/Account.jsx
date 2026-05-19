@@ -32,6 +32,7 @@ export default function Account() {
   const [uploadingMeal, setUploadingMeal] = useState(false);
 
   // Settings
+  const [showSettings, setShowSettings] = useState(false);
   const [customRestEnabled, setCustomRestEnabled] = useState(false);
   const [defaultRestSeconds, setDefaultRestSeconds] = useState("90");
   const [editingRest, setEditingRest] = useState(false);
@@ -311,11 +312,18 @@ export default function Account() {
       </div>
 
       {/* Settings */}
-      <div className="border border-border p-5 space-y-4 bg-[hsl(var(--popover))] rounded-[50px]">
-        <div className="flex items-center gap-2">
-          <Settings className="w-5 h-5 text-primary" />
-          <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Impostazioni Allenamento</h2>
-        </div>
+      <div className="border border-border overflow-hidden bg-[hsl(var(--popover))] rounded-[50px] opacity-80">
+        <button onClick={() => setShowSettings(!showSettings)} className="w-full flex items-center justify-between p-5 bg-[hsl(var(--popover))] rounded-[50px] opacity-70">
+          <div className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-primary" />
+            <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Impostazioni Allenamento</h2>
+          </div>
+          {showSettings ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        <AnimatePresence>
+          {showSettings &&
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <div className="px-5 pb-5 space-y-4 border-t border-border pt-3">
 
         {/* Custom rest toggle */}
         <div className="flex items-center justify-between px-4 py-3 bg-[hsl(var(--popover))] text-[hsl(var(--background))] rounded-[50px] border-2 border-[hsl(var(--background))]">
@@ -426,6 +434,11 @@ export default function Account() {
             </p>
           }
         </div>
+
+            </div>
+          </motion.div>
+          }
+        </AnimatePresence>
       </div>
 
       <p className="text-xs text-muted-foreground text-center">Golden Track v1.0 · Conforme alle linee guida App Store</p>
