@@ -39,7 +39,7 @@ export default function Account() {
   const [notifSettings, setNotifSettings] = useState({
     workout: { enabled: false, time: "" },
     supplement: { enabled: false, time: "" },
-    water: { enabled: false, time: "" },
+    water: { enabled: false, time: "" }
   });
 
   useEffect(() => {
@@ -148,7 +148,7 @@ export default function Account() {
 
   function saveRestDefault() {
     const val = Number(defaultRestSeconds);
-    if (!val || val < 10) { toast.error("Inserisci un valore valido (min 10s)"); return; }
+    if (!val || val < 10) {toast.error("Inserisci un valore valido (min 10s)");return;}
     localStorage.setItem("defaultRestSeconds", String(val));
     setEditingRest(false);
     toast.success(`Recupero default impostato a ${val}s`);
@@ -318,7 +318,7 @@ export default function Account() {
         </div>
 
         {/* Custom rest toggle */}
-        <div className="flex items-center justify-between bg-[hsl(var(--background))] rounded-2xl px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-3 bg-[hsl(var(--popover))] text-[hsl(var(--background))] rounded-none">
           <div className="flex items-center gap-3">
             <Timer className="w-5 h-5 text-primary shrink-0" />
             <div>
@@ -384,31 +384,31 @@ export default function Account() {
           </div>
 
           {[
-            { key: "workout", label: "Promemoria allenamento" },
-            { key: "supplement", label: "Promemoria integratori" },
-            { key: "water", label: "Promemoria acqua" },
-          ].map(({ key, label }) => (
-            <div key={key} className="space-y-1.5">
+          { key: "workout", label: "Promemoria allenamento" },
+          { key: "supplement", label: "Promemoria integratori" },
+          { key: "water", label: "Promemoria acqua" }].
+          map(({ key, label }) =>
+          <div key={key} className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{label}</span>
                 <button
-                  onClick={() => {
-                    if (!notifSettings[key].enabled && notifStatus !== "granted") requestNotifPermission();
-                    updateNotif(key, "enabled", !notifSettings[key].enabled);
-                  }}
-                  className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${notifSettings[key].enabled ? "bg-primary" : "bg-muted"}`}>
+                onClick={() => {
+                  if (!notifSettings[key].enabled && notifStatus !== "granted") requestNotifPermission();
+                  updateNotif(key, "enabled", !notifSettings[key].enabled);
+                }}
+                className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${notifSettings[key].enabled ? "bg-primary" : "bg-muted"}`}>
                   <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${notifSettings[key].enabled ? "left-5" : "left-0.5"}`} />
                 </button>
               </div>
               {notifSettings[key].enabled &&
-              <input
-                type="time"
-                value={notifSettings[key].time}
-                onChange={(e) => updateNotif(key, "time", e.target.value)}
-                className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
-              }
+            <input
+              type="time"
+              value={notifSettings[key].time}
+              onChange={(e) => updateNotif(key, "time", e.target.value)}
+              className="w-full h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
+            }
             </div>
-          ))}
+          )}
 
           {notifStatus === "denied" &&
           <p className="text-xs text-destructive flex items-center gap-1">
