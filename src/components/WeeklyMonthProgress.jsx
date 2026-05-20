@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProgressCircle from "./ProgressCircle";
 import WeekSessionModal from "./WeekSessionModal";
 
-const SESSIONS_PER_WEEK = 4;
+
 
 function getMonthWeeks() {
   const now = new Date();
@@ -29,7 +29,7 @@ function getMonthWeeks() {
   return weeks;
 }
 
-export default function WeeklyMonthProgress({ sessions, compact = false }) {
+export default function WeeklyMonthProgress({ sessions, compact = false, sessionsPerWeek = 4 }) {
   const weeks = getMonthWeeks();
   const today = new Date().toISOString().split("T")[0];
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -137,7 +137,7 @@ export default function WeeklyMonthProgress({ sessions, compact = false }) {
                   }`}>
                     {compact ? `S${i+1}` : week.label}
                   </p>
-                  <ProgressCircle completed={uniqueDays} total={SESSIONS_PER_WEEK} size={circleSize} />
+                  <ProgressCircle completed={uniqueDays} total={sessionsPerWeek} size={circleSize} />
                   {isCurrent && isFocused && (
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                   )}

@@ -1,53 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { startTimer } from "@/lib/timerStore";
 import { base44 } from "@/api/base44Client";
-import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, Flame, Trash2, Zap } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, Flame, Trash2, Zap, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
-import RestTimer from "./RestTimer";
 import LoadChart from "./LoadChart";
 
 // A superset: multiple exercises performed back-to-back before resting
 export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved, onLogDeleted, index }) {
   const [expanded, setExpanded] = useState(false);
-
-  const [currentExIdx, setCurrentExIdx] = useState(0); // which exercise in superset we're logging
+  const [currentExIdx, setCurrentExIdx] = useState(0);
   const [saving, setSaving] = useState(false);
   const [deletingLog, setDeletingLog] = useState(null);
-  // Per-exercise form state
+  const [editingLog, setEditingLog] = useState(null); // { logId, weight }
   const [forms, setForms] = useState(() => exercises.map(() => ({ setNumber: "1", weightKg: "", repsDone: "", isWarmup: false })));
   const today = new Date().toISOString().split("T")[0];
-
   const totalSets = exercises[0]?.sets || 3;
+  const restSeconds = exercises[0]?.rest_seconds || 90;
 
   function setForm(i, key, val) {
     setForms(prev => prev.map((f, idx) => idx === i ? { ...f, [key]: val } : f));
   }
 
-  // Count completed sets for each exercise today
   function todayLogs(ex) {
     return logs.filter(l => l.exercise_id === ex.id && l.date === today);
   }
 
-  // Solo le serie allenanti (non warmup) contano verso il completamento
+  // Get suggested weight from last session for a given exercise + set number
+  function getSuggestedWeight(ex, setNum) {
+    const pastLogs = logs.filter(l => l.exercise_id === ex.id && l.date !== today && !l.is_warmup);
+    const pastDates = [...new Set(pastLogs.map(l => l.date))].sort((a, b) => b.localeCompare(a));
+    const lastDate = pastDates[0];
+    if (!lastDate) return "";
+    const match = pastLogs.find(l => l.date === lastDate && l.set_number === setNum);
+    return match?.weight_kg ? String(match.weight_kg) : "";
+  }
+
   const allDone = exercises.every(ex => todayLogs(ex).filter(l => !l.is_warmup).length >= totalSets);
+
+  // Auto pre-fill weight for current exercise + next set
+  useEffect(() => {
+    const ex = exercises[currentExIdx];
+    if (!ex) return;
+    const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
+    const nextSetNum = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSets.includes(n)) || (totalSets + 1);
+    const suggested = getSuggestedWeight(ex, nextSetNum);
+    setForms(prev => prev.map((f, i) => i === currentExIdx ? { ...f, setNumber: String(nextSetNum), weightKg: suggested } : f));
+  }, [currentExIdx, logs]);
 
   async function handleSaveSet() {
     setSaving(true);
-    // Save current exercise in superset
     const ex = exercises[currentExIdx];
     const form = forms[currentExIdx];
     const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
     const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSets.includes(n)) || (totalSets + 1);
+    const setNum = Number(form.setNumber || nextSet);
 
     const optimistic = {
       id: `tmp-${Date.now()}`,
       exercise_id: ex.id,
       plan_id: ex.plan_id,
       exercise_name: ex.name,
-      set_number: Number(form.setNumber || nextSet),
+      set_number: setNum,
       reps_done: form.repsDone ? Number(form.repsDone) : (ex.reps ? parseInt(ex.reps) : 0),
       weight_kg: form.weightKg ? Number(form.weightKg) : undefined,
       is_warmup: form.isWarmup,
@@ -55,15 +71,13 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
     };
     onLogSaved(optimistic);
 
-    // Advance to next exercise in superset, or reset + start timer
     if (currentExIdx < exercises.length - 1) {
       setCurrentExIdx(currentExIdx + 1);
     } else {
       setCurrentExIdx(0);
-      startTimer(restSeconds); // rest after completing all exercises in superset
+      startTimer(restSeconds);
     }
 
-    // Reset form for this exercise
     setForms(prev => prev.map((f, i) => i === currentExIdx ? { setNumber: "1", weightKg: "", repsDone: "", isWarmup: false } : f));
 
     const newLog = await base44.entities.WorkoutLog.create({
@@ -87,7 +101,19 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
     setDeletingLog(null);
   }
 
-  const restSeconds = exercises[0]?.rest_seconds || 90;
+  async function handleEditWeight(log, newWeightStr) {
+    const newWeight = newWeightStr ? Number(newWeightStr) : undefined;
+    await base44.entities.WorkoutLog.update(log.id, { weight_kg: newWeight });
+    onLogSaved({ ...log, weight_kg: newWeight, _replaceId: log.id });
+    setEditingLog(null);
+  }
+
+  async function adjustWeight(log, delta) {
+    const current = log.weight_kg || 0;
+    const updated = Math.max(0, parseFloat((current + delta).toFixed(1)));
+    await base44.entities.WorkoutLog.update(log.id, { weight_kg: updated });
+    onLogSaved({ ...log, weight_kg: updated, _replaceId: log.id });
+  }
 
   return (
     <>
@@ -135,22 +161,59 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                         <div className={`w-2 h-2 rounded-full ${currentExIdx === ei && !allDone ? "bg-primary animate-pulse" : "bg-muted-foreground/30"}`} />
                         <p className="text-sm font-semibold">{ex.name}</p>
                         {ex.reps && <span className="text-xs text-muted-foreground">× {ex.reps}</span>}
+                        <span className={`ml-auto text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                          exLogs.filter(l => !l.is_warmup).length >= totalSets ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"
+                        }`}>{exLogs.filter(l => !l.is_warmup).length}/{totalSets}</span>
                       </div>
                       {exLogs.length > 0 && (
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           {exLogs.sort((a, b) => a.set_number - b.set_number).map(log => (
-                            <div key={log.id} className="flex items-center gap-3 bg-secondary/40 rounded-xl px-3 py-2">
-                              <span className="text-xs text-muted-foreground w-14 shrink-0">
-                                {log.is_warmup ? <span className="text-chart-3">🔥 W/U</span> : `Serie ${log.set_number}`}
-                              </span>
-                              <span className="text-sm font-medium">{log.reps_done || ex.reps || "—"} rep</span>
-                              <span className="text-sm font-bold text-primary ml-auto">{log.weight_kg ? `${log.weight_kg} kg` : "—"}</span>
-                              <button onClick={() => handleDeleteLog(log.id)} disabled={deletingLog === log.id}
-                                className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
-                                {deletingLog === log.id
-                                  ? <div className="w-3.5 h-3.5 border-2 border-destructive/20 border-t-destructive rounded-full animate-spin" />
-                                  : <Trash2 className="w-3.5 h-3.5" />}
-                              </button>
+                            <div key={log.id} className="flex flex-col gap-2 bg-secondary/40 rounded-xl px-3 py-2.5">
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs text-muted-foreground w-14 shrink-0">
+                                  {log.is_warmup ? <span className="text-chart-3">🔥 W/U</span> : `Serie ${log.set_number}`}
+                                </span>
+                                <span className="text-sm font-medium">{log.reps_done || ex.reps || "—"} rep</span>
+                                {editingLog?.id === log.id ? (
+                                  <>
+                                    <Input type="number" placeholder="kg" value={editingLog.weight}
+                                      onChange={e => setEditingLog({ id: log.id, weight: e.target.value })}
+                                      className="h-8 w-24 rounded-lg text-sm ml-auto" autoFocus />
+                                    <Button size="sm" onClick={() => handleEditWeight(log, editingLog.weight)} className="h-8 rounded-lg px-3">
+                                      <Check className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="text-sm font-bold text-primary ml-auto">
+                                      {log.weight_kg ? `${log.weight_kg} kg` : "—"}
+                                    </span>
+                                    <button onClick={() => setEditingLog({ id: log.id, weight: log.weight_kg ? String(log.weight_kg) : "" })}
+                                      className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                                      <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                                    </button>
+                                    <button onClick={() => handleDeleteLog(log.id)} disabled={deletingLog === log.id}
+                                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
+                                      {deletingLog === log.id
+                                        ? <div className="w-3.5 h-3.5 border-2 border-destructive/20 border-t-destructive rounded-full animate-spin" />
+                                        : <Trash2 className="w-3.5 h-3.5" />}
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                              {editingLog?.id !== log.id && log.weight_kg != null && (
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  <span className="text-[10px] text-muted-foreground mr-1">Modifica rapida:</span>
+                                  {[-5, -2, -1, +1, +2, +5].map(d => (
+                                    <button key={d} onClick={() => adjustWeight(log, d)}
+                                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full transition-colors ${
+                                        d > 0 ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+                                      }`}>
+                                      {d > 0 ? `+${d}` : d}kg
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -160,38 +223,64 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                 })}
 
                 {/* Active input for current exercise in superset */}
-                {!allDone && (
-                  <div className="border border-primary/20 rounded-xl p-3 space-y-3 bg-primary/5">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-primary" />
-                      <p className="text-xs font-semibold text-primary">
-                        Ora: {exercises[currentExIdx]?.name}
-                        {currentExIdx < exercises.length - 1 && <span className="text-muted-foreground font-normal"> → poi {exercises[currentExIdx + 1]?.name}</span>}
-                        {currentExIdx === exercises.length - 1 && <span className="text-accent font-normal"> → poi recupero</span>}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="w-20 shrink-0">
-                        <label className="text-xs text-muted-foreground mb-1 block">Rep</label>
-                        <Input type="number" placeholder={exercises[currentExIdx]?.reps?.split(/[^0-9]/)[0] || "—"}
-                          value={forms[currentExIdx].repsDone}
-                          onChange={e => setForm(currentExIdx, "repsDone", e.target.value)}
-                          className="h-10 rounded-xl" />
+                {!allDone && (() => {
+                  const ex = exercises[currentExIdx];
+                  const form = forms[currentExIdx];
+                  const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
+                  const missingSets = Array.from({ length: totalSets }, (_, i) => i + 1).filter(n => !completedSets.includes(n));
+                  const extraSets = Array.from({ length: 5 }, (_, i) => totalSets + i + 1);
+                  const suggested = getSuggestedWeight(ex, Number(form.setNumber));
+                  return (
+                    <div className="border border-primary/20 rounded-xl p-3 space-y-3 bg-primary/5">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-3.5 h-3.5 text-primary" />
+                        <p className="text-xs font-semibold text-primary">
+                          Ora: {ex?.name}
+                          {currentExIdx < exercises.length - 1 && <span className="text-muted-foreground font-normal"> → poi {exercises[currentExIdx + 1]?.name}</span>}
+                          {currentExIdx === exercises.length - 1 && <span className="text-accent font-normal"> → poi recupero</span>}
+                        </p>
                       </div>
-                      <div className="flex-1">
-                        <label className="text-xs text-muted-foreground mb-1 block">Carico (kg)</label>
-                        <Input type="number" placeholder="es. 50"
-                          value={forms[currentExIdx].weightKg}
-                          onChange={e => setForm(currentExIdx, "weightKg", e.target.value)}
-                          className="h-10 rounded-xl" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Serie</label>
+                          <Select value={form.setNumber} onValueChange={v => setForm(currentExIdx, "setNumber", v)}>
+                            <SelectTrigger className="h-10 rounded-xl text-[hsl(var(--primary))]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[...missingSets, ...extraSets].map(n => (
+                                <SelectItem key={n} value={String(n)}>
+                                  {n > totalSets ? `Serie ${n} (extra)` : `Serie ${n}`}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1 block">Rep</label>
+                          <Input type="number" placeholder={ex?.reps?.split(/[^0-9]/)[0] || "—"}
+                            value={form.repsDone}
+                            onChange={e => setForm(currentExIdx, "repsDone", e.target.value)}
+                            className="h-10 rounded-xl" />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="text-xs text-muted-foreground mb-1 block">
+                            Carico (kg)
+                            {suggested && !form.weightKg && <span className="text-primary ml-1">(prec. {suggested}kg)</span>}
+                          </label>
+                          <Input type="number" placeholder={suggested || "es. 50"}
+                            value={form.weightKg}
+                            onChange={e => setForm(currentExIdx, "weightKg", e.target.value)}
+                            className="h-10 rounded-xl" />
+                        </div>
                       </div>
+                      <Button onClick={handleSaveSet} disabled={saving} className="w-full rounded-xl h-10">
+                        <Plus className="w-4 h-4 mr-1" />
+                        {saving ? "Salvataggio..." : currentExIdx < exercises.length - 1 ? "Salva e prossimo esercizio →" : "Salva e recupera"}
+                      </Button>
                     </div>
-                    <Button onClick={handleSaveSet} disabled={saving} className="w-full rounded-xl h-10">
-                      <Plus className="w-4 h-4 mr-1" />
-                      {saving ? "Salvataggio..." : currentExIdx < exercises.length - 1 ? "Salva e prossimo esercizio →" : "Salva e recupera"}
-                    </Button>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </motion.div>
           )}

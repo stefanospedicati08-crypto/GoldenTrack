@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [sessions, setSessions] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [supplements, setSupplements] = useState([]);
+  const [planDaysCount, setPlanDaysCount] = useState(4);
   const [loading, setLoading] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [watermarkUrl, setWatermarkUrl] = useState(null);
@@ -48,6 +49,17 @@ export default function Dashboard() {
       setNotifications(notifs);
       setSupplements(supps);
       if (gs[0]?.watermark_url) setWatermarkUrl(gs[0].watermark_url);
+      // Count distinct days in active plan
+      if (p[0]) {
+        const exs = await base44.entities.Exercise.filter({ plan_id: p[0].id });
+        const days = new Set(exs.map(e => e.day_label).filter(Boolean));
+        if (days.size > 0) setPlanDaysCount(days.size);
+      }
+      if (p[0]) {
+      const exs = await base44.entities.Exercise.filter({ plan_id: p[0].id });
+      const days = new Set(exs.map(e => e.day_label).filter(Boolean));
+      if (days.size > 0) setPlanDaysCount(days.size);
+      }
       setLoading(false);
     }
     load();
@@ -156,7 +168,7 @@ export default function Dashboard() {
             transition={{ delay: 0.05 }}
             className="p-2 flex-1 min-w-0">
             
-            <WeeklyMonthProgress sessions={sessions} compact />
+            <WeeklyMonthProgress sessions={sessions} compact sessionsPerWeek={planDaysCount} />
           </motion.div>
           }
       </div>
