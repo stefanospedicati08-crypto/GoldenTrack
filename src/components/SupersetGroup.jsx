@@ -15,7 +15,7 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
   const [saving, setSaving] = useState(false);
   const [deletingLog, setDeletingLog] = useState(null);
   const [editingLog, setEditingLog] = useState(null); // { logId, weight }
-  const [forms, setForms] = useState(() => exercises.map(() => ({ setNumber: "1", weightKg: "", repsDone: "", isWarmup: false })));
+  const [forms, setForms] = useState(() => exercises.map(() => ({ setNumber: "", weightKg: "", repsDone: "", isWarmup: false })));
   const today = new Date().toISOString().split("T")[0];
   const totalSets = exercises[0]?.sets || 3;
   const restSeconds = exercises[0]?.rest_seconds || 90;
@@ -40,23 +40,17 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
 
   const allDone = exercises.every(ex => todayLogs(ex).filter(l => !l.is_warmup).length >= totalSets);
 
-  // Auto pre-fill weight for current exercise + next set
-  useEffect(() => {
-    const ex = exercises[currentExIdx];
-    if (!ex) return;
+  // Compute next set number for current exercise reactively
+  function getNextSetNum(ex) {
     const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
-    const nextSetNum = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSets.includes(n)) || (totalSets + 1);
-    const suggested = getSuggestedWeight(ex, nextSetNum);
-    setForms(prev => prev.map((f, i) => i === currentExIdx ? { ...f, setNumber: String(nextSetNum), weightKg: suggested } : f));
-  }, [currentExIdx, logs]);
+    return Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSets.includes(n)) || (totalSets + 1);
+  }
 
   async function handleSaveSet() {
     setSaving(true);
     const ex = exercises[currentExIdx];
     const form = forms[currentExIdx];
-    const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
-    const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSets.includes(n)) || (totalSets + 1);
-    const setNum = Number(form.setNumber || nextSet);
+    const setNum = Number(form.setNumber || getNextSetNum(ex));
 
     const optimistic = {
       id: `tmp-${Date.now()}`,
@@ -71,14 +65,20 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
     };
     onLogSaved(optimistic);
 
-    if (currentExIdx < exercises.length - 1) {
-      setCurrentExIdx(currentExIdx + 1);
-    } else {
-      setCurrentExIdx(0);
-      startTimer(restSeconds);
-    }
+    // Advance to next exercise
+    const nextExIdx = currentExIdx < exercises.length - 1 ? currentExIdx + 1 : 0;
+    if (nextExIdx === 0) startTimer(restSeconds);
 
-    setForms(prev => prev.map((f, i) => i === currentExIdx ? { setNumber: "1", weightKg: "", repsDone: "", isWarmup: false } : f));
+    // Pre-fill weight for next exercise from previous session
+    const nextEx = exercises[nextExIdx];
+    const nextSetForNextEx = getNextSetNum(nextEx);
+    const nextSuggested = getSuggestedWeight(nextEx, nextSetForNextEx);
+    setForms(prev => prev.map((f, i) => {
+      if (i === currentExIdx) return { setNumber: "", weightKg: "", repsDone: "", isWarmup: false };
+      if (i === nextExIdx) return { ...f, weightKg: nextSuggested, setNumber: String(nextSetForNextEx) };
+      return f;
+    }));
+    setCurrentExIdx(nextExIdx);
 
     const newLog = await base44.entities.WorkoutLog.create({
       exercise_id: ex.id,
@@ -229,7 +229,8 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                   const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
                   const missingSets = Array.from({ length: totalSets }, (_, i) => i + 1).filter(n => !completedSets.includes(n));
                   const extraSets = Array.from({ length: 5 }, (_, i) => totalSets + i + 1);
-                  const suggested = getSuggestedWeight(ex, Number(form.setNumber));
+                  const currentSetNum = form.setNumber ? Number(form.setNumber) : getNextSetNum(ex);
+                  const suggested = getSuggestedWeight(ex, currentSetNum);
                   return (
                     <div className="border border-primary/20 rounded-xl p-3 space-y-3 bg-primary/5">
                       <div className="flex items-center gap-2">
@@ -243,7 +244,7 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground mb-1 block">Serie</label>
-                          <Select value={form.setNumber} onValueChange={v => setForm(currentExIdx, "setNumber", v)}>
+                          <Select value={form.setNumber || String(getNextSetNum(ex))} onValueChange={v => setForm(currentExIdx, "setNumber", v)}>
                             <SelectTrigger className="h-10 rounded-xl text-[hsl(var(--primary))]">
                               <SelectValue />
                             </SelectTrigger>
