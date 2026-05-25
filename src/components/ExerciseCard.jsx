@@ -44,14 +44,17 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const completedSetNumbers = trainingSets.map((l) => l.set_number);
   const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find((n) => !completedSetNumbers.includes(n));
 
-  // Get last session's log for the next set to pre-fill weight
+  // Suggested weight: today's most recent log first, then last session's same set
+  const trainingLogsToday = todayLogs.filter(l => !l.is_warmup).sort((a, b) => b.set_number - a.set_number);
   const lastSessionLogs = logs.filter((l) => l.date !== today && !l.is_warmup);
   const lastSessionDates = [...new Set(lastSessionLogs.map((l) => l.date))].sort((a, b) => b.localeCompare(a));
   const lastSessionDate = lastSessionDates[0];
   const lastSessionSetLogs = lastSessionDate ? lastSessionLogs.filter((l) => l.date === lastSessionDate) : [];
   const currentSetNum = Number(isWarmup ? setNumber : (nextSet || totalSets + 1));
   const prevSetLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === currentSetNum) : null;
-  const suggestedWeight = prevSetLog?.weight_kg ? String(prevSetLog.weight_kg) : "";
+  const suggestedWeight = !isWarmup && trainingLogsToday.length > 0 && trainingLogsToday[0].weight_kg != null
+    ? String(trainingLogsToday[0].weight_kg)
+    : prevSetLog?.weight_kg ? String(prevSetLog.weight_kg) : "";
 
   async function handleSave() {
     setSaving(true);
@@ -73,9 +76,10 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       (nextSet ? (nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : totalSets + 1);
     const nextSetStr = String(nextSetNum);
     setSetNumber(nextSetStr);
-    // Pre-fill weight from last session for next set
+    // Pre-fill weight for next set: today's most recent first, then last session
     const nextPrevLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === nextSetNum) : null;
-    setWeightKg(nextPrevLog?.weight_kg ? String(nextPrevLog.weight_kg) : "");
+    const todayLatest = !isWarmup && trainingLogsToday.length > 0 ? trainingLogsToday[0] : null;
+    setWeightKg(todayLatest?.weight_kg != null ? String(todayLatest.weight_kg) : nextPrevLog?.weight_kg ? String(nextPrevLog.weight_kg) : "");
     setWeightKg2("");
     setRepsDone("");
     setSaving(false);

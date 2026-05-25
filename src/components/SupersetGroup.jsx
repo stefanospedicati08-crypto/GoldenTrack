@@ -28,11 +28,17 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
     return logs.filter(l => l.exercise_id === ex.id && l.date === today);
   }
 
-  // Get suggested weight from last session for a given exercise + set number
+  // Get suggested weight: first from today's most recent log, then from last session
   function getSuggestedWeight(ex, setNum) {
-    const pastLogs = logs.filter(l => l.exercise_id === ex.id && l.date !== today && !l.is_warmup);
-    const pastDates = [...new Set(pastLogs.map(l => l.date))].sort((a, b) => b.localeCompare(a));
-    const lastDate = pastDates[0];
+    const exLogs = logs.filter(l => l.exercise_id === ex.id && !l.is_warmup);
+    // Today's logs sorted by set_number desc — use the most recently logged weight today
+    const todayExLogs = exLogs.filter(l => l.date === today).sort((a, b) => b.set_number - a.set_number);
+    if (todayExLogs.length > 0 && todayExLogs[0].weight_kg != null) {
+      return String(todayExLogs[0].weight_kg);
+    }
+    // Fall back to same set from last session
+    const pastLogs = exLogs.filter(l => l.date !== today);
+    const lastDate = [...new Set(pastLogs.map(l => l.date))].sort((a, b) => b.localeCompare(a))[0];
     if (!lastDate) return "";
     const match = pastLogs.find(l => l.date === lastDate && l.set_number === setNum);
     return match?.weight_kg ? String(match.weight_kg) : "";
