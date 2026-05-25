@@ -76,10 +76,10 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       (nextSet ? (nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : totalSets + 1);
     const nextSetStr = String(nextSetNum);
     setSetNumber(nextSetStr);
-    // Pre-fill weight for next set: today's most recent first, then last session
+    // Pre-fill weight for next set: use the weight just logged (most recent), fall back to last session
     const nextPrevLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === nextSetNum) : null;
-    const todayLatest = !isWarmup && trainingLogsToday.length > 0 ? trainingLogsToday[0] : null;
-    setWeightKg(todayLatest?.weight_kg != null ? String(todayLatest.weight_kg) : nextPrevLog?.weight_kg ? String(nextPrevLog.weight_kg) : "");
+    const justLoggedWeight = !isWarmup && optimistic.weight_kg != null ? String(optimistic.weight_kg) : null;
+    setWeightKg(justLoggedWeight ?? (nextPrevLog?.weight_kg ? String(nextPrevLog.weight_kg) : ""));
     setWeightKg2("");
     setRepsDone("");
     setSaving(false);

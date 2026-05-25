@@ -75,10 +75,11 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
     const nextExIdx = currentExIdx < exercises.length - 1 ? currentExIdx + 1 : 0;
     if (nextExIdx === 0) startTimer(restSeconds);
 
-    // Pre-fill weight for next exercise from previous session
+    // Pre-fill next exercise: use the weight just logged (most recent), fall back to previous session
     const nextEx = exercises[nextExIdx];
     const nextSetForNextEx = getNextSetNum(nextEx);
-    const nextSuggested = getSuggestedWeight(nextEx, nextSetForNextEx);
+    const justLoggedWeight = optimistic.weight_kg != null ? String(optimistic.weight_kg) : null;
+    const nextSuggested = justLoggedWeight ?? getSuggestedWeight(nextEx, nextSetForNextEx);
     setForms(prev => prev.map((f, i) => {
       if (i === currentExIdx) return { setNumber: "", weightKg: "", repsDone: "", isWarmup: false };
       if (i === nextExIdx) return { ...f, weightKg: nextSuggested, setNumber: String(nextSetForNextEx) };
