@@ -22,6 +22,17 @@ export default function DayWorkout() {
   const [editingSuperset, setEditingSuperset] = useState(false);
   const [supersetEdits, setSupersetEdits] = useState({});
 
+  // Calcola la chiave della settimana corrente (lunedì)
+  function getWeekKey() {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.getFullYear(), d.getMonth(), diff).toISOString().split("T")[0];
+  }
+
+  const sessionDoneKey = `session_done_${planId}_${dayLabel}_${getWeekKey()}`;
+  const isSessionDone = !!localStorage.getItem(sessionDoneKey);
+
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
@@ -74,6 +85,8 @@ export default function DayWorkout() {
       return [session, ...prev];
     });
     setShowSessionLogger(false);
+    localStorage.setItem(sessionDoneKey, "1");
+    navigate(`/schede/${planId}`);
   };
 
   if (loading) {
@@ -179,8 +192,16 @@ export default function DayWorkout() {
         </motion.div>
       }
 
+      {/* Se la sessione è già stata terminata questa settimana → solo storico */}
+      {isSessionDone && (
+        <div className="bg-accent/10 border border-accent/30 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
+          <p className="text-sm text-accent font-medium">Sessione completata questa settimana — visualizzazione sola lettura.</p>
+        </div>
+      )}
+
       {/* Exercise list */}
-      {groups.map((group, gi) =>
+      {!isSessionDone && groups.map((group, gi) =>
       group.type === "superset" ?
       <SupersetGroup
         key={group.key}
@@ -202,6 +223,9 @@ export default function DayWorkout() {
 
 
       )}
+
+      {/* chiudi il blocco condizionale esercizi */}
+      {!isSessionDone && null}
 
       {/* Storico sessioni */}
       <DaySessionHistory
@@ -244,8 +268,8 @@ export default function DayWorkout() {
         }
       </AnimatePresence>
 
-      {/* FAB Termina Sessione */}
-      <div className="fixed bottom-24 left-0 right-0 flex justify-center z-40 px-4 lg:bottom-6">
+      {/* FAB Termina Sessione — nascosto se sessione già terminata */}
+      {!isSessionDone && <div className="fixed bottom-24 left-0 right-0 flex justify-center z-40 px-4 lg:bottom-6">
         <motion.button
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -255,7 +279,7 @@ export default function DayWorkout() {
           <Flag className="w-5 h-5" />
           Termina Sessione
         </motion.button>
-      </div>
+      </div>}
     </div>);
 
 }
