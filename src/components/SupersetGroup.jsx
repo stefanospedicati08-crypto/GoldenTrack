@@ -15,7 +15,8 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
   const [saving, setSaving] = useState(false);
   const [deletingLog, setDeletingLog] = useState(null);
   const [editingLog, setEditingLog] = useState(null); // { logId, weight }
-  const [forms, setForms] = useState(() => exercises.map(() => ({ setNumber: "", weightKg: "", repsDone: "", isWarmup: false })));
+  const [forms, setForms] = useState(() => exercises.map(() => ({ setNumber: "", weightKg: "", repsDone: "", isWarmup: false, notes: "", rpeSet: "" })));
+  const [rpePerSetEnabled, setRpePerSetEnabled] = useState(() => localStorage.getItem("rpePerSetEnabled") === "true");
   const today = new Date().toISOString().split("T")[0];
   const totalSets = exercises[0]?.sets || 3;
   const restSeconds = exercises[0]?.rest_seconds || 90;
@@ -66,6 +67,8 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
       set_number: setNum,
       reps_done: form.repsDone ? Number(form.repsDone) : (ex.reps ? parseInt(ex.reps) : 0),
       weight_kg: form.weightKg ? Number(form.weightKg) : undefined,
+      notes: form.notes || undefined,
+      rpe_set: rpePerSetEnabled && form.rpeSet ? Number(form.rpeSet) : undefined,
       is_warmup: form.isWarmup,
       date: today,
     };
@@ -81,7 +84,7 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
     const justLoggedWeight = optimistic.weight_kg != null ? String(optimistic.weight_kg) : null;
     const nextSuggested = justLoggedWeight ?? getSuggestedWeight(nextEx, nextSetForNextEx);
     setForms(prev => prev.map((f, i) => {
-      if (i === currentExIdx) return { setNumber: "", weightKg: "", repsDone: "", isWarmup: false };
+      if (i === currentExIdx) return { setNumber: "", weightKg: "", repsDone: "", isWarmup: false, notes: "", rpeSet: "" };
       if (i === nextExIdx) return { ...f, weightKg: nextSuggested, setNumber: String(nextSetForNextEx) };
       return f;
     }));
@@ -94,6 +97,8 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
       set_number: optimistic.set_number,
       reps_done: optimistic.reps_done,
       weight_kg: optimistic.weight_kg,
+      notes: optimistic.notes,
+      rpe_set: optimistic.rpe_set,
       is_warmup: optimistic.is_warmup,
       date: today,
     });
@@ -272,15 +277,31 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                             className="h-10 rounded-xl" />
                         </div>
                         <div className="col-span-2">
-                          <label className="text-xs text-muted-foreground mb-1 block">
-                            Carico (kg)
-                            {suggested && !form.weightKg && <span className="text-primary ml-1">(prec. {suggested}kg)</span>}
-                          </label>
-                          <Input type="number" placeholder={suggested || "es. 50"}
-                            value={form.weightKg}
-                            onChange={e => setForm(currentExIdx, "weightKg", e.target.value)}
+                           <label className="text-xs text-muted-foreground mb-1 block">
+                             Carico (kg)
+                             {suggested && !form.weightKg && <span className="text-primary ml-1">(prec. {suggested}kg)</span>}
+                           </label>
+                           <Input type="number" placeholder={suggested || "es. 50"}
+                             value={form.weightKg}
+                             onChange={e => setForm(currentExIdx, "weightKg", e.target.value)}
+                             className="h-10 rounded-xl" />
+                         </div>
+                        <div className="col-span-2">
+                          <label className="text-xs text-muted-foreground mb-1 block">Note serie (opzionale)</label>
+                          <Input type="text" placeholder="es. buona esecuzione..."
+                            value={form.notes}
+                            onChange={e => setForm(currentExIdx, "notes", e.target.value)}
                             className="h-10 rounded-xl" />
                         </div>
+                        {rpePerSetEnabled && (
+                          <div className="col-span-2">
+                            <label className="text-xs text-muted-foreground mb-1 block">RPE (1-10)</label>
+                            <Input type="number" placeholder="es. 8" min="1" max="10"
+                              value={form.rpeSet}
+                              onChange={e => setForm(currentExIdx, "rpeSet", e.target.value)}
+                              className="h-10 rounded-xl" />
+                          </div>
+                        )}
                       </div>
                       <Button onClick={handleSaveSet} disabled={saving} className="w-full rounded-xl h-10">
                         <Plus className="w-4 h-4 mr-1" />

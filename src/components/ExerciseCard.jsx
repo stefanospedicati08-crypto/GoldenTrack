@@ -27,11 +27,14 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const [completed, setCompleted] = useState(false);
   const [showWarmups, setShowWarmups] = useState(false);
   const [customRestEnabled, setCustomRestEnabled] = useState(false);
+  const [rpePerSetEnabled, setRpePerSetEnabled] = useState(false);
+  const [setNotes, setSetNotes] = useState("");
+  const [rpeSet, setRpeSet] = useState("");
 
   useEffect(() => {
-    // Read custom rest setting from localStorage
     const setting = localStorage.getItem("customRestEnabled");
     setCustomRestEnabled(setting === "true");
+    setRpePerSetEnabled(localStorage.getItem("rpePerSetEnabled") === "true");
   }, []);
 
   const isDoubleReps = exercise.reps && exercise.reps.includes("/");
@@ -67,6 +70,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       reps_done: repsDone ? Number(repsDone) : exercise.reps ? parseInt(exercise.reps) : 0,
       weight_kg: weightKg ? Number(weightKg) : undefined,
       weight_kg_2: isDoubleReps && weightKg2 ? Number(weightKg2) : undefined,
+      notes: setNotes || undefined,
+      rpe_set: rpePerSetEnabled && rpeSet ? Number(rpeSet) : undefined,
       is_warmup: isWarmup,
       date: today
     };
@@ -82,6 +87,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
     setWeightKg(justLoggedWeight ?? (nextPrevLog?.weight_kg ? String(nextPrevLog.weight_kg) : ""));
     setWeightKg2("");
     setRepsDone("");
+    setSetNotes("");
+    setRpeSet("");
     setSaving(false);
     const defaultRest = Number(localStorage.getItem("defaultRestSeconds") || "90");
     const restTime = customRestEnabled && exercise.rest_seconds > 0 ? exercise.rest_seconds : (exercise.rest_seconds > 0 ? exercise.rest_seconds : defaultRest);
@@ -94,6 +101,8 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
       reps_done: optimistic.reps_done,
       weight_kg: optimistic.weight_kg,
       weight_kg_2: optimistic.weight_kg_2,
+      notes: optimistic.notes,
+      rpe_set: optimistic.rpe_set,
       is_warmup: isWarmup,
       date: today
     });
@@ -239,6 +248,7 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                               <span className="text-sm font-bold text-primary ml-auto">
                                 {log.weight_kg ? `${log.weight_kg} kg` : "—"}
                                 {log.weight_kg_2 ? <span className="text-muted-foreground font-normal"> / {log.weight_kg_2} kg</span> : null}
+                                {log.rpe_set != null ? <span className="text-xs text-muted-foreground font-normal ml-1">RPE {log.rpe_set}</span> : null}
                               </span>
                               <button
                         onClick={() => {setEditingLog(log.id);setEditWeight(log.weight_kg ? String(log.weight_kg) : "");}}
@@ -339,7 +349,28 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                     className="h-10 rounded-xl" />
                   
                   </div>
-                  {isDoubleReps &&
+                  <div className="col-span-2">
+                  <label className="text-xs text-muted-foreground mb-1 block">Note serie (opzionale)</label>
+                  <Input
+                    type="text"
+                    placeholder="es. buona esecuzione, dolorino spalla..."
+                    value={setNotes}
+                    onChange={(e) => setSetNotes(e.target.value)}
+                    className="h-10 rounded-xl" />
+                </div>
+                {rpePerSetEnabled && (
+                  <div className="col-span-2">
+                    <label className="text-xs text-muted-foreground mb-1 block">RPE (1-10)</label>
+                    <Input
+                      type="number"
+                      placeholder="es. 8"
+                      min="1" max="10"
+                      value={rpeSet}
+                      onChange={(e) => setRpeSet(e.target.value)}
+                      className="h-10 rounded-xl" />
+                  </div>
+                )}
+                {isDoubleReps &&
                 <div>
                       <label className="text-xs text-muted-foreground mb-1 block">Carico 2° (kg)</label>
                       <Input

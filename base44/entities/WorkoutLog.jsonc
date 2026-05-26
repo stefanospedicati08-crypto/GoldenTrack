@@ -37,7 +37,13 @@
     },
     "notes": {
       "type": "string",
-      "title": "Note"
+      "title": "Note Serie"
+    },
+    "rpe_set": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "title": "RPE Serie"
     },
     "is_warmup": {
       "type": "boolean",
