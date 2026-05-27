@@ -31,15 +31,16 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleVisibility = async () => {
-      if (document.visibilityState === 'visible') {
-        const u = await base44.auth.me();
-        const sess = await base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100);
-        setSessions(sess);
+    const unsub = base44.entities.WorkoutSession.subscribe((event) => {
+      if (event.type === 'delete') {
+        setSessions(prev => prev.filter(s => s.id !== event.id));
+      } else if (event.type === 'create' && event.data) {
+        setSessions(prev => [event.data, ...prev]);
+      } else if (event.type === 'update' && event.data) {
+        setSessions(prev => prev.map(s => s.id === event.id ? event.data : s));
       }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    });
+    return unsub;
   }, []);
 
   useEffect(() => {
