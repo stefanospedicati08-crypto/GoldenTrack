@@ -6,15 +6,18 @@ function getTodayKey() {
   return new Date().toISOString().split("T")[0];
 }
 
+function getNotifSettings() {
+  try { return JSON.parse(localStorage.getItem("notifSettings") || "{}"); } catch { return {}; }
+}
+
 export default function SupplementsWidget({ supplements }) {
   const storageKey = `supp_taken_${getTodayKey()}`;
-  const reminderKey = "supp_reminder_time";
 
   const [taken, setTaken] = useState(() => {
     try {return JSON.parse(localStorage.getItem(storageKey) || "[]");} catch {return [];}
   });
   const [showSettings, setShowSettings] = useState(false);
-  const [reminderTime, setReminderTime] = useState(() => localStorage.getItem(reminderKey) || "");
+  const [reminderTime, setReminderTime] = useState(() => getNotifSettings()?.supplement?.time || "");
   const [notifStatus, setNotifStatus] = useState("default");
 
   useEffect(() => {
@@ -44,11 +47,9 @@ export default function SupplementsWidget({ supplements }) {
   }
 
   function saveReminder() {
-    if (reminderTime) {
-      localStorage.setItem(reminderKey, reminderTime);
-    } else {
-      localStorage.removeItem(reminderKey);
-    }
+    const current = getNotifSettings();
+    const updated = { ...current, supplement: { enabled: !!reminderTime, time: reminderTime || "" } };
+    localStorage.setItem("notifSettings", JSON.stringify(updated));
     setShowSettings(false);
     if (reminderTime && notifStatus === "granted") {
       scheduleReminder(reminderTime);
@@ -73,7 +74,7 @@ export default function SupplementsWidget({ supplements }) {
   const allIds = supplements.map((s) => s.id);
   const allTaken = allIds.every((id) => taken.includes(id));
   const someTaken = taken.length > 0 && !allTaken;
-  const savedReminderTime = localStorage.getItem(reminderKey);
+  const savedReminderTime = getNotifSettings()?.supplement?.time || "";
 
   return (
     <div className="space-y-4">
