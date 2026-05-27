@@ -246,7 +246,7 @@ export default function DayWorkout() {
 
       {/* Storico sessioni */}
       <DaySessionHistory
-        sessions={sessions.filter((s) => s.day_label === dayLabel && s.date !== today)}
+        sessions={sessions.filter((s) => s.day_label === dayLabel)}
         dayLabel={dayLabel}
         logs={logs}
         onSessionDeleted={handleSessionDeleted}
