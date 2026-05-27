@@ -31,7 +31,7 @@ export default function DayWorkout() {
   }
 
   const sessionDoneKey = `session_done_${planId}_${dayLabel}_${getWeekKey()}`;
-  const isSessionDone = !!localStorage.getItem(sessionDoneKey);
+  const [isSessionDone, setIsSessionDone] = useState(() => !!localStorage.getItem(sessionDoneKey));
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -86,7 +86,18 @@ export default function DayWorkout() {
     });
     setShowSessionLogger(false);
     localStorage.setItem(sessionDoneKey, "1");
+    setIsSessionDone(true);
     navigate(`/schede/${planId}`);
+  };
+
+  const handleSessionDeleted = async (session) => {
+    await base44.entities.WorkoutSession.delete(session.id);
+    setSessions((prev) => prev.filter((s) => s.id !== session.id));
+    // Se era la sessione di questa settimana, sblocca il workout
+    const weekKey = getWeekKey();
+    const key = `session_done_${planId}_${dayLabel}_${weekKey}`;
+    localStorage.removeItem(key);
+    setIsSessionDone(false);
   };
 
   if (loading) {
@@ -227,7 +238,8 @@ export default function DayWorkout() {
       <DaySessionHistory
         sessions={sessions.filter((s) => s.day_label === dayLabel && s.date !== today)}
         dayLabel={dayLabel}
-        logs={logs} />
+        logs={logs}
+        onSessionDeleted={handleSessionDeleted} />
       
 
       {/* Session Logger modal */}

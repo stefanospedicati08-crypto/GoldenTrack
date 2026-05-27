@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Calendar, Heart, Zap, MessageSquare, Dumbbell } from "lucide-react";
+import { ChevronDown, ChevronUp, Calendar, Heart, Zap, MessageSquare, Dumbbell, Trash2 } from "lucide-react";
 import moment from "moment";
 import "moment/locale/it";
 moment.locale("it");
 
-export default function DaySessionHistory({ sessions, dayLabel, logs }) {
+export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionDeleted }) {
   const [open, setOpen] = useState(false);
   const [expandedSession, setExpandedSession] = useState(null);
 
@@ -92,9 +92,10 @@ export default function DaySessionHistory({ sessions, dayLabel, logs }) {
                   transition={{ delay: i * 0.04 }}
                   className="bg-card rounded-xl border border-border overflow-hidden">
                   
+                    <div className="flex items-center">
                     <button
                       onClick={() => setExpandedSession(isExpanded ? null : session.id)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-secondary/30 transition-colors">
+                      className="flex-1 flex items-center justify-between p-3 text-left hover:bg-secondary/30 transition-colors">
                       <div>
                         <p className="text-sm font-semibold capitalize">
                           {moment(session.date).format("dddd D MMMM YYYY")}
@@ -115,6 +116,14 @@ export default function DaySessionHistory({ sessions, dayLabel, logs }) {
                       </div>
                       {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                     </button>
+                    {onSessionDeleted && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onSessionDeleted(session); }}
+                        className="p-3 text-destructive hover:bg-destructive/10 transition-colors rounded-r-xl">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    </div>
 
                     <AnimatePresence>
                       {isExpanded &&
