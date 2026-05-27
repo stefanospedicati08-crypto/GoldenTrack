@@ -13,6 +13,19 @@ export default function SchedaDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const unsub = base44.entities.WorkoutSession.subscribe((event) => {
+      if (event.type === 'delete') {
+        setSessions(prev => prev.filter(s => s.id !== event.id));
+      } else if (event.type === 'create' && event.data) {
+        setSessions(prev => [event.data, ...prev]);
+      } else if (event.type === 'update' && event.data) {
+        setSessions(prev => prev.map(s => s.id === event.id ? event.data : s));
+      }
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
     async function load() {
       const [p, exs, sess] = await Promise.all([
       base44.entities.WorkoutPlan.get(id),
