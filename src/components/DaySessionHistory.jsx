@@ -5,12 +5,27 @@ import moment from "moment";
 import "moment/locale/it";
 moment.locale("it");
 
-export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionDeleted, onSessionUpdated }) {
+export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionDeleted, onSessionUpdated, onLogUpdated }) {
   const [open, setOpen] = useState(false);
   const [expandedSession, setExpandedSession] = useState(null);
   const [editingSession, setEditingSession] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
+  const [editingLog, setEditingLog] = useState(null); // { id, reps_done, weight_kg, weight_kg_2 }
+  const [savingLog, setSavingLog] = useState(false);
+
+  async function saveLogEdit() {
+    if (!editingLog) return;
+    setSavingLog(true);
+    const data = {
+      reps_done: editingLog.reps_done ? Number(editingLog.reps_done) : undefined,
+      weight_kg: editingLog.weight_kg ? Number(editingLog.weight_kg) : undefined,
+      weight_kg_2: editingLog.weight_kg_2 ? Number(editingLog.weight_kg_2) : undefined,
+    };
+    await onLogUpdated(editingLog.id, data);
+    setEditingLog(null);
+    setSavingLog(false);
+  }
 
   function startEdit(session) {
     setEditingSession(session.id);
@@ -209,12 +224,45 @@ export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionD
                                   </div>
                                   <div className="pl-5 space-y-0.5">
                                     {exLogs.map((l) => (
-                                      <div key={l.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <span className="w-14 shrink-0">Serie {l.set_number}</span>
-                                        <span className="font-medium text-foreground">{l.reps_done || "—"} rep</span>
-                                        {l.weight_kg && <span className="font-bold text-primary">{l.weight_kg} kg{l.weight_kg_2 ? ` / ${l.weight_kg_2} kg` : ""}</span>}
-                                      </div>
-                                    ))}
+                                        <div key={l.id}>
+                                          {editingLog?.id === l.id ? (
+                                            <div className="flex flex-wrap items-center gap-1.5 bg-secondary/60 rounded-lg px-2 py-1.5">
+                                              <span className="text-[10px] text-muted-foreground w-14 shrink-0">Serie {l.set_number}</span>
+                                              <input type="number" placeholder="rep" value={editingLog.reps_done}
+                                                onChange={e => setEditingLog(p => ({...p, reps_done: e.target.value}))}
+                                                className="w-16 h-7 rounded-md border border-input bg-background px-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring" />
+                                              <input type="number" placeholder="kg" value={editingLog.weight_kg}
+                                                onChange={e => setEditingLog(p => ({...p, weight_kg: e.target.value}))}
+                                                className="w-16 h-7 rounded-md border border-input bg-background px-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring" />
+                                              {(l.weight_kg_2 != null || editingLog.weight_kg_2) && (
+                                                <input type="number" placeholder="kg2" value={editingLog.weight_kg_2}
+                                                  onChange={e => setEditingLog(p => ({...p, weight_kg_2: e.target.value}))}
+                                                  className="w-16 h-7 rounded-md border border-input bg-background px-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring" />
+                                              )}
+                                              <button onClick={saveLogEdit} disabled={savingLog}
+                                                className="h-7 w-7 flex items-center justify-center rounded-md bg-primary text-primary-foreground">
+                                                <Check className="w-3 h-3" />
+                                              </button>
+                                              <button onClick={() => setEditingLog(null)}
+                                                className="h-7 w-7 flex items-center justify-center rounded-md bg-secondary text-muted-foreground">
+                                                <X className="w-3 h-3" />
+                                              </button>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground group">
+                                              <span className="w-14 shrink-0">Serie {l.set_number}</span>
+                                              <span className="font-medium text-foreground">{l.reps_done || "—"} rep</span>
+                                              {l.weight_kg && <span className="font-bold text-primary">{l.weight_kg} kg{l.weight_kg_2 ? ` / ${l.weight_kg_2} kg` : ""}</span>}
+                                              {onLogUpdated && (
+                                                <button onClick={() => setEditingLog({ id: l.id, reps_done: l.reps_done ?? "", weight_kg: l.weight_kg ?? "", weight_kg_2: l.weight_kg_2 ?? "" })}
+                                                  className="ml-auto opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-secondary transition-all">
+                                                  <Pencil className="w-3 h-3 text-muted-foreground" />
+                                                </button>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
                                   </div>
                                 </div>
                               );
