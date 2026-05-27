@@ -90,6 +90,11 @@ export default function DayWorkout() {
     navigate(`/schede/${planId}`);
   };
 
+  const handleSessionUpdated = async (sessionId, data) => {
+    await base44.entities.WorkoutSession.update(sessionId, data);
+    setSessions((prev) => prev.map((s) => s.id === sessionId ? { ...s, ...data } : s));
+  };
+
   const handleSessionDeleted = async (session) => {
     await base44.entities.WorkoutSession.delete(session.id);
     setSessions((prev) => prev.filter((s) => s.id !== session.id));
@@ -239,7 +244,8 @@ export default function DayWorkout() {
         sessions={sessions.filter((s) => s.day_label === dayLabel && s.date !== today)}
         dayLabel={dayLabel}
         logs={logs}
-        onSessionDeleted={handleSessionDeleted} />
+        onSessionDeleted={handleSessionDeleted}
+        onSessionUpdated={handleSessionUpdated} />
       
 
       {/* Session Logger modal */}

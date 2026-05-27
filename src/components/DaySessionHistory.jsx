@@ -1,13 +1,41 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, Calendar, Heart, Zap, MessageSquare, Dumbbell, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Calendar, Heart, Zap, MessageSquare, Dumbbell, Trash2, Pencil, Check, X } from "lucide-react";
 import moment from "moment";
 import "moment/locale/it";
 moment.locale("it");
 
-export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionDeleted }) {
+export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionDeleted, onSessionUpdated }) {
   const [open, setOpen] = useState(false);
   const [expandedSession, setExpandedSession] = useState(null);
+  const [editingSession, setEditingSession] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  function startEdit(session) {
+    setEditingSession(session.id);
+    setEditForm({
+      rpe: session.rpe ?? "",
+      heart_rate_avg: session.heart_rate_avg ?? "",
+      calories: session.calories ?? "",
+      training_minutes: session.training_minutes ?? "",
+      athlete_note: session.athlete_note ?? "",
+    });
+  }
+
+  async function saveEdit(session) {
+    setSaving(true);
+    const data = {
+      rpe: editForm.rpe ? Number(editForm.rpe) : undefined,
+      heart_rate_avg: editForm.heart_rate_avg ? Number(editForm.heart_rate_avg) : undefined,
+      calories: editForm.calories ? Number(editForm.calories) : undefined,
+      training_minutes: editForm.training_minutes ? Number(editForm.training_minutes) : undefined,
+      athlete_note: editForm.athlete_note || undefined,
+    };
+    await onSessionUpdated(session.id, data);
+    setEditingSession(null);
+    setSaving(false);
+  }
 
   const today = new Date().toISOString().split("T")[0];
   const todayLogs = logs.filter((l) => l.date === today);
@@ -116,6 +144,13 @@ export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionD
                       </div>
                       {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                     </button>
+                    {onSessionUpdated && editingSession !== session.id && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); startEdit(session); setExpandedSession(session.id); }}
+                        className="p-3 text-muted-foreground hover:bg-secondary/50 transition-colors">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    )}
                     {onSessionDeleted && (
                       <button
                         onClick={(e) => { e.stopPropagation(); onSessionDeleted(session); }}
@@ -135,6 +170,35 @@ export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionD
                         className="overflow-hidden border-t border-border">
                         
                           <div className="p-3 space-y-2">
+                            {editingSession === session.id && (
+                              <div className="bg-secondary/40 rounded-xl p-3 space-y-2">
+                                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">Modifica sessione</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {[{key:"rpe",label:"RPE (1-10)"},{key:"heart_rate_avg",label:"FC media (bpm)"},{key:"calories",label:"Calorie (kcal)"},{key:"training_minutes",label:"Durata (min)"}].map(f => (
+                                    <div key={f.key}>
+                                      <label className="text-[10px] text-muted-foreground block mb-0.5">{f.label}</label>
+                                      <input type="number" value={editForm[f.key]} onChange={e => setEditForm(p => ({...p, [f.key]: e.target.value}))}
+                                        className="w-full h-8 rounded-lg border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
+                                    </div>
+                                  ))}
+                                </div>
+                                <div>
+                                  <label className="text-[10px] text-muted-foreground block mb-0.5">Note atleta</label>
+                                  <textarea value={editForm.athlete_note} onChange={e => setEditForm(p => ({...p, athlete_note: e.target.value}))}
+                                    rows={2} className="w-full rounded-lg border border-input bg-background px-2 py-1 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring" />
+                                </div>
+                                <div className="flex gap-2">
+                                  <button onClick={() => saveEdit(session)} disabled={saving}
+                                    className="flex-1 flex items-center justify-center gap-1 h-8 rounded-lg bg-primary text-primary-foreground text-xs font-medium">
+                                    <Check className="w-3.5 h-3.5" /> {saving ? "Salvataggio..." : "Salva"}
+                                  </button>
+                                  <button onClick={() => setEditingSession(null)}
+                                    className="flex items-center gap-1 h-8 px-3 rounded-lg bg-secondary text-muted-foreground text-xs">
+                                    <X className="w-3.5 h-3.5" /> Annulla
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                             {exerciseNames.map((exName) => {
                               const exLogs = sessionLogs.filter((l) => l.exercise_name === exName).sort((a, b) => a.set_number - b.set_number);
                               return (
