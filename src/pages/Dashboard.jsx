@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,15 +29,6 @@ export default function Dashboard() {
     try {return JSON.parse(localStorage.getItem("dashboard_widgets") || '{"water":true,"meal":true}');} catch {return { water: true, meal: true };}
   });
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Ri-fetch sessioni ad ogni navigazione sulla dashboard (garantisce dati freschi dopo eliminazioni)
-  useEffect(() => {
-    if (loading) return;
-    base44.auth.me().then(u =>
-      base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100).then(setSessions)
-    );
-  }, [location.key]); // eslint-disable-line
 
   useEffect(() => {
     const unsub = base44.entities.WorkoutSession.subscribe((event) => {
