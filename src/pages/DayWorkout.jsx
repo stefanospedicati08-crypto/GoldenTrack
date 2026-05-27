@@ -201,7 +201,7 @@ export default function DayWorkout() {
       )}
 
       {/* Exercise list */}
-      {!isSessionDone && groups.map((group, gi) =>
+      {groups.map((group, gi) =>
       group.type === "superset" ?
       <SupersetGroup
         key={group.key}
@@ -210,8 +210,8 @@ export default function DayWorkout() {
         logs={logs}
         onLogSaved={handleLogSaved}
         onLogDeleted={handleLogDeleted}
+        readOnly={isSessionDone}
         index={gi} /> :
-
 
       <ExerciseCard
         key={group.exercise.id}
@@ -219,13 +219,9 @@ export default function DayWorkout() {
         logs={logs.filter((l) => l.exercise_id === group.exercise.id)}
         onLogSaved={handleLogSaved}
         onLogDeleted={handleLogDeleted}
+        readOnly={isSessionDone}
         index={gi} />
-
-
       )}
-
-      {/* chiudi il blocco condizionale esercizi */}
-      {!isSessionDone && null}
 
       {/* Storico sessioni */}
       <DaySessionHistory

@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LoadChart from "./LoadChart";
 
 // A superset: multiple exercises performed back-to-back before resting
-export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved, onLogDeleted, index }) {
+export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved, onLogDeleted, index, readOnly = false }) {
   const [expanded, setExpanded] = useState(false);
   const [currentExIdx, setCurrentExIdx] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -235,7 +235,7 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                 })}
 
                 {/* Active input for current exercise in superset */}
-                {!allDone && (() => {
+                {!allDone && !readOnly && (() => {
                   const ex = exercises[currentExIdx];
                   const form = forms[currentExIdx];
                   const completedSets = todayLogs(ex).filter(l => !l.is_warmup).map(l => l.set_number);
