@@ -55,6 +55,14 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const lastSessionSetLogs = lastSessionDate ? lastSessionLogs.filter((l) => l.date === lastSessionDate) : [];
   const currentSetNum = Number(isWarmup ? setNumber : (nextSet || totalSets + 1));
   const prevSetLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === currentSetNum) : null;
+
+  // Pyramid rep detection: "12-10-8-6" → [12,10,8,6]
+  const pyramidReps = exercise.reps && /^\d+(-\d+)+$/.test(exercise.reps.trim())
+    ? exercise.reps.trim().split("-").map(Number)
+    : null;
+  const suggestedReps = pyramidReps
+    ? (pyramidReps[currentSetNum - 1] ?? pyramidReps[pyramidReps.length - 1])
+    : null;
   const suggestedWeight = !isWarmup && trainingLogsToday.length > 0 && trainingLogsToday[0].weight_kg != null
     ? String(trainingLogsToday[0].weight_kg)
     : prevSetLog?.weight_kg ? String(prevSetLog.weight_kg) : "";
@@ -327,10 +335,13 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Rep fatte</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      Rep fatte
+                      {suggestedReps && <span className="text-primary ml-1">({suggestedReps} prescritte)</span>}
+                    </label>
                     <Input
                     type="number"
-                    placeholder={exercise.reps ? exercise.reps.split(/\D/)[0] : "—"}
+                    placeholder={suggestedReps ? String(suggestedReps) : (exercise.reps ? exercise.reps.split(/\D/)[0] : "—")}
                     value={repsDone}
                     onChange={(e) => setRepsDone(e.target.value)}
                     className="h-10 rounded-xl" />

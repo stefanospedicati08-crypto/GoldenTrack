@@ -243,6 +243,11 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                   const extraSets = Array.from({ length: 5 }, (_, i) => totalSets + i + 1);
                   const currentSetNum = form.setNumber ? Number(form.setNumber) : getNextSetNum(ex);
                   const suggested = getSuggestedWeight(ex, currentSetNum);
+                  const pyramidReps = ex.reps && /^\d+(-\d+)+$/.test(ex.reps.trim())
+                    ? ex.reps.trim().split("-").map(Number) : null;
+                  const suggestedReps = pyramidReps
+                    ? (pyramidReps[currentSetNum - 1] ?? pyramidReps[pyramidReps.length - 1])
+                    : null;
                   return (
                     <div className="border border-primary/20 rounded-xl p-3 space-y-3 bg-primary/5">
                       <div className="flex items-center gap-2">
@@ -270,8 +275,10 @@ export default function SupersetGroup({ supersetKey, exercises, logs, onLogSaved
                           </Select>
                         </div>
                         <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">Rep</label>
-                          <Input type="number" placeholder={ex?.reps?.split(/[^0-9]/)[0] || "—"}
+                          <label className="text-xs text-muted-foreground mb-1 block">
+                            Rep{suggestedReps && <span className="text-primary ml-1">({suggestedReps} prescritte)</span>}
+                          </label>
+                          <Input type="number" placeholder={suggestedReps ? String(suggestedReps) : (ex?.reps?.split(/[^0-9]/)[0] || "—")}
                             value={form.repsDone}
                             onChange={e => setForm(currentExIdx, "repsDone", e.target.value)}
                             className="h-10 rounded-xl" />
