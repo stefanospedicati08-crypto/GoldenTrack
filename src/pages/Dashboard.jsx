@@ -168,7 +168,7 @@ export default function Dashboard() {
             transition={{ delay: 0.05 }}
             className="p-2 flex-1 min-w-0">
             
-            <WeeklyMonthProgress sessions={sessions} compact sessionsPerWeek={planDaysCount} />
+            <WeeklyMonthProgress sessions={sessions} compact sessionsPerWeek={planDaysCount} planStartDate={activePlan?.created_date} />
           </motion.div>
           }
       </div>

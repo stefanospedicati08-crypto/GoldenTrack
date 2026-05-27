@@ -5,36 +5,39 @@ import WeekSessionModal from "./WeekSessionModal";
 
 
 
-function getMonthWeeks() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const dayOfWeek = firstDay.getDay();
+function getPlanWeeks(planStartDate) {
+  const today = new Date().toISOString().split("T")[0];
+  const start = new Date(planStartDate);
+  const dayOfWeek = start.getDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const firstMonday = new Date(firstDay);
-  firstMonday.setDate(firstDay.getDate() + mondayOffset);
+  start.setDate(start.getDate() + mondayOffset);
   const weeks = [];
-  for (let i = 0; i < 4; i++) {
-    const start = new Date(firstMonday);
-    start.setDate(firstMonday.getDate() + i * 7);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
+  let weekStart = new Date(start);
+  let weekNum = 1;
+  while (weekStart.toISOString().split("T")[0] <= today) {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
     weeks.push({
-      start: start.toISOString().split("T")[0],
-      end: end.toISOString().split("T")[0],
-      label: `Settimana ${i + 1}`,
+      start: weekStart.toISOString().split("T")[0],
+      end: weekEnd.toISOString().split("T")[0],
+      label: `Settimana ${weekNum}`,
     });
+    weekNum++;
+    weekStart = new Date(weekStart);
+    weekStart.setDate(weekStart.getDate() + 7);
   }
   return weeks;
 }
 
-export default function WeeklyMonthProgress({ sessions, compact = false, sessionsPerWeek = 4 }) {
-  const weeks = getMonthWeeks();
+export default function WeeklyMonthProgress({ sessions, compact = false, sessionsPerWeek = 4, planStartDate }) {
+  const startDate = planStartDate || new Date().toISOString().split("T")[0];
+  const planSessions = planStartDate ? sessions.filter(s => s.date >= planStartDate) : sessions;
+  const weeks = getPlanWeeks(startDate);
   const today = new Date().toISOString().split("T")[0];
   const [selectedWeek, setSelectedWeek] = useState(null);
   const currentWeekIdx = weeks.findIndex(w => today >= w.start && today <= w.end);
-  const [focusedIdx, setFocusedIdx] = useState(currentWeekIdx >= 0 ? currentWeekIdx : 0);
+  const defaultIdx = currentWeekIdx >= 0 ? currentWeekIdx : weeks.length - 1;
+  const [focusedIdx, setFocusedIdx] = useState(defaultIdx);
   const [dragging, setDragging] = useState(false);
   const dragStartX = useRef(0);
   const dragVel = useRef(0);
@@ -103,7 +106,7 @@ export default function WeeklyMonthProgress({ sessions, compact = false, session
           {/* Arc carousel */}
           <div className="absolute inset-0 flex items-center justify-center">
             {weeks.map((week, i) => {
-              const weekSessions = sessions.filter(s => s.date >= week.start && s.date <= week.end);
+              const weekSessions = planSessions.filter(s => s.date >= week.start && s.date <= week.end);
               const uniqueDays = [...new Set(weekSessions.map(s => s.date))].length;
               const isCurrent = today >= week.start && today <= week.end;
               const isFuture = today < week.start;
