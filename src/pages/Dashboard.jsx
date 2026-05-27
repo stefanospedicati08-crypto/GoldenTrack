@@ -31,6 +31,18 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const handleVisibility = async () => {
+      if (document.visibilityState === 'visible') {
+        const u = await base44.auth.me();
+        const sess = await base44.entities.WorkoutSession.filter({ created_by: u.email }, "-date", 100);
+        setSessions(sess);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
+  useEffect(() => {
     async function load() {
       const u = await base44.auth.me();
       setUser(u);
