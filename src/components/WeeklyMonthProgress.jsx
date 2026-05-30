@@ -132,7 +132,7 @@ export default function WeeklyMonthProgress({ sessions, compact = false, session
                 </span>
                 <div className="relative my-1">
                   <Ring completed={wd} total={sessionsPerWeek} size={36} />
-                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white rotate-90">
+                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white">
                     {done ? "✓" : `${wd}/${sessionsPerWeek}`}
                   </span>
                 </div>
@@ -163,10 +163,10 @@ export default function WeeklyMonthProgress({ sessions, compact = false, session
             <div className="relative shrink-0">
               <Ring completed={focusedDays} total={sessionsPerWeek} size={64} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-sm font-bold text-white rotate-90 leading-none">
+                <span className="text-sm font-bold text-white leading-none">
                   {weekDone ? "✓" : `${focusedDays}`}
                 </span>
-                {!weekDone && <span className="text-[9px] text-white/30 rotate-90">/{sessionsPerWeek}</span>}
+                {!weekDone && <span className="text-[9px] text-white/30">/{sessionsPerWeek}</span>}
               </div>
             </div>
 
