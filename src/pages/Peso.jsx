@@ -16,7 +16,7 @@ function WeightRing({ current, goal, max }) {
   const size = 160;
   return (
     <svg width={size} height={size} className="-rotate-90">
-      <circle cx={size/2} cy={size/2} r={RING_R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="8" />
+      <circle cx={size/2} cy={size/2} r={RING_R} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="8" />
       <circle cx={size/2} cy={size/2} r={RING_R} fill="none"
         stroke="#fcd12a" strokeWidth="8" strokeLinecap="round"
         strokeDasharray={RING_CIRC} strokeDashoffset={offset}
@@ -196,23 +196,27 @@ export default function Peso() {
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="bg-white/4 border border-white/8 rounded-3xl p-4">
           <p className="text-xs font-semibold text-white/35 uppercase tracking-widest mb-4">Andamento</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={chartData}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="wGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#fcd12a" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#fcd12a" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#fcd12a" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#fcd12a" stopOpacity={0.03} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} unit=" kg" domain={["dataMin - 1", "dataMax + 1"]} axisLine={false} tickLine={false} width={45} />
-              <Tooltip contentStyle={{ background: "#1c1f28", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", fontSize: 13, color: "#fff" }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "rgba(255,255,255,0.55)" }} unit=" kg" domain={["dataMin - 1", "dataMax + 1"]} axisLine={false} tickLine={false} width={52} />
+              <Tooltip
+                contentStyle={{ background: "#1c1f28", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "12px", fontSize: 13, color: "#fff" }}
+                formatter={(v) => [`${v} kg`, "Peso"]}
+                labelStyle={{ color: "rgba(255,255,255,0.5)", marginBottom: 4 }}
+              />
               {weightGoal && (
-                <ReferenceLine y={weightGoal} stroke="#4ade80" strokeDasharray="4 3" strokeWidth={1.5}
-                  label={{ value: `${weightGoal} kg`, position: "insideTopRight", fontSize: 10, fill: "#4ade80" }} />
+                <ReferenceLine y={weightGoal} stroke="#4ade80" strokeDasharray="4 3" strokeWidth={2}
+                  label={{ value: `Obiettivo ${weightGoal} kg`, position: "insideTopRight", fontSize: 11, fill: "#4ade80" }} />
               )}
-              <Area type="monotone" dataKey="kg" stroke="#fcd12a" strokeWidth={2.5} fill="url(#wGrad)" dot={false} activeDot={{ r: 5, fill: "#fcd12a" }} />
+              <Area type="monotone" dataKey="kg" stroke="#fcd12a" strokeWidth={3} fill="url(#wGrad)" dot={false} activeDot={{ r: 6, fill: "#fcd12a", strokeWidth: 2, stroke: "#1c1f28" }} />
             </AreaChart>
           </ResponsiveContainer>
         </motion.div>
