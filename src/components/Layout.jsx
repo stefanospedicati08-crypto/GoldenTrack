@@ -41,11 +41,11 @@ export default function Layout() {
     : user?.email?.[0]?.toUpperCase() || "?";
 
   return (
-    <div className="min-h-screen bg-[#16181f] font-body" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <div className="min-h-screen bg-[#16181f] font-body">
       {/* Mobile Header */}
       <header
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#1c1f28]/90 backdrop-blur-xl border-b border-white/6 flex items-center px-4"
-        style={{ paddingTop: "env(safe-area-inset-top)", height: "calc(3.5rem + env(safe-area-inset-top))" }}
+        className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#1a1d26] border-b-2 border-[#fcd12a]/30 flex items-center px-4 gap-3"
+        style={{ paddingTop: "env(safe-area-inset-top)", height: "calc(3.75rem + env(safe-area-inset-top))" }}
       >
         <button onClick={() => setMobileOpen(!mobileOpen)}
           className="w-10 h-10 rounded-2xl bg-[#fcd12a] flex items-center justify-center shadow-md active:scale-95 transition-all">
@@ -130,7 +130,7 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-14 lg:pt-0 min-h-screen">
+      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
         {/* Desktop top bar */}
         <div className="hidden lg:flex items-center justify-between px-8 py-4 border-b border-white/5 bg-[#1c1f28]/60 backdrop-blur-sm">
           <div />
