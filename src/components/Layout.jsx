@@ -48,8 +48,8 @@ export default function Layout() {
         style={{ paddingTop: "env(safe-area-inset-top)", height: "calc(3.5rem + env(safe-area-inset-top))" }}
       >
         <button onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-          {mobileOpen ? <X className="w-6 h-6 text-white" /> : <Menu className="w-6 h-6 text-white" />}
+          className="w-10 h-10 rounded-2xl bg-[#fcd12a] flex items-center justify-center shadow-md active:scale-95 transition-all">
+          {mobileOpen ? <X className="w-5 h-5 text-black" /> : <Menu className="w-5 h-5 text-black" />}
         </button>
         <div className="flex items-center gap-2 ml-3 flex-1">
           <div className="w-7 h-7 rounded-xl bg-[#fcd12a]/15 flex items-center justify-center">
