@@ -1,0 +1,22 @@
+{
+  "name": "MealLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "completed": {
+      "type": "boolean",
+      "title": "Alimentazione rispettata"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Note"
+    }
+  },
+  "required": [
+    "date"
+  ]
+}

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, LogOut, AlertTriangle, X, Pencil, Check, Ruler, Weight, Camera, Loader2, Plus, ChevronDown, ChevronUp, Pill, Upload, FileText, Settings, Timer, Bell, BellOff } from "lucide-react";
+import { Trash2, LogOut, AlertTriangle, X, Pencil, Check, Ruler, Weight, Camera, Loader2, Plus, ChevronDown, ChevronUp, Pill, Upload, FileText, Settings, Timer, Bell, BellOff, CalendarDays } from "lucide-react";
+import GoalCalendar from "../components/GoalCalendar";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -247,6 +248,15 @@ export default function Account() {
             </a>
           : <p className="text-sm text-muted-foreground">Nessun piano caricato. Carica un'immagine o PDF del tuo piano.</p>
         }
+      </div>
+
+      {/* Goal Calendar */}
+      <div className="border border-border p-5 space-y-4 bg-[hsl(var(--popover))] rounded-[50px]">
+        <div className="flex items-center gap-2">
+          <CalendarDays className="w-5 h-5 text-primary" />
+          <h2 className="font-heading font-semibold text-[hsl(var(--primary))]">Calendario Obiettivi</h2>
+        </div>
+        <GoalCalendar />
       </div>
 
       {/* Supplements */}
