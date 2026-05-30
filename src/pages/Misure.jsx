@@ -147,16 +147,18 @@ export default function Misure() {
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="bg-white/4 border border-white/7 rounded-3xl p-4">
           <p className="text-[11px] font-semibold text-white/30 uppercase tracking-widest mb-4">Andamento</p>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} unit=" cm" domain={["dataMin - 2", "dataMax + 2"]} axisLine={false} tickLine={false} width={40} />
-              <Tooltip contentStyle={{ background: "#1c1f28", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", fontSize: 12, color: "#fff" }}
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "rgba(255,255,255,0.55)" }} unit=" cm" domain={["dataMin - 2", "dataMax + 2"]} axisLine={false} tickLine={false} width={52} />
+              <Tooltip contentStyle={{ background: "#1c1f28", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "12px", fontSize: 12, color: "#fff" }}
+                labelStyle={{ color: "rgba(255,255,255,0.5)", marginBottom: 4 }}
                 formatter={(v, name) => [v ? `${v} cm` : "—", MISURE_FIELDS.find(f => f.key === name)?.label || name]} />
               {activeFields.map((f, i) => (
                 <Line key={f.key} type="monotone" dataKey={f.key} stroke={FIELD_COLORS[i % FIELD_COLORS.length]}
-                  strokeWidth={2} dot={false} connectNulls name={f.label} />
+                  strokeWidth={2.5} dot={false} connectNulls name={f.label}
+                  activeDot={{ r: 5, strokeWidth: 2, stroke: "#1c1f28" }} />
               ))}
             </LineChart>
           </ResponsiveContainer>
@@ -246,14 +248,15 @@ export default function Misure() {
                 </div>
               )}
               {fieldChartData.length > 1 ? (
-                <ResponsiveContainer width="100%" height={180}>
-                  <LineChart data={fieldChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} unit=" cm" domain={["dataMin - 1", "dataMax + 1"]} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip contentStyle={{ background: "#1c1f28", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", fontSize: 12, color: "#fff" }}
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={fieldChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "rgba(255,255,255,0.55)" }} unit=" cm" domain={["dataMin - 1", "dataMax + 1"]} axisLine={false} tickLine={false} width={52} />
+                    <Tooltip contentStyle={{ background: "#1c1f28", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "12px", fontSize: 12, color: "#fff" }}
+                      labelStyle={{ color: "rgba(255,255,255,0.5)", marginBottom: 4 }}
                       formatter={v => [`${v} cm`, selectedField.label]} />
-                    <Line type="monotone" dataKey="value" stroke="#fcd12a" strokeWidth={2.5} dot={false} />
+                    <Line type="monotone" dataKey="value" stroke="#fcd12a" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: "#fcd12a", strokeWidth: 2, stroke: "#1c1f28" }} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (

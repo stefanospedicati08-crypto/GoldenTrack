@@ -35,7 +35,7 @@ function Ring({ completed, total, size = 72 }) {
   const done = completed >= total && total > 0;
   return (
     <svg width={size} height={size} className="-rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="5" />
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="5" />
       <circle
         cx={size / 2} cy={size / 2} r={radius} fill="none"
         stroke={done ? "#4ade80" : "#fcd12a"}
