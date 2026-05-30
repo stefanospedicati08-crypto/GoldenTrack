@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadChart from "./LoadChart";
+import ExerciseCompareModal from "./ExerciseCompareModal";
 
 export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted, index }) {
   const [expanded, setExpanded] = useState(false);
   const [showChart, setShowChart] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
   const [saving, setSaving] = useState(false);
   const [setNumber, setSetNumber] = useState("1");
   const [weightKg, setWeightKg] = useState("");
@@ -402,6 +404,9 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                   <Button variant="outline" onClick={() => setShowChart(!showChart)} className="rounded-xl h-10">
                     <TrendingUp className="w-4 h-4" />
                   </Button>
+                  <Button variant="outline" onClick={() => setShowCompare(true)} className="rounded-xl h-10" title="Confronta sessioni">
+                    <span className="text-xs font-bold">A/B</span>
+                  </Button>
                 </div>
                 <Button
                 onClick={() => {setCompleted(true);setExpanded(false);}}
@@ -456,6 +461,14 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
                   </motion.div>
               }
               </AnimatePresence>
+
+              {showCompare && (
+                <ExerciseCompareModal
+                  exercise={exercise}
+                  logs={logs}
+                  onClose={() => setShowCompare(false)}
+                />
+              )}
 
             </div>
           </motion.div>
