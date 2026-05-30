@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { startTimer } from "@/lib/timerStore";
 import { base44 } from "@/api/base44Client";
 import { ChevronDown, ChevronUp, Plus, Dumbbell, TrendingUp, Check, Pencil, MessageSquare, Flame, Trash2, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,37 +33,32 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
   const [rpeSet, setRpeSet] = useState("");
 
   useEffect(() => {
-    const setting = localStorage.getItem("customRestEnabled");
-    setCustomRestEnabled(setting === "true");
+    setCustomRestEnabled(localStorage.getItem("customRestEnabled") === "true");
     setRpePerSetEnabled(localStorage.getItem("rpePerSetEnabled") === "true");
   }, []);
 
   const isDoubleReps = exercise.reps && exercise.reps.includes("/");
   const today = new Date().toISOString().split("T")[0];
-  const todayLogs = logs.filter((l) => l.date === today);
+  const todayLogs = logs.filter(l => l.date === today);
   const totalSets = exercise.sets || 5;
-
-  const trainingSets = todayLogs.filter((l) => !l.is_warmup);
+  const trainingSets = todayLogs.filter(l => !l.is_warmup);
+  const warmupLogs = todayLogs.filter(l => l.is_warmup);
   const allSetsCompleted = trainingSets.length >= totalSets;
-  const completedSetNumbers = trainingSets.map((l) => l.set_number);
-  const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find((n) => !completedSetNumbers.includes(n));
+  const completedSetNumbers = trainingSets.map(l => l.set_number);
+  const nextSet = Array.from({ length: totalSets }, (_, i) => i + 1).find(n => !completedSetNumbers.includes(n));
 
-  // Suggested weight: today's most recent log first, then last session's same set
   const trainingLogsToday = todayLogs.filter(l => !l.is_warmup).sort((a, b) => b.set_number - a.set_number);
-  const lastSessionLogs = logs.filter((l) => l.date !== today && !l.is_warmup);
-  const lastSessionDates = [...new Set(lastSessionLogs.map((l) => l.date))].sort((a, b) => b.localeCompare(a));
+  const lastSessionLogs = logs.filter(l => l.date !== today && !l.is_warmup);
+  const lastSessionDates = [...new Set(lastSessionLogs.map(l => l.date))].sort((a, b) => b.localeCompare(a));
   const lastSessionDate = lastSessionDates[0];
-  const lastSessionSetLogs = lastSessionDate ? lastSessionLogs.filter((l) => l.date === lastSessionDate) : [];
+  const lastSessionSetLogs = lastSessionDate ? lastSessionLogs.filter(l => l.date === lastSessionDate) : [];
   const currentSetNum = Number(isWarmup ? setNumber : (nextSet || totalSets + 1));
-  const prevSetLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === currentSetNum) : null;
+  const prevSetLog = !isWarmup ? lastSessionSetLogs.find(l => l.set_number === currentSetNum) : null;
 
-  // Pyramid rep detection: "12-10-8-6" → [12,10,8,6]
   const pyramidReps = exercise.reps && /^\d+(-\d+)+$/.test(exercise.reps.trim())
-    ? exercise.reps.trim().split("-").map(Number)
-    : null;
+    ? exercise.reps.trim().split("-").map(Number) : null;
   const suggestedReps = pyramidReps
-    ? (pyramidReps[currentSetNum - 1] ?? pyramidReps[pyramidReps.length - 1])
-    : null;
+    ? (pyramidReps[currentSetNum - 1] ?? pyramidReps[pyramidReps.length - 1]) : null;
   const suggestedWeight = !isWarmup && trainingLogsToday.length > 0 && trainingLogsToday[0].weight_kg != null
     ? String(trainingLogsToday[0].weight_kg)
     : prevSetLog?.weight_kg ? String(prevSetLog.weight_kg) : "";
@@ -73,48 +67,33 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
     setSaving(true);
     const optimistic = {
       id: `tmp-${Date.now()}`,
-      exercise_id: exercise.id,
-      plan_id: exercise.plan_id,
-      exercise_name: exercise.name,
+      exercise_id: exercise.id, plan_id: exercise.plan_id, exercise_name: exercise.name,
       set_number: Number(setNumber),
       reps_done: repsDone ? Number(repsDone) : exercise.reps ? parseInt(exercise.reps) : 0,
       weight_kg: weightKg ? Number(weightKg) : undefined,
       weight_kg_2: isDoubleReps && weightKg2 ? Number(weightKg2) : undefined,
       notes: setNotes || undefined,
       rpe_set: rpePerSetEnabled && rpeSet ? Number(rpeSet) : undefined,
-      is_warmup: isWarmup,
-      date: today
+      is_warmup: isWarmup, date: today,
     };
     onLogSaved(optimistic);
-    const nextSetNum = isWarmup ?
-      Number(setNumber) + 1 :
-      (nextSet ? (nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : totalSets + 1);
-    const nextSetStr = String(nextSetNum);
-    setSetNumber(nextSetStr);
-    // Pre-fill weight for next set: use the weight just logged (most recent), fall back to last session
-    const nextPrevLog = !isWarmup ? lastSessionSetLogs.find((l) => l.set_number === nextSetNum) : null;
+    const nextSetNum = isWarmup
+      ? Number(setNumber) + 1
+      : (nextSet ? (nextSet === Number(setNumber) ? nextSet + 1 : nextSet) : totalSets + 1);
+    setSetNumber(String(nextSetNum));
+    const nextPrevLog = !isWarmup ? lastSessionSetLogs.find(l => l.set_number === nextSetNum) : null;
     const justLoggedWeight = !isWarmup && optimistic.weight_kg != null ? String(optimistic.weight_kg) : null;
     setWeightKg(justLoggedWeight ?? (nextPrevLog?.weight_kg ? String(nextPrevLog.weight_kg) : ""));
-    setWeightKg2("");
-    setRepsDone("");
-    setSetNotes("");
-    setRpeSet("");
+    setWeightKg2(""); setRepsDone(""); setSetNotes(""); setRpeSet("");
     setSaving(false);
     const defaultRest = Number(localStorage.getItem("defaultRestSeconds") || "90");
     const restTime = customRestEnabled && exercise.rest_seconds > 0 ? exercise.rest_seconds : (exercise.rest_seconds > 0 ? exercise.rest_seconds : defaultRest);
     startTimer(restTime);
     const newLog = await base44.entities.WorkoutLog.create({
-      exercise_id: exercise.id,
-      plan_id: exercise.plan_id,
-      exercise_name: exercise.name,
-      set_number: Number(optimistic.set_number),
-      reps_done: optimistic.reps_done,
-      weight_kg: optimistic.weight_kg,
-      weight_kg_2: optimistic.weight_kg_2,
-      notes: optimistic.notes,
-      rpe_set: optimistic.rpe_set,
-      is_warmup: isWarmup,
-      date: today
+      exercise_id: exercise.id, plan_id: exercise.plan_id, exercise_name: exercise.name,
+      set_number: Number(optimistic.set_number), reps_done: optimistic.reps_done,
+      weight_kg: optimistic.weight_kg, weight_kg_2: optimistic.weight_kg_2,
+      notes: optimistic.notes, rpe_set: optimistic.rpe_set, is_warmup: isWarmup, date: today,
     });
     onLogSaved({ ...newLog, _replaceId: optimistic.id });
   }
@@ -123,15 +102,11 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
     setSaving(true);
     const newWeight = editWeight ? Number(editWeight) : undefined;
     await base44.entities.WorkoutLog.update(log.id, { weight_kg: newWeight });
-    log.weight_kg = newWeight;
-    setEditingLog(null);
-    setEditWeight("");
-    setSaving(false);
+    log.weight_kg = newWeight; setEditingLog(null); setEditWeight(""); setSaving(false);
   }
 
   async function adjustWeight(log, delta) {
-    const current = log.weight_kg || 0;
-    const updated = Math.max(0, parseFloat((current + delta).toFixed(1)));
+    const updated = Math.max(0, parseFloat(((log.weight_kg || 0) + delta).toFixed(1)));
     await base44.entities.WorkoutLog.update(log.id, { weight_kg: updated });
     onLogSaved({ ...log, weight_kg: updated, _replaceId: log.id });
   }
@@ -147,333 +122,294 @@ export default function ExerciseCard({ exercise, logs, onLogSaved, onLogDeleted,
     setSavingNote(true);
     await base44.entities.Exercise.update(exercise.id, { athlete_note: exerciseNote || undefined });
     exercise.athlete_note = exerciseNote || undefined;
-    setNoteSaved(true);
-    setEditingNote(false);
-    setSavingNote(false);
+    setNoteSaved(true); setEditingNote(false); setSavingNote(false);
   }
-
-  const warmupLogs = todayLogs.filter((l) => l.is_warmup);
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-card border border-border overflow-hidden rounded-[50px]">
-      
+      className={`bg-white/4 border rounded-3xl overflow-hidden transition-colors ${
+        allSetsCompleted ? "border-green-500/25" : expanded ? "border-[#fcd12a]/20" : "border-white/7"
+      }`}
+    >
+      {/* Header row */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-4 p-4 text-left hover:bg-secondary/30 transition-colors rounded-[1px]">
-        
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <Dumbbell className="w-5 h-5 text-primary" />
+        className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/3 transition-colors"
+      >
+        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+          allSetsCompleted ? "bg-green-500/15" : "bg-[#fcd12a]/10"
+        }`}>
+          {allSetsCompleted
+            ? <CheckCircle2 className="w-5 h-5 text-green-400" />
+            : <Dumbbell className="w-5 h-5 text-[#fcd12a]" />}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-[hsl(var(--primary))]">{exercise.name}</h3>
-          <p className="text-sm text-[hsl(var(--popover-foreground))]">
+          <h3 className="font-semibold text-white text-sm">{exercise.name}</h3>
+          <p className="text-xs text-white/35 mt-0.5">
             {exercise.sets && `${exercise.sets} serie`}
-            {exercise.reps && ` × ${exercise.reps} rep`}
-            {exercise.rest_seconds && ` • ${exercise.rest_seconds}s rec.`}
+            {exercise.reps && ` × ${exercise.reps}`}
+            {exercise.rest_seconds && ` · ${exercise.rest_seconds}s rec.`}
           </p>
         </div>
-        {completed &&
-        <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
-        }
-        {todayLogs.length > 0 && !completed &&
-        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${allSetsCompleted ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
+        {todayLogs.length > 0 && (
+          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${
+            allSetsCompleted ? "bg-green-500/15 text-green-400" : "bg-[#fcd12a]/12 text-[#fcd12a]"
+          }`}>
             {trainingSets.length}/{totalSets}
-            {warmupLogs.length > 0 && <span className="text-chart-3"> +{warmupLogs.length}WU</span>}
+            {warmupLogs.length > 0 && <span className="text-orange-400 ml-1">+{warmupLogs.length}W</span>}
           </span>
-        }
-        {expanded ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+        )}
+        {expanded
+          ? <ChevronUp className="w-4 h-4 text-white/25 shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-white/25 shrink-0" />}
       </button>
 
       <AnimatePresence>
-        {expanded &&
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="overflow-hidden">
-          
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
             <div className="px-4 pb-4 space-y-4">
 
-              {exercise.notes &&
-            <p className="text-sm text-muted-foreground bg-secondary/50 rounded-xl p-3">
-                  📝 {exercise.notes}
-                </p>
-            }
-
-              {exercise.reps &&
-            <div className="flex items-center gap-2 bg-secondary/40 rounded-xl px-3 py-2">
-                  <span className="text-xs text-muted-foreground">Ripetizioni prescritte:</span>
-                  <span className="font-semibold text-sm">{exercise.reps}</span>
+              {/* Trainer note */}
+              {exercise.notes && (
+                <div className="flex items-start gap-2 bg-[#fcd12a]/5 border border-[#fcd12a]/12 rounded-2xl px-3 py-2.5">
+                  <span className="text-[#fcd12a]/50 text-xs shrink-0 mt-0.5">📝</span>
+                  <p className="text-xs text-white/50">{exercise.notes}</p>
                 </div>
-            }
+              )}
 
-              {todayLogs.length > 0 &&
-            <div className="space-y-2">
+              {/* Reps prescription */}
+              {exercise.reps && (
+                <div className="flex items-center gap-2 bg-white/3 rounded-2xl px-3 py-2">
+                  <span className="text-xs text-white/30">Ripetizioni prescritte:</span>
+                  <span className="font-bold text-sm text-[#fcd12a]">{exercise.reps}</span>
+                </div>
+              )}
+
+              {/* Today's sets */}
+              {todayLogs.length > 0 && (
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Serie di oggi</p>
+                    <p className="text-[10px] font-semibold text-white/25 uppercase tracking-widest">Serie di oggi</p>
                     <div className="flex items-center gap-2">
-                      {warmupLogs.length > 0 &&
-                  <button
-                    onClick={() => setShowWarmups((v) => !v)}
-                    className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-chart-3/10 text-chart-3 flex items-center gap-1">
+                      {warmupLogs.length > 0 && (
+                        <button onClick={() => setShowWarmups(v => !v)}
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-400/10 text-orange-400 flex items-center gap-1">
                           🔥 {warmupLogs.length} WU {showWarmups ? "▲" : "▼"}
                         </button>
-                  }
-                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${allSetsCompleted ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
-                        💪 {trainingSets.length}/{totalSets} serie
+                      )}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        allSetsCompleted ? "bg-green-500/15 text-green-400" : "bg-[#fcd12a]/12 text-[#fcd12a]"
+                      }`}>
+                        {trainingSets.length}/{totalSets} serie
                       </span>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    {[...todayLogs]
-                      .filter((log) => !log.is_warmup || showWarmups)
-                      .sort((a, b) => a.set_number - b.set_number).map((log) =>
-                <div key={log.id} className="flex flex-col gap-2 bg-secondary/40 rounded-xl px-3 py-2.5">
+                  <div className="space-y-1.5">
+                    {[...todayLogs].filter(l => !l.is_warmup || showWarmups).sort((a, b) => a.set_number - b.set_number).map(log => (
+                      <div key={log.id} className="bg-white/4 rounded-2xl px-3 py-2.5 space-y-2">
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-muted-foreground w-14 shrink-0">
-                            {log.is_warmup ? <span className="text-chart-3">🔥 W/U</span> : `Serie ${log.set_number}`}
+                          <span className="text-xs text-white/30 w-14 shrink-0">
+                            {log.is_warmup ? <span className="text-orange-400">🔥 W/U</span> : `Serie ${log.set_number}`}
                           </span>
-                          <span className="text-sm font-medium">{log.reps_done || exercise.reps || "—"} rep</span>
-                          {editingLog === log.id ?
-                    <>
-                              <Input
-                        type="number"
-                        placeholder="kg"
-                        value={editWeight}
-                        onChange={(e) => setEditWeight(e.target.value)}
-                        className="h-8 w-24 rounded-lg text-sm ml-auto"
-                        autoFocus />
-                      
-                              <Button size="sm" onClick={() => handleEditWeight(log)} disabled={saving} className="h-8 rounded-lg px-3">
+                          <span className="text-sm text-white/60">{log.reps_done || exercise.reps || "—"} rep</span>
+                          {editingLog === log.id ? (
+                            <>
+                              <Input type="number" placeholder="kg" value={editWeight}
+                                onChange={e => setEditWeight(e.target.value)}
+                                className="h-8 w-24 rounded-xl text-sm ml-auto bg-white/5 border-white/10 text-white" autoFocus />
+                              <button onClick={() => handleEditWeight(log)} disabled={saving}
+                                className="w-8 h-8 rounded-xl bg-[#fcd12a] text-black flex items-center justify-center">
                                 <Check className="w-3.5 h-3.5" />
-                              </Button>
-                            </> :
-
-                    <>
-                              <span className="text-sm font-bold text-primary ml-auto">
-                                {log.weight_kg ? `${log.weight_kg} kg` : "—"}
-                                {log.weight_kg_2 ? <span className="text-muted-foreground font-normal"> / {log.weight_kg_2} kg</span> : null}
-                                {log.rpe_set != null ? <span className="text-xs text-muted-foreground font-normal ml-1">RPE {log.rpe_set}</span> : null}
-                              </span>
-                              <button
-                        onClick={() => {setEditingLog(log.id);setEditWeight(log.weight_kg ? String(log.weight_kg) : "");}}
-                        className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
-                        
-                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                              </button>
-                              <button
-                        onClick={() => handleDeleteLog(log)}
-                        disabled={deletingLog === log.id}
-                        className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
-                        
-                                {deletingLog === log.id ?
-                        <div className="w-3.5 h-3.5 border-2 border-destructive/20 border-t-destructive rounded-full animate-spin" /> :
-                        <Trash2 className="w-3.5 h-3.5" />
-                        }
                               </button>
                             </>
-                    }
+                          ) : (
+                            <>
+                              <span className="text-sm font-bold text-[#fcd12a] ml-auto">
+                                {log.weight_kg ? `${log.weight_kg} kg` : "—"}
+                                {log.weight_kg_2 ? <span className="text-white/30 font-normal"> / {log.weight_kg_2}kg</span> : null}
+                                {log.rpe_set != null ? <span className="text-xs text-white/25 font-normal ml-1">RPE {log.rpe_set}</span> : null}
+                              </span>
+                              <button onClick={() => { setEditingLog(log.id); setEditWeight(log.weight_kg ? String(log.weight_kg) : ""); }}
+                                className="p-1.5 rounded-xl hover:bg-white/8 transition-colors">
+                                <Pencil className="w-3.5 h-3.5 text-white/25" />
+                              </button>
+                              <button onClick={() => handleDeleteLog(log)} disabled={deletingLog === log.id}
+                                className="p-1.5 rounded-xl hover:bg-red-500/10 transition-colors">
+                                {deletingLog === log.id
+                                  ? <div className="w-3.5 h-3.5 border-2 border-red-400/20 border-t-red-400 rounded-full animate-spin" />
+                                  : <Trash2 className="w-3.5 h-3.5 text-red-400/50" />}
+                              </button>
+                            </>
+                          )}
                         </div>
-                        {editingLog !== log.id && log.weight_kg != null &&
-                  <div className="flex items-center gap-1 flex-wrap">
-                            <span className="text-[10px] text-muted-foreground mr-1">Modifica rapida:</span>
-                            {[-5, -2, -1, +1, +2, +5].map((d) =>
-                    <button
-                      key={d}
-                      onClick={() => adjustWeight(log, d)}
-                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full transition-colors ${d > 0 ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"}`}>
-                      
+                        {editingLog !== log.id && log.weight_kg != null && (
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-[10px] text-white/20 mr-1">Quick:</span>
+                            {[-5, -2, -1, +1, +2, +5].map(d => (
+                              <button key={d} onClick={() => adjustWeight(log, d)}
+                                className={`text-[10px] font-medium px-2 py-0.5 rounded-full transition-colors ${
+                                  d > 0 ? "bg-[#fcd12a]/10 text-[#fcd12a] hover:bg-[#fcd12a]/20" : "bg-white/5 text-white/35 hover:bg-white/10"
+                                }`}>
                                 {d > 0 ? `+${d}` : d}kg
                               </button>
-                    )}
+                            ))}
                           </div>
-                  }
+                        )}
                       </div>
-                )}
+                    ))}
                   </div>
                 </div>
-            }
+              )}
 
-              <div className="space-y-3">
+              {/* Log new set */}
+              <div className="space-y-3 bg-white/3 rounded-2xl p-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Registra Serie</p>
-                  <button
-                  onClick={() => setIsWarmup((v) => !v)}
-                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-all ${isWarmup ? "bg-chart-3/10 text-chart-3 border-chart-3/40" : "bg-secondary text-muted-foreground border-border"}`}>
-                  
-                    <Flame className="w-3 h-3" />
-                    Warm Up
+                  <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">Registra Serie</p>
+                  <button onClick={() => setIsWarmup(v => !v)}
+                    className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-all ${
+                      isWarmup ? "bg-orange-400/10 text-orange-400 border-orange-400/30" : "bg-white/5 text-white/30 border-white/10"
+                    }`}>
+                    <Flame className="w-3 h-3" /> Warm Up
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Serie</label>
+                    <label className="text-[11px] text-white/30 mb-1 block">Serie</label>
                     <Select value={setNumber} onValueChange={setSetNumber}>
-                      <SelectTrigger className="h-10 rounded-xl text-[hsl(var(--primary))]">
+                      <SelectTrigger className="h-10 rounded-2xl bg-white/5 border-white/10 text-[#fcd12a] text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {isWarmup ?
-                      Array.from({ length: 10 }, (_, i) => i + 1).map((n) =>
-                      <SelectItem key={n} value={String(n)}>WU {n}</SelectItem>
-                      ) :
-
-                      (() => {
-                        const missing = Array.from({ length: totalSets }, (_, i) => i + 1).filter((n) => !completedSetNumbers.includes(n));
-                        const extra = Array.from({ length: 5 }, (_, i) => totalSets + i + 1);
-                        return [...missing, ...extra].map((n) =>
-                        <SelectItem key={n} value={String(n)}>
-                                {n > totalSets ? `Serie ${n} (extra)` : `Serie ${n}`}
-                              </SelectItem>
-                        );
-                      })()
-                      }
+                        {isWarmup
+                          ? Array.from({ length: 10 }, (_, i) => i + 1).map(n => <SelectItem key={n} value={String(n)}>WU {n}</SelectItem>)
+                          : (() => {
+                            const missing = Array.from({ length: totalSets }, (_, i) => i + 1).filter(n => !completedSetNumbers.includes(n));
+                            const extra = Array.from({ length: 5 }, (_, i) => totalSets + i + 1);
+                            return [...missing, ...extra].map(n => (
+                              <SelectItem key={n} value={String(n)}>{n > totalSets ? `Serie ${n} (extra)` : `Serie ${n}`}</SelectItem>
+                            ));
+                          })()
+                        }
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
+                    <label className="text-[11px] text-white/30 mb-1 block">
                       Rep fatte
-                      {suggestedReps && <span className="text-primary ml-1">({suggestedReps} prescritte)</span>}
+                      {suggestedReps && <span className="text-[#fcd12a]/60 ml-1">({suggestedReps} pres.)</span>}
                     </label>
-                    <Input
-                    type="number"
-                    placeholder={suggestedReps ? String(suggestedReps) : (exercise.reps ? exercise.reps.split(/\D/)[0] : "—")}
-                    value={repsDone}
-                    onChange={(e) => setRepsDone(e.target.value)}
-                    className="h-10 rounded-xl" />
-                  
+                    <Input type="number"
+                      placeholder={suggestedReps ? String(suggestedReps) : (exercise.reps ? exercise.reps.split(/\D/)[0] : "—")}
+                      value={repsDone} onChange={e => setRepsDone(e.target.value)}
+                      className="h-10 rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-white/20" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">
+                    <label className="text-[11px] text-white/30 mb-1 block">
                       {isDoubleReps ? "Carico 1° (kg)" : "Carico (kg)"}
-                      {suggestedWeight && !weightKg && <span className="text-primary ml-1">(prec. {suggestedWeight}kg)</span>}
+                      {suggestedWeight && !weightKg && <span className="text-[#fcd12a]/60 ml-1">(prec. {suggestedWeight}kg)</span>}
                     </label>
-                    <Input
-                    type="number"
-                    placeholder={suggestedWeight ? suggestedWeight : "es. 50"}
-                    value={weightKg}
-                    onChange={(e) => setWeightKg(e.target.value)}
-                    className="h-10 rounded-xl" />
-                  
+                    <Input type="number" placeholder={suggestedWeight || "es. 50"}
+                      value={weightKg} onChange={e => setWeightKg(e.target.value)}
+                      className="h-10 rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-white/20" />
                   </div>
-                  <div className="col-span-2">
-                  <label className="text-xs text-muted-foreground mb-1 block">Note serie (opzionale)</label>
-                  <Input
-                    type="text"
-                    placeholder="es. buona esecuzione, dolorino spalla..."
-                    value={setNotes}
-                    onChange={(e) => setSetNotes(e.target.value)}
-                    className="h-10 rounded-xl" />
-                </div>
-                {rpePerSetEnabled && (
-                  <div className="col-span-2">
-                    <label className="text-xs text-muted-foreground mb-1 block">RPE (1-10)</label>
-                    <Input
-                      type="number"
-                      placeholder="es. 8"
-                      min="1" max="10"
-                      value={rpeSet}
-                      onChange={(e) => setRpeSet(e.target.value)}
-                      className="h-10 rounded-xl" />
+                  <div>
+                    <label className="text-[11px] text-white/30 mb-1 block">Note serie</label>
+                    <Input type="text" placeholder="es. buona esecuzione..."
+                      value={setNotes} onChange={e => setSetNotes(e.target.value)}
+                      className="h-10 rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-white/20" />
                   </div>
-                )}
-                {isDoubleReps &&
-                <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Carico 2° (kg)</label>
-                      <Input
-                    type="number"
-                    placeholder="es. 30"
-                    value={weightKg2}
-                    onChange={(e) => setWeightKg2(e.target.value)}
-                    className="h-10 rounded-xl" />
-                  
+                  {rpePerSetEnabled && (
+                    <div className="col-span-2">
+                      <label className="text-[11px] text-white/30 mb-1 block">RPE (1-10)</label>
+                      <Input type="number" placeholder="es. 8" min="1" max="10"
+                        value={rpeSet} onChange={e => setRpeSet(e.target.value)}
+                        className="h-10 rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-white/20" />
                     </div>
-                }
+                  )}
+                  {isDoubleReps && (
+                    <div>
+                      <label className="text-[11px] text-white/30 mb-1 block">Carico 2° (kg)</label>
+                      <Input type="number" placeholder="es. 30"
+                        value={weightKg2} onChange={e => setWeightKg2(e.target.value)}
+                        className="h-10 rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-white/20" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl h-10">
-                    <Plus className="w-4 h-4 mr-1" />
+                  <button onClick={handleSave} disabled={saving}
+                    className="flex-1 h-11 rounded-2xl bg-[#fcd12a] text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#fcd12a]/90 disabled:opacity-50 transition-all active:scale-[0.98]">
+                    <Plus className="w-4 h-4" />
                     {saving ? "Salvataggio..." : "Salva Serie"}
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowChart(!showChart)} className="rounded-xl h-10">
-                    <TrendingUp className="w-4 h-4" />
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowCompare(true)} className="rounded-xl h-10" title="Confronta sessioni">
-                    <span className="text-xs font-bold">A/B</span>
-                  </Button>
+                  </button>
+                  <button onClick={() => setShowChart(!showChart)}
+                    className="w-11 h-11 rounded-2xl bg-white/6 border border-white/8 flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <TrendingUp className="w-4 h-4 text-white/40" />
+                  </button>
+                  <button onClick={() => setShowCompare(true)}
+                    className="w-11 h-11 rounded-2xl bg-white/6 border border-white/8 flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <span className="text-xs font-bold text-white/40">A/B</span>
+                  </button>
                 </div>
-                <Button
-                onClick={() => {setCompleted(true);setExpanded(false);}}
-                variant={completed ? "default" : "outline"}
-                className={`w-full rounded-xl h-10 ${completed ? "bg-accent text-accent-foreground hover:bg-accent/90" : "border-accent/50 text-accent hover:bg-accent/10"}`}>
-                
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                <button
+                  onClick={() => { setCompleted(true); setExpanded(false); }}
+                  className={`w-full h-10 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 transition-all ${
+                    completed
+                      ? "bg-green-500/15 text-green-400 border border-green-500/25"
+                      : "bg-white/4 text-white/40 border border-white/8 hover:border-green-500/25 hover:text-green-400"
+                  }`}>
+                  <CheckCircle2 className="w-4 h-4" />
                   {completed ? "Esercizio completato ✓" : "Segna come completato"}
-                </Button>
+                </button>
               </div>
 
+              {/* Personal note */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5" /> Note personali esercizio
+                  <p className="text-[10px] font-semibold text-white/25 uppercase tracking-widest flex items-center gap-1.5">
+                    <MessageSquare className="w-3 h-3" /> Note personali
                   </p>
-                  {noteSaved && !editingNote &&
-                <button onClick={() => setEditingNote(true)} className="p-1 rounded hover:bg-secondary">
-                      <Pencil className="w-3 h-3 text-muted-foreground" />
+                  {noteSaved && !editingNote && (
+                    <button onClick={() => setEditingNote(true)} className="p-1 rounded hover:bg-white/8">
+                      <Pencil className="w-3 h-3 text-white/25" />
                     </button>
-                }
+                  )}
                 </div>
-                {noteSaved && !editingNote &&
-              <p className="text-sm text-muted-foreground bg-secondary/40 rounded-xl px-3 py-2 italic">
-                    {exerciseNote || "—"}
-                  </p>
-              }
-                {(!noteSaved || editingNote) &&
-              <div className="flex gap-2">
-                    <textarea
-                  placeholder="Es. Sento bene il bicipite, aumentare peso..."
-                  value={exerciseNote}
-                  onChange={(e) => setExerciseNote(e.target.value)}
-                  rows={2}
-                  className="flex-1 text-sm bg-background border border-input rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground" />
-                
-                    <Button size="sm" onClick={handleSaveNote} disabled={savingNote} className="h-9 rounded-xl self-end">
+                {noteSaved && !editingNote && (
+                  <p className="text-sm text-white/40 bg-white/4 rounded-2xl px-3 py-2 italic">{exerciseNote || "—"}</p>
+                )}
+                {(!noteSaved || editingNote) && (
+                  <div className="flex gap-2">
+                    <textarea placeholder="Es. Sento bene il bicipite, aumentare peso..."
+                      value={exerciseNote} onChange={e => setExerciseNote(e.target.value)} rows={2}
+                      className="flex-1 text-sm bg-white/5 border border-white/10 rounded-2xl px-3 py-2 resize-none focus:outline-none focus:border-[#fcd12a]/30 text-white placeholder:text-white/20" />
+                    <button onClick={handleSaveNote} disabled={savingNote}
+                      className="h-9 px-3 rounded-2xl bg-[#fcd12a] text-black font-bold self-end">
                       {savingNote ? "..." : <Check className="w-3.5 h-3.5" />}
-                    </Button>
+                    </button>
                   </div>
-              }
+                )}
               </div>
 
+              {/* Chart */}
               <AnimatePresence>
-                {showChart &&
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}>
-                
+                {showChart && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
                     <LoadChart logs={logs} />
                   </motion.div>
-              }
+                )}
               </AnimatePresence>
 
               {showCompare && (
-                <ExerciseCompareModal
-                  exercise={exercise}
-                  logs={logs}
-                  onClose={() => setShowCompare(false)}
-                />
+                <ExerciseCompareModal exercise={exercise} logs={logs} onClose={() => setShowCompare(false)} />
               )}
-
             </div>
           </motion.div>
-        }
+        )}
       </AnimatePresence>
-    </motion.div>);
-
+    </motion.div>
+  );
 }

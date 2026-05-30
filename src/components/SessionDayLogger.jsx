@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heart, Zap, MessageSquare, Check, Edit2, Flame, Clock } from "lucide-react";
 import RPEInfoTooltip from "./RPEInfoTooltip";
@@ -20,15 +19,12 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
   const [saved, setSaved] = useState(!!existingSession);
   const [editing, setEditing] = useState(false);
   const rpeHidden = !!localStorage.getItem(RPE_HIDDEN_KEY);
-
   const showForm = !saved || editing;
 
   async function handleSave() {
     setSaving(true);
     const data = {
-      plan_id: planId,
-      day_label: dayLabel,
-      date,
+      plan_id: planId, day_label: dayLabel, date,
       rpe: rpe ? Number(rpe) : undefined,
       heart_rate_avg: hr ? Number(hr) : undefined,
       calories: calories ? Number(calories) : undefined,
@@ -37,7 +33,6 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
         : undefined,
       athlete_note: note || undefined,
     };
-
     let session;
     if (existingSession?.id) {
       session = await base44.entities.WorkoutSession.update(existingSession.id, data);
@@ -45,20 +40,19 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
       session = await base44.entities.WorkoutSession.create(data);
     }
     onSaved(session);
-    setSaved(true);
-    setEditing(false);
-    setSaving(false);
+    setSaved(true); setEditing(false); setSaving(false);
   }
 
+  const inputClass = "h-11 rounded-2xl bg-white/5 border-white/10 text-white placeholder:text-white/20 text-sm";
+  const labelClass = "text-[11px] font-medium text-white/30 uppercase tracking-wider mb-1.5 flex items-center gap-1";
+
   return (
-    <div className={inline ? "space-y-3" : "bg-card rounded-2xl border border-border p-4 space-y-3"}>
+    <div className={inline ? "space-y-4" : "bg-white/4 border border-white/8 rounded-3xl p-4 space-y-4"}>
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          📊 Dati Sessione di Oggi
-        </p>
+        <p className="text-xs font-semibold text-white/30 uppercase tracking-widest">Dati Sessione</p>
         {saved && !editing && (
-          <button onClick={() => setEditing(true)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
-            <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
+          <button onClick={() => setEditing(true)} className="p-1.5 rounded-xl hover:bg-white/8 transition-colors">
+            <Edit2 className="w-3.5 h-3.5 text-white/30" />
           </button>
         )}
       </div>
@@ -68,28 +62,28 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
       {saved && !editing ? (
         <div className="flex flex-wrap gap-2">
           {rpe && (
-            <span className="flex items-center gap-1.5 text-sm bg-chart-3/10 text-chart-3 px-3 py-1.5 rounded-xl font-medium">
+            <span className="flex items-center gap-1.5 text-sm bg-orange-400/10 text-orange-400 px-3 py-1.5 rounded-2xl font-medium">
               <Zap className="w-4 h-4" /> RPE: {rpe}/10
             </span>
           )}
           {hr && (
-            <span className="flex items-center gap-1.5 text-sm bg-destructive/10 text-destructive px-3 py-1.5 rounded-xl font-medium">
+            <span className="flex items-center gap-1.5 text-sm bg-red-400/10 text-red-400 px-3 py-1.5 rounded-2xl font-medium">
               <Heart className="w-4 h-4" /> {hr} bpm
             </span>
           )}
           {calories && (
-            <span className="flex items-center gap-1.5 text-sm bg-orange-500/10 text-orange-500 px-3 py-1.5 rounded-xl font-medium">
+            <span className="flex items-center gap-1.5 text-sm bg-orange-500/10 text-orange-500 px-3 py-1.5 rounded-2xl font-medium">
               <Flame className="w-4 h-4" /> {calories} kcal
             </span>
           )}
           {(durationHours || durationMinutes) && (
-            <span className="flex items-center gap-1.5 text-sm bg-secondary text-muted-foreground px-3 py-1.5 rounded-xl">
+            <span className="flex items-center gap-1.5 text-sm bg-white/6 text-white/40 px-3 py-1.5 rounded-2xl">
               <Clock className="w-4 h-4" />
               {durationHours ? `${durationHours}h ` : ""}{durationMinutes ? `${durationMinutes}min` : ""}{durationSeconds ? ` ${durationSeconds}s` : ""}
             </span>
           )}
           {note && (
-            <span className="flex items-center gap-1.5 text-sm bg-secondary px-3 py-1.5 rounded-xl text-muted-foreground w-full">
+            <span className="flex items-center gap-1.5 text-sm bg-white/5 px-3 py-1.5 rounded-2xl text-white/35 w-full">
               <MessageSquare className="w-4 h-4 shrink-0" /> {note}
             </span>
           )}
@@ -99,68 +93,50 @@ export default function SessionDayLogger({ planId, dayLabel, date, existingSessi
           <div className="grid grid-cols-2 gap-3">
             {!rpeHidden && (
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
-                  <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> RPE (1-10)</span>
-                </label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="10"
-                  placeholder="es. 7"
-                  value={rpe}
-                  onChange={e => setRpe(e.target.value)}
-                  className="h-10 rounded-xl"
-                />
+                <label className={labelClass}><Zap className="w-3 h-3 text-orange-400" /> RPE (1-10)</label>
+                <Input type="number" min="1" max="10" placeholder="es. 7"
+                  value={rpe} onChange={e => setRpe(e.target.value)} className={inputClass} />
               </div>
             )}
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">
-                <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> FC Media (bpm)</span>
-              </label>
-              <Input type="number" placeholder="es. 145" value={hr} onChange={e => setHr(e.target.value)} className="h-10 rounded-xl" />
+              <label className={labelClass}><Heart className="w-3 h-3 text-red-400" /> FC Media (bpm)</label>
+              <Input type="number" placeholder="es. 145"
+                value={hr} onChange={e => setHr(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">
-                <span className="flex items-center gap-1"><Flame className="w-3 h-3" /> Calorie (kcal)</span>
-              </label>
-              <Input type="number" placeholder="es. 450" value={calories} onChange={e => setCalories(e.target.value)} className="h-10 rounded-xl" />
+              <label className={labelClass}><Flame className="w-3 h-3 text-orange-400" /> Calorie (kcal)</label>
+              <Input type="number" placeholder="es. 450"
+                value={calories} onChange={e => setCalories(e.target.value)} className={inputClass} />
             </div>
             <div className="col-span-2">
-              <label className="text-xs text-muted-foreground mb-1 block">
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Durata allenamento</span>
-              </label>
+              <label className={labelClass}><Clock className="w-3 h-3 text-white/40" /> Durata</label>
               <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Input type="number" min="0" placeholder="0" value={durationHours} onChange={e => setDurationHours(e.target.value)} className="h-10 rounded-xl text-center" />
-                  <p className="text-[10px] text-center text-muted-foreground mt-0.5">ore</p>
-                </div>
-                <div>
-                  <Input type="number" min="0" max="59" placeholder="0" value={durationMinutes} onChange={e => setDurationMinutes(e.target.value)} className="h-10 rounded-xl text-center" />
-                  <p className="text-[10px] text-center text-muted-foreground mt-0.5">minuti</p>
-                </div>
-                <div>
-                  <Input type="number" min="0" max="59" placeholder="0" value={durationSeconds} onChange={e => setDurationSeconds(e.target.value)} className="h-10 rounded-xl text-center" />
-                  <p className="text-[10px] text-center text-muted-foreground mt-0.5">secondi</p>
-                </div>
+                {[
+                  { val: durationHours, set: setDurationHours, label: "ore", max: undefined },
+                  { val: durationMinutes, set: setDurationMinutes, label: "min", max: 59 },
+                  { val: durationSeconds, set: setDurationSeconds, label: "sec", max: 59 },
+                ].map(({ val, set, label, max }) => (
+                  <div key={label}>
+                    <Input type="number" min="0" max={max} placeholder="0"
+                      value={val} onChange={e => set(e.target.value)}
+                      className={inputClass + " text-center"} />
+                    <p className="text-[10px] text-center text-white/20 mt-0.5">{label}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">
-              <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> Note personali (visibili al trainer)</span>
-            </label>
-            <textarea
-              placeholder="Come ti sei sentito? Difficoltà particolari..."
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              rows={2}
-              className="w-full text-sm bg-background border border-input rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
-            />
+            <label className={labelClass}><MessageSquare className="w-3 h-3" /> Note personali</label>
+            <textarea placeholder="Come ti sei sentito? Difficoltà particolari..."
+              value={note} onChange={e => setNote(e.target.value)} rows={2}
+              className="w-full text-sm bg-white/5 border border-white/10 rounded-2xl px-3 py-2.5 resize-none focus:outline-none focus:border-[#fcd12a]/30 text-white placeholder:text-white/20" />
           </div>
-          <Button onClick={handleSave} disabled={saving} size="sm" className="h-9 rounded-xl px-5">
-            <Check className="w-4 h-4 mr-1" />
+          <button onClick={handleSave} disabled={saving}
+            className="w-full h-12 rounded-2xl bg-[#fcd12a] text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#fcd12a]/90 disabled:opacity-50 transition-all">
+            <Check className="w-4 h-4" />
             {saving ? "Salvataggio..." : "Salva Dati Sessione"}
-          </Button>
+          </button>
         </div>
       )}
     </div>
