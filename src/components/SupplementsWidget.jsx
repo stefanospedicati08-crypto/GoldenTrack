@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { base44 } from "@/api/base44Client";
 import { Pill, Check, Bell, Settings, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,17 +20,35 @@ export default function SupplementsWidget({ supplements }) {
   const [showSettings, setShowSettings] = useState(false);
   const [reminderTime, setReminderTime] = useState(() => getNotifSettings()?.supplement?.time || "");
   const [notifStatus, setNotifStatus] = useState("default");
+  const mealLogIdRef = useRef(null);
+  const today = getTodayKey();
 
   useEffect(() => {
     if ("Notification" in window) {
       setNotifStatus(Notification.permission);
     }
+    // Load today's MealLog id if exists
+    base44.entities.MealLog.filter({ date: today }, "-date", 1).then((logs) => {
+      if (logs[0]) mealLogIdRef.current = logs[0].id;
+    });
   }, []);
+
+  async function syncMealLog(nextTaken) {
+    const allIds = supplements.map((s) => s.id);
+    const allDone = allIds.length > 0 && allIds.every((id) => nextTaken.includes(id));
+    if (mealLogIdRef.current) {
+      await base44.entities.MealLog.update(mealLogIdRef.current, { completed: allDone });
+    } else if (allDone) {
+      const created = await base44.entities.MealLog.create({ date: today, completed: true });
+      mealLogIdRef.current = created.id;
+    }
+  }
 
   function toggleTaken(id) {
     const next = taken.includes(id) ? taken.filter((t) => t !== id) : [...taken, id];
     setTaken(next);
     localStorage.setItem(storageKey, JSON.stringify(next));
+    syncMealLog(next);
   }
 
   function toggleAll() {
@@ -38,6 +57,7 @@ export default function SupplementsWidget({ supplements }) {
     const next = allTaken ? [] : allIds;
     setTaken(next);
     localStorage.setItem(storageKey, JSON.stringify(next));
+    syncMealLog(next);
   }
 
   async function requestNotifPermission() {

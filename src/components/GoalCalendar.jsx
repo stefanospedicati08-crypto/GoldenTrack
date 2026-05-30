@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronLeft, ChevronRight, Droplets, Utensils } from "lucide-react";
+import { ChevronLeft, ChevronRight, Droplets, Pill } from "lucide-react";
 
 const DAYS = ["L", "M", "M", "G", "V", "S", "D"];
 
@@ -14,7 +14,6 @@ export default function GoalCalendar() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      // Load 3 months of data to cover navigation
       const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split("T")[0];
       const [wl, ml] = await Promise.all([
         base44.entities.WaterLog.filter({ date: { $gte: threeMonthsAgo } }, "-date", 200),
@@ -38,7 +37,6 @@ export default function GoalCalendar() {
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
   const firstDay = new Date(year, month, 1);
-  // Monday-based offset
   const startOffset = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
@@ -56,33 +54,23 @@ export default function GoalCalendar() {
     mealLogs.filter((l) => l.completed).map((l) => [l.date, true])
   );
 
-  // Toggle meal log for a date
-  async function toggleMeal(d) {
-    const ds = dateStr(d);
-    const existing = mealLogs.find((l) => l.date === ds);
-    if (existing) {
-      const updated = await base44.entities.MealLog.update(existing.id, { completed: !existing.completed });
-      setMealLogs((prev) => prev.map((l) => l.id === existing.id ? { ...l, completed: !l.completed } : l));
-    } else {
-      const created = await base44.entities.MealLog.create({ date: ds, completed: true });
-      setMealLogs((prev) => [...prev, created]);
-    }
-  }
-
   const monthName = currentMonth.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
   const isFutureMonth = new Date(year, month + 1, 1) > today;
 
-  // Stats for current month
+  const prefix = `${year}-${String(month + 1).padStart(2, "0")}`;
   const daysElapsed = month === today.getMonth() && year === today.getFullYear() ? today.getDate() : daysInMonth;
-  const waterDays = Object.keys(waterMap).filter(d => d.startsWith(`${year}-${String(month + 1).padStart(2, "0")}`)).length;
-  const mealDays = Object.keys(mealMap).filter(d => d.startsWith(`${year}-${String(month + 1).padStart(2, "0")}`)).length;
+  const waterDays = Object.keys(waterMap).filter(d => d.startsWith(prefix)).length;
+  const mealDays = Object.keys(mealMap).filter(d => d.startsWith(prefix)).length;
+  const bothDays = Array.from({ length: daysInMonth }, (_, i) => dateStr(i + 1))
+    .filter(d => waterMap[d] && mealMap[d]).length;
 
   return (
     <div className="space-y-4">
       {/* Legend */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-400 inline-block" /><Droplets className="w-3 h-3" /> Obiettivo acqua</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-accent inline-block" /><Utensils className="w-3 h-3" /> Alimentazione</span>
+      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-400 inline-block" /><Droplets className="w-3 h-3" /> Acqua</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-accent inline-block" /><Pill className="w-3 h-3" /> Integratori</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-yellow-400 inline-block" /> Entrambi ⭐</span>
       </div>
 
       {/* Month header */}
@@ -116,46 +104,55 @@ export default function GoalCalendar() {
             const ds = dateStr(dayNum);
             const isToday = ds === today.toISOString().split("T")[0];
             const isFuture = new Date(year, month, dayNum) > today;
-            const hasWater = waterMap[ds];
-            const hasMeal = mealMap[ds];
+            const hasWater = !!waterMap[ds];
+            const hasMeal = !!mealMap[ds];
+            const hasBoth = hasWater && hasMeal;
 
             return (
-              <button
+              <div
                 key={i}
-                onClick={() => !isFuture && toggleMeal(dayNum)}
-                disabled={isFuture}
-                className={`relative aspect-square flex flex-col items-center justify-center rounded-xl transition-colors text-xs font-medium
+                className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-xs font-medium
                   ${isToday ? "ring-2 ring-primary ring-offset-1" : ""}
-                  ${isFuture ? "opacity-30 cursor-default" : "hover:bg-secondary/60"}
-                  ${hasWater && hasMeal ? "bg-accent/15" : hasWater ? "bg-blue-400/10" : hasMeal ? "bg-accent/10" : "bg-secondary/20"}
+                  ${isFuture ? "opacity-30" : ""}
+                  ${hasBoth ? "bg-yellow-400/20" : hasWater ? "bg-blue-400/10" : hasMeal ? "bg-accent/10" : "bg-secondary/20"}
                 `}
               >
                 <span className={isToday ? "text-primary font-bold" : ""}>{dayNum}</span>
                 <div className="flex gap-0.5 mt-0.5">
-                  {hasWater && <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
-                  {hasMeal && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
+                  {hasBoth
+                    ? <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                    : <>
+                        {hasWater && <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
+                        {hasMeal && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
+                      </>
+                  }
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
       )}
 
       {/* Monthly stats */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        <div className="bg-blue-400/10 rounded-2xl px-4 py-3 text-center">
+      <div className="grid grid-cols-3 gap-2 pt-1">
+        <div className="bg-blue-400/10 rounded-2xl px-3 py-3 text-center">
           <Droplets className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-          <p className="text-xl font-bold font-heading text-blue-400">{waterDays}</p>
-          <p className="text-xs text-muted-foreground">giorni acqua {daysElapsed > 0 && <span className="text-blue-400 font-medium">({Math.round(waterDays / daysElapsed * 100)}%)</span>}</p>
+          <p className="text-lg font-bold font-heading text-blue-400">{waterDays}</p>
+          <p className="text-[11px] text-muted-foreground">{daysElapsed > 0 ? `${Math.round(waterDays / daysElapsed * 100)}%` : "—"}</p>
         </div>
-        <div className="bg-accent/10 rounded-2xl px-4 py-3 text-center">
-          <Utensils className="w-4 h-4 text-accent mx-auto mb-1" />
-          <p className="text-xl font-bold font-heading text-accent">{mealDays}</p>
-          <p className="text-xs text-muted-foreground">giorni alimentaz. {daysElapsed > 0 && <span className="text-accent font-medium">({Math.round(mealDays / daysElapsed * 100)}%)</span>}</p>
+        <div className="bg-accent/10 rounded-2xl px-3 py-3 text-center">
+          <Pill className="w-4 h-4 text-accent mx-auto mb-1" />
+          <p className="text-lg font-bold font-heading text-accent">{mealDays}</p>
+          <p className="text-[11px] text-muted-foreground">{daysElapsed > 0 ? `${Math.round(mealDays / daysElapsed * 100)}%` : "—"}</p>
+        </div>
+        <div className="bg-yellow-400/10 rounded-2xl px-3 py-3 text-center">
+          <span className="text-base block mb-1">⭐</span>
+          <p className="text-lg font-bold font-heading text-yellow-500">{bothDays}</p>
+          <p className="text-[11px] text-muted-foreground">{daysElapsed > 0 ? `${Math.round(bothDays / daysElapsed * 100)}%` : "—"}</p>
         </div>
       </div>
 
-      <p className="text-[11px] text-muted-foreground text-center">Tocca un giorno per segnare/togliere l'obiettivo alimentazione</p>
+      <p className="text-[11px] text-muted-foreground text-center">Gli obiettivi si aggiornano automaticamente dalla dashboard</p>
     </div>
   );
 }
