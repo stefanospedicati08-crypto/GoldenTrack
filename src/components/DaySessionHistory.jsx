@@ -5,6 +5,19 @@ import moment from "moment";
 import "moment/locale/it";
 moment.locale("it");
 
+function formatDuration(minutes) {
+  if (!minutes) return null;
+  const totalSeconds = Math.round(minutes * 60);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const parts = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}min`);
+  if (s > 0) parts.push(`${s}s`);
+  return parts.length ? parts.join(' ') : '0min';
+}
+
 export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionDeleted, onSessionUpdated, onLogUpdated }) {
   const [open, setOpen] = useState(false);
   const [expandedSession, setExpandedSession] = useState(null);
@@ -167,7 +180,7 @@ export default function DaySessionHistory({ sessions, dayLabel, logs, onSessionD
                             )}
                             {session.training_minutes && (
                               <span className="text-[10px] text-white/30">
-                                <Clock className="w-3 h-3 inline mr-0.5" />{session.training_minutes}min
+                                <Clock className="w-3 h-3 inline mr-0.5" />{formatDuration(session.training_minutes)}
                               </span>
                             )}
                             <span className="text-[10px] text-white/25">{exerciseNames.length} es.</span>

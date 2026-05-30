@@ -4,6 +4,19 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, ClipboardList, Weight, Camera, Dumbbell, TrendingDown, TrendingUp, Minus, ChevronDown, ChevronUp, BarChart2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+
+function formatDuration(minutes) {
+  if (!minutes) return null;
+  const totalSeconds = Math.round(minutes * 60);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const parts = [];
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}min`);
+  if (s > 0) parts.push(`${s}s`);
+  return parts.length ? parts.join(' ') : '0min';
+}
 import moment from "moment";
 
 export default function ClientDetail() {
@@ -142,7 +155,7 @@ export default function ClientDetail() {
                               <div className="flex gap-1.5 text-xs flex-wrap">
                                 {s.rpe && <span className="bg-orange-400/10 text-orange-400 px-2 py-0.5 rounded-lg">RPE {s.rpe}</span>}
                                 {s.heart_rate_avg && <span className="bg-red-400/10 text-red-400 px-2 py-0.5 rounded-lg">{s.heart_rate_avg} bpm</span>}
-                                {s.training_minutes && <span className="bg-white/8 text-white/50 px-2 py-0.5 rounded-lg">{s.training_minutes} min</span>}
+                                {s.training_minutes && <span className="bg-white/8 text-white/50 px-2 py-0.5 rounded-lg">{formatDuration(s.training_minutes)}</span>}
                               </div>
                             </div>
                             {s.athlete_note && <p className="text-white/35 mt-1 italic text-xs">"{s.athlete_note}"</p>}
@@ -274,7 +287,7 @@ export default function ClientDetail() {
                     {s.rpe && <span className="text-xs bg-orange-400/10 text-orange-400 px-2 py-0.5 rounded-xl font-medium">RPE {s.rpe}/10</span>}
                     {s.heart_rate_avg && <span className="text-xs bg-red-400/10 text-red-400 px-2 py-0.5 rounded-xl">{s.heart_rate_avg} bpm</span>}
                     {s.calories && <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-xl">{s.calories} kcal</span>}
-                    {s.training_minutes && <span className="text-xs bg-white/8 text-white/50 px-2 py-0.5 rounded-xl">{s.training_minutes} min</span>}
+                    {s.training_minutes && <span className="text-xs bg-white/8 text-white/50 px-2 py-0.5 rounded-xl">{formatDuration(s.training_minutes)}</span>}
                   </div>
                 </div>
                 {s.athlete_note && <p className="text-sm text-white/35 italic">"{s.athlete_note}"</p>}
