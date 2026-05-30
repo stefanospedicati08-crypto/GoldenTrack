@@ -14,7 +14,7 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-xl border-t border-border flex"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#1c1f28]/95 backdrop-blur-xl border-t border-white/6 flex"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {tabs.map((tab) => {
@@ -30,11 +30,15 @@ export default function BottomTabBar() {
               }
             }}
             className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-all duration-200 select-none ${
-              active ? "text-primary" : "text-muted-foreground"
+              active ? "text-[#fcd12a]" : "text-white/30"
             }`}
           >
-            <tab.icon className={`w-5 h-5 transition-transform ${active ? "scale-110" : ""}`} />
-            <span className="text-[10px] font-medium">{tab.label}</span>
+            <div className={`relative flex items-center justify-center ${active ? "after:absolute after:-bottom-1 after:w-1 after:h-1 after:rounded-full after:bg-[#fcd12a]" : ""}`}>
+              <tab.icon className={`w-5 h-5 transition-transform ${active ? "scale-110" : ""}`} />
+            </div>
+            <span className={`text-[10px] font-medium ${active ? "text-[#fcd12a]" : "text-white/25"}`}>
+              {tab.label}
+            </span>
           </button>
         );
       })}
